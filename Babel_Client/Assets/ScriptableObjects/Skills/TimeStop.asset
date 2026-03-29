@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 782c2782a5cffc14785ac477215b5a49, type: 3}
+  m_Name: TimeStop
+  m_EditorClassIdentifier: 
+  _skillId: time_stop
+  _skillName: 时间凝滞
+  _description: 点击区域内时间减缓，大幅降低敌人移动速度，低伤害强控制。
+  _icon: {fileID: 0}
+  _skillType: 0
+  _passiveCategory: 0
+  _damage: 10
+  _bonusDamagePerStack: 0
+  _cooldown: 2
+  _chargeTime: 0
+  _aoeRadius: 3
+  _chainCount: 0
+  _piercing: 0
+  _slowPercent: 0.7
+  _slowDuration: 3
+  _triggerInterval: 0
+  _maxStackCount: 1
+  _spreadOnKill: 0
+  _weight: 1
+  _upgradesFrom: {fileID: 0}
+  _isStarterSkill: 0

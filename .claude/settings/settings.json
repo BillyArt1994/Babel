@@ -1,0 +1,12 @@
+{
+  "skills": {
+    "start": {
+      "path": ".claude/skills/start.md",
+      "enabled": true
+    },
+    "brainstorm": {
+      "path": ".claude/skills/brainstorm.md",
+      "enabled": true
+    }
+  }
+}

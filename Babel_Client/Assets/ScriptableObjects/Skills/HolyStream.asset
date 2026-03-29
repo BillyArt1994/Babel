@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 782c2782a5cffc14785ac477215b5a49, type: 3}
+  m_Name: HolyStream
+  m_EditorClassIdentifier: 
+  _skillId: holy_stream
+  _skillName: 圣光洪流
+  _description: 释放横贯全屏的圣光光束，穿透击中路径上所有敌人。
+  _icon: {fileID: 0}
+  _skillType: 0
+  _passiveCategory: 0
+  _damage: 45
+  _bonusDamagePerStack: 0
+  _cooldown: 1.2
+  _chargeTime: 0.8
+  _aoeRadius: 0
+  _chainCount: 0
+  _piercing: 1
+  _slowPercent: 0
+  _slowDuration: 0
+  _triggerInterval: 0
+  _maxStackCount: 1
+  _spreadOnKill: 0
+  _weight: 1
+  _upgradesFrom: {fileID: 0}
+  _isStarterSkill: 0

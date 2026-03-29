@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de9b02853b5c0324a83b0cf5d50479be, type: 3}
+  m_Name: Elite
+  m_EditorClassIdentifier: 
+  _enemyId: elite
+  _enemyName: Elite
+  _enemyType: 1
+  _maxHealth: 160
+  _moveSpeed: 2
+  _faithValue: 15
+  _buildContribution: 1
+  _spawnWeight: 0.5
+  _specialAbility: 0
+  _healRadius: 0
+  _healPerSecond: 0
+  _deathExplosionRadius: 0
+  _deathExplosionForce: 0
+  _spawnStartTime: 120
+  _sprite: {fileID: 0}
+  _animatorController: {fileID: 0}
+  _prefab: {fileID: 7796131692613805298, guid: a80f21d77e3a7ec45b2e8db0870f77ff, type: 3}
