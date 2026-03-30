@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -11,6 +12,8 @@ public class EnemyController : MonoBehaviour, IPoolable
     private Vector2 _targetPosition;
     private bool _isActive;
     private SpriteRenderer _spriteRenderer;
+    private static readonly Color HitFlashColor = new Color(1f, 0.3f, 0.3f);
+    private Coroutine _hitFlashCoroutine;
 
     public EnemyData Data => _data;
     public EnemyType EnemyType => _data != null ? _data.EnemyType : default;
@@ -36,10 +39,27 @@ public class EnemyController : MonoBehaviour, IPoolable
         }
 
         _currentHealth -= damage;
+
+        if (_spriteRenderer != null)
+        {
+            if (_hitFlashCoroutine != null)
+                StopCoroutine(_hitFlashCoroutine);
+            _hitFlashCoroutine = StartCoroutine(HitFlash());
+        }
+
         if (_currentHealth <= 0f)
         {
             Die();
         }
+    }
+
+    private IEnumerator HitFlash()
+    {
+        _spriteRenderer.color = HitFlashColor;
+        yield return new WaitForSeconds(0.08f);
+        if (_spriteRenderer != null)
+            _spriteRenderer.color = Color.white;
+        _hitFlashCoroutine = null;
     }
 
     public void ApplySlow(float percent, float duration)

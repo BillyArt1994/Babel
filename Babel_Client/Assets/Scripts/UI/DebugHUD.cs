@@ -10,6 +10,7 @@ public class DebugHUD : MonoBehaviour
     [SerializeField] private Text _currentLayerText;
     [SerializeField] private Text _gameStateText;
     [SerializeField] private Text _killCountText;
+    [SerializeField] private Text _currentSkillText;
     [SerializeField] private TowerConstructionSystem _towerSystem;
 
     private int _killCount;
@@ -33,6 +34,7 @@ public class DebugHUD : MonoBehaviour
         RefreshCurrentLayerText();
         RefreshGameStateText();
         RefreshKillCountText();
+        RefreshCurrentSkillText();
     }
 
     private void OnEnemyDied(EnemyData data, Vector2 position)
@@ -118,5 +120,22 @@ public class DebugHUD : MonoBehaviour
         }
 
         _killCountText.text = _killCount.ToString();
+    }
+
+    private void RefreshCurrentSkillText()
+    {
+        if (_currentSkillText == null)
+        {
+            return;
+        }
+
+        if (SkillSystem.Instance == null)
+        {
+            _currentSkillText.text = "Skill: --";
+            return;
+        }
+
+        SkillData activeSkill = SkillSystem.Instance.GetActiveClickForm();
+        _currentSkillText.text = activeSkill != null ? $"Skill: {activeSkill.SkillName}" : "Skill: --";
     }
 }

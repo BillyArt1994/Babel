@@ -125,7 +125,7 @@ public class SkillData : ScriptableObject
             Debug.LogWarning($"SkillData '{name}' has an empty skillId.", this);
         }
 
-        if (_weight <= 0f)
+        if (_weight <= 0f && _skillType != SkillType.ClickForm)
         {
             Debug.LogWarning($"SkillData '{name}' has weight <= 0 and will not appear in weighted upgrade rolls.", this);
         }

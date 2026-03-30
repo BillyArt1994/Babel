@@ -64,8 +64,21 @@ public class UpgradeSystemPlaceholder : MonoBehaviour
             return;
         }
 
+        StartCoroutine(UpgradeSequence(skill));
+    }
+
+    private System.Collections.IEnumerator UpgradeSequence(SkillData skill)
+    {
+        if (GameLoopManager.Instance != null)
+            GameLoopManager.Instance.RequestLevelUp();
+
+        yield return new WaitForSecondsRealtime(1f);
+
         AddSkill(skill);
         Debug.Log($"[UpgradePlaceholder] Level {_levelCount}: Added {skill.SkillName}");
+
+        if (GameLoopManager.Instance != null)
+            GameLoopManager.Instance.RequestLevelUpComplete();
     }
 
     private SkillData GetRandomEligibleSkill()
