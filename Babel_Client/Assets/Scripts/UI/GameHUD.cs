@@ -128,7 +128,11 @@ public class GameHUD : MonoBehaviour
 
     private void RefreshFaith()
     {
-        if (UpgradeSystem.Instance == null) return;
+        if (UpgradeSystem.Instance == null)
+        {
+            Debug.LogWarning("[GameHUD] UpgradeSystem.Instance is null");
+            return;
+        }
 
         if (_faithBarFill != null)
             _faithBarFill.fillAmount = UpgradeSystem.Instance.GetFaithProgress();

@@ -2,15 +2,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Implements the upgrade selection UI from design/gdd/升级选择UI.md.
-/// Listens for UpgradeEvents.OnOptionsGenerated, shows 3 skill cards,
-/// calls UpgradeSystem.SelectOption on click.
+/// Upgrade selection UI. Subscribes in Awake/OnDestroy so the listener
+/// survives Hide() toggling _root inactive.
 /// </summary>
 public class UpgradeSelectionUI : MonoBehaviour
 {
     [SerializeField] private GameObject _root;
     [SerializeField] private Image _overlay;
-    [SerializeField] private GameObject[] _cardRoots;       // 3 card GameObjects
+    [SerializeField] private GameObject[] _cardRoots;
     [SerializeField] private Image[] _cardIcons;
     [SerializeField] private Text[] _cardNames;
     [SerializeField] private Text[] _cardTypes;
@@ -20,12 +19,22 @@ public class UpgradeSelectionUI : MonoBehaviour
     private SkillData[] _currentOptions;
     private bool _accepted;
 
-    private void OnEnable()  => UpgradeEvents.OnOptionsGenerated += Show;
-    private void OnDisable() => UpgradeEvents.OnOptionsGenerated -= Show;
+    private void Awake()
+    {
+        UpgradeEvents.OnOptionsGenerated += OnOptionsGenerated;
+    }
 
-    private void Start() => Hide();
+    private void OnDestroy()
+    {
+        UpgradeEvents.OnOptionsGenerated -= OnOptionsGenerated;
+    }
 
-    private void Show(SkillData[] options)
+    private void Start()
+    {
+        if (_root != null) _root.SetActive(false);
+    }
+
+    private void OnOptionsGenerated(SkillData[] options)
     {
         _currentOptions = options;
         _accepted = false;
@@ -41,7 +50,7 @@ public class UpgradeSelectionUI : MonoBehaviour
 
             SkillData skill = options[i];
 
-            if (_cardIcons[i] != null)
+            if (_cardIcons != null && i < _cardIcons.Length && _cardIcons[i] != null)
             {
                 _cardIcons[i].sprite = skill.Icon;
                 _cardIcons[i].enabled = skill.Icon != null;
@@ -63,21 +72,15 @@ public class UpgradeSelectionUI : MonoBehaviour
             }
         }
 
-        _root.SetActive(true);
+        if (_root != null) _root.SetActive(true);
     }
 
-    private void Hide()
-    {
-        _root.SetActive(false);
-    }
-
-    // Wired to each card button in Inspector (pass 0/1/2)
     public void OnCardClicked(int index)
     {
         if (_accepted) return;
         _accepted = true;
 
-        Hide();
+        if (_root != null) _root.SetActive(false);
 
         if (UpgradeSystem.Instance != null)
             UpgradeSystem.Instance.SelectOption(index);
