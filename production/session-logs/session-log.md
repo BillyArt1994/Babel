@@ -671,3 +671,27 @@ Babel_Client/ProjectSettings/PackageManagerSettings.asset
 Babel_Client/ProjectSettings/ProjectVersion.txt
 ---
 
+## Session End: 20260330_174639
+### Commits
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+---
+
