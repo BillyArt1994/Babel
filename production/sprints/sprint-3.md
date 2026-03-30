@@ -41,6 +41,7 @@
 | S3-03 | **性能优化 Phase 2**：ObjectPool 预热容量调整 + ClickAttackSystem ToArray 消除 | gameplay-programmer | 低 | 无 | 各敌人类型 ObjectPool `_initialSize` 调整为 50；`_hitBuffer.ToArray()` 替换为直接传递 List 或 ReadOnlySpan；100 单位同屏 GC spike 消除 |
 | S3-04 | **效果被动实现**：余震（Aftershock）+ 瘟疫（Plague）+ 狂怒（Rage）| gameplay-programmer | 高 | S3-01, S3-02 | 余震：OnAttackExecuted 后在命中点触发二次 AOE（伤害 = 主攻击 x 0.3），不递归；瘟疫：OnEnemyDied 时死亡位置释放 AOE（伤害 = 主攻击 x 0.2）；狂怒：击杀后减少冷却 0.5s；三者在升级选项中可正常出现和选择 |
 | S3-05 | **伤害数字浮动显示**：命中时在敌人头顶弹出伤害数字（白色常规 / 黄色暴击 / 红色处决），向上飘动后消失 | ui-programmer | 中 | 无 | 命中时显示伤害数字；暴击数字大 1.5 倍且为黄色；数字 0.8 秒后淡出消失；使用对象池管理（无 GC）；100 单位同屏不卡顿 |
+| S3-14 | **敌人移动重构（槽位寻路）**：TowerConstructionSystem 改为槽位网格模型（每层 N 个槽），EnemyController 移动目标改为动态查询最近空槽，到达后占据槽位并消失，当层填满后新敌人自动寻找上一层空槽 | gameplay-programmer | 高 | S3-01, S3-02 | 每层塔有明确槽位数；敌人移动到最近空槽而非固定中心点；到达后槽位标记占据；当层满后新敌人移动至上层；视觉上呈现拼积木效果；与现有 TowerProgressEvents/GameLoop 兼容 |
 
 ### Should Have（本冲刺内尽量完成）
 
@@ -130,6 +131,8 @@ S3-01/02/03（性能优化）
        v
 S3-04（效果被动）──> S3-07（难度曲线，含效果被动后的平衡调整）
 
+S3-01/02（性能优化）──> S3-14（敌人移动重构）
+
 S3-13（数据表管线）──> S3-07（难度曲线调整，使用 Excel 调参）
 
 S3-05（伤害数字）──> 独立，可提前开始
@@ -144,7 +147,7 @@ S3-09（死亡特效）──> 独立
 
 ## 本冲刺完成标准
 
-- [ ] S3-01 至 S3-05 全部完成（Must Have）
+- [ ] S3-01 至 S3-05 以及 S3-14 全部完成（Must Have）
 - [ ] 所有 Must Have 任务通过验收标准
 - [ ] 无 S1/S2 级 Bug（游戏崩溃或核心逻辑错误）
 - [ ] 100 单位同屏帧率 >= 60fps 且无 GC spike > 2ms（性能回归通过）
