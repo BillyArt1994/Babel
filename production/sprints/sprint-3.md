@@ -58,6 +58,7 @@
 | S3-10 | **屏幕震动反馈**：AOE 攻击和大量击杀时触发微弱屏幕震动（摄像机 offset 抖动） | unity-specialist | 低 | 无 | AOE 命中时摄像机轻微震动（振幅 0.1-0.3 单位，持续 0.15s）；可配置震动强度和持续时间；不与摄像机 Lerp 跟随冲突 |
 | S3-11 | **HitFlash 优化**：将 HitFlash 协程替换为 Timer 方式，消除 WaitForSeconds GC 分配；缓存颜色材质 | gameplay-programmer | 低 | 无 | 命中闪光效果不变；移除 Coroutine + WaitForSeconds；改用 Update 计时器驱动；Profiler 验证零 GC |
 | S3-12 | **结算 UI 数据增强**：结算界面增加更多统计（存活时间、塔高达到层数、最高连杀、技能选择历史） | ui-programmer | 低 | 无 | 结算界面显示至少 5 项统计数据；数据来源于 StatsTracker 扩展字段；布局美观不溢出 |
+| S3-13 | **数据表管线**：建立 Excel 模板（敌人属性表 + 波次配置表）+ Unity CSV 导入 Editor 工具，一键将 CSV 写入对应 ScriptableObject | tools-programmer | 中 | 无 | 提供 `Assets/Data/enemies.csv` 和 `Assets/Data/waves.csv` 模板；Editor 菜单 "Babel/Import Data Tables" 可一键导入；导入后 EnemyData ScriptableObject 数值正确更新；WaveConfig ScriptableObject 波次数据正确更新；导入失败时有清晰错误提示 |
 
 ---
 
@@ -111,6 +112,7 @@
 
 第 6-7 天（周末）：
   -> S3-07 难度曲线初调（需要手动测试多局，安排在整块时间）
+  -> S3-13 数据表管线（可与 S3-07 难度调整并行 -- 先建表，再用表调数值）
   -> S3-10 屏幕震动（若有余量）
   -> S3-11 HitFlash 优化（若有余量）
   -> S3-12 结算数据增强（若有余量）
@@ -127,6 +129,8 @@ S3-01/02/03（性能优化）
        |
        v
 S3-04（效果被动）──> S3-07（难度曲线，含效果被动后的平衡调整）
+
+S3-13（数据表管线）──> S3-07（难度曲线调整，使用 Excel 调参）
 
 S3-05（伤害数字）──> 独立，可提前开始
 S3-06（音效框架）──> 独立，可提前开始
