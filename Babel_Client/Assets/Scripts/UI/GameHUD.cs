@@ -21,6 +21,10 @@ public class GameHUD : MonoBehaviour
     [Header("Top-center: Timer")]
     [SerializeField] private Text _timerText;
 
+    [Header("Bottom-center: Faith bar")]
+    [SerializeField] private Image _faithBarFill;   // fillAmount 0→1
+    [SerializeField] private Text  _faithLevelText; // "Lv N"
+
     [Header("Right side: Skill list")]
     [SerializeField] private Transform _skillListContainer;  // VerticalLayoutGroup parent
     [SerializeField] private GameObject _skillEntryPrefab;   // Text prefab for each skill entry
@@ -55,6 +59,7 @@ public class GameHUD : MonoBehaviour
     private void Update()
     {
         RefreshTimer();
+        RefreshFaith();
     }
 
     // ── Game events ───────────────────────────────────────────────────────────
@@ -117,5 +122,18 @@ public class GameHUD : MonoBehaviour
         int seconds = total % 60;
         _timerText.text  = $"{minutes:00}:{seconds:00}";
         _timerText.color = remaining <= WARNING_THRESHOLD ? WarningTimeColor : NormalTimeColor;
+    }
+
+    // ── Faith bar ─────────────────────────────────────────────────────────────
+
+    private void RefreshFaith()
+    {
+        if (UpgradeSystem.Instance == null) return;
+
+        if (_faithBarFill != null)
+            _faithBarFill.fillAmount = UpgradeSystem.Instance.GetFaithProgress();
+
+        if (_faithLevelText != null)
+            _faithLevelText.text = $"Lv {UpgradeSystem.Instance.GetLevelCount()}";
     }
 }
