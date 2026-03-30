@@ -1080,6 +1080,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62a9494a074dd204a88959ab6e5e919c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _groundMargin: 2.8
   _towerSystem: {fileID: 1818027461}
 --- !u!1 &1424553851
 GameObject:
