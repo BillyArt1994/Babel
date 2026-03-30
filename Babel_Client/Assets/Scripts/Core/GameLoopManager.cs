@@ -75,7 +75,7 @@ public class GameLoopManager : MonoBehaviour
             _remainingTime = 0f;
         }
 
-        if (_currentState == GameState.Playing && Mathf.Approximately(_remainingTime, 0f))
+        if (_currentState == GameState.Playing && _remainingTime <= 0f)
         {
             TransitionTo(GameState.Victory);
         }

@@ -50,14 +50,16 @@ public class EnemyController : MonoBehaviour, IPoolable
     {
         _isActive = false;
         EnemyEvents.RaiseEnemyDied(_data, transform.position);
-        EnemyPool.Instance.Return(this);
+        if (EnemyPool.Instance != null)
+            EnemyPool.Instance.Return(this);
     }
 
     private void ReachTower()
     {
         _isActive = false;
         EnemyEvents.RaiseEnemyReachedTower(_data);
-        EnemyPool.Instance.Return(this);
+        if (EnemyPool.Instance != null)
+            EnemyPool.Instance.Return(this);
     }
 
     private void Update()

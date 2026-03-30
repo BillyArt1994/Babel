@@ -61,6 +61,9 @@ public class ClickAttackSystem : MonoBehaviour
                 break;
         }
 
+        if (collectedHits.Count == 0)
+            return new AttackResult { request = request, hits = new HitInfo[0] };
+
         AttackResult result = new AttackResult
         {
             request = request,

@@ -11,6 +11,8 @@ public class TowerConstructionSystem : MonoBehaviour
     private const float BASE_WIDTH = 10f;
     private const float TOP_WIDTH_RATIO = 0.2f;
     private const float LAYER_HEIGHT = 1.2f;
+    private const float REQUIRED_POINTS_BOTTOM = 100f;
+    private const float REQUIRED_POINTS_TOP = 20f;
 
     [SerializeField] private Transform _towerRoot;
     [SerializeField] private Sprite _layerSprite;
@@ -24,10 +26,14 @@ public class TowerConstructionSystem : MonoBehaviour
     /// <summary>Returns overall tower completion as a value in [0, 100].</summary>
     public float GetTotalCompletionPercent()
     {
-        float total = 0f;
+        float currentTotal = 0f;
+        float requiredTotal = 0f;
         for (int i = 0; i < LAYER_COUNT; i++)
-            total += _layers[i].CompletionPercent;
-        return total / (LAYER_COUNT * 100f) * 100f;
+        {
+            currentTotal += _layers[i].CurrentPoints;
+            requiredTotal += _layers[i].RequiredPoints;
+        }
+        return requiredTotal > 0f ? currentTotal / requiredTotal * 100f : 0f;
     }
 
     public int GetCurrentLayer() => _currentActiveLayer;
@@ -58,7 +64,11 @@ public class TowerConstructionSystem : MonoBehaviour
         _currentActiveLayer = 0;
 
         for (int i = 0; i < LAYER_COUNT; i++)
-            _layers[i] = new TowerLayer(i, unlocked: i == 0);
+        {
+            float t = LAYER_COUNT > 1 ? (float)i / (LAYER_COUNT - 1) : 0f;
+            float required = Mathf.Lerp(REQUIRED_POINTS_BOTTOM, REQUIRED_POINTS_TOP, t);
+            _layers[i] = new TowerLayer(i, required, unlocked: i == 0);
+        }
     }
 
     private void BuildLayerVisuals()
@@ -82,7 +92,7 @@ public class TowerConstructionSystem : MonoBehaviour
         for (int i = 0; i < LAYER_COUNT; i++)
         {
             _layers[i].Reset();
-            _layers[i].SetLocked(i == 0);   // only layer 0 starts unlocked
+            _layers[i].SetUnlocked(i == 0);   // only layer 0 starts unlocked
         }
         RefreshAllVisuals();
     }
@@ -91,7 +101,7 @@ public class TowerConstructionSystem : MonoBehaviour
 
     /// <summary>
     /// Called by EnemySpawnSystem when an enemy reaches the tower.
-    /// Advances the current active layer by enemyData.BuildContribution percent.
+    /// Adds enemyData.BuildContribution points to the current active layer.
     /// </summary>
     public void AddProgress(EnemyData enemyData)
     {
@@ -102,7 +112,7 @@ public class TowerConstructionSystem : MonoBehaviour
         TowerLayer active = _layers[_currentActiveLayer];
         if (!active.IsUnlocked || active.IsCompleted) return;
 
-        active.AddProgress(enemyData.BuildContribution);
+        active.AddPoints(enemyData.BuildContribution);
         TowerProgressEvents.RaiseLayerProgressChanged(_currentActiveLayer, active.CompletionPercent);
         UpdateLayerVisual(_currentActiveLayer);
 

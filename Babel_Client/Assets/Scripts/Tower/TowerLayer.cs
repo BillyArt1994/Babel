@@ -3,39 +3,40 @@ using UnityEngine;
 /// <summary>
 /// Tower layer data model implementing the layer progress rules from
 /// design/gdd/塔建造系统.md.
+/// Each layer has an independent requiredPoints derived from its width (layer index).
 /// </summary>
 [System.Serializable]
 public class TowerLayer
 {
     public int LayerIndex { get; private set; }
-    public float CompletionPercent { get; private set; }
-    public bool IsCompleted => CompletionPercent >= 100f;
+    public float CurrentPoints { get; private set; }
+    public float RequiredPoints { get; private set; }
+    public float CompletionPercent => RequiredPoints > 0f ? Mathf.Clamp01(CurrentPoints / RequiredPoints) * 100f : 0f;
+    public bool IsCompleted => CurrentPoints >= RequiredPoints;
     public bool IsUnlocked { get; private set; }
 
-    public TowerLayer(int index, bool unlocked)
+    public TowerLayer(int index, float requiredPoints, bool unlocked)
     {
         LayerIndex = index;
-        CompletionPercent = 0f;
+        RequiredPoints = requiredPoints;
+        CurrentPoints = 0f;
         IsUnlocked = unlocked;
     }
 
-    /// <summary>Adds progress to this layer. Returns overflow amount.</summary>
-    public float AddProgress(float amount)
+    /// <summary>Adds build points to this layer. Clamps to requiredPoints; no overflow.</summary>
+    public void AddPoints(float points)
     {
-        if (!IsUnlocked || IsCompleted || amount <= 0f)
-            return amount <= 0f ? 0f : amount;
+        if (!IsUnlocked || IsCompleted || points <= 0f)
+            return;
 
-        float previous = CompletionPercent;
-        CompletionPercent = Mathf.Clamp(CompletionPercent + amount, 0f, 100f);
-        float applied = CompletionPercent - previous;
-        return Mathf.Max(0f, amount - applied);
+        CurrentPoints = Mathf.Min(CurrentPoints + points, RequiredPoints);
     }
 
     public void Unlock() => IsUnlocked = true;
 
     /// <summary>Resets progress to 0. Unlock state unchanged.</summary>
-    public void Reset() => CompletionPercent = 0f;
+    public void Reset() => CurrentPoints = 0f;
 
-    /// <summary>Sets the lock state explicitly (used during game reset).</summary>
-    public void SetLocked(bool unlocked) => IsUnlocked = unlocked;
+    /// <summary>Sets the unlock state explicitly (used during game reset).</summary>
+    public void SetUnlocked(bool unlocked) => IsUnlocked = unlocked;
 }
