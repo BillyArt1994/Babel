@@ -20,9 +20,9 @@ MonoBehaviour:
   _faithValue: 25
   _buildContribution: 1
   _spawnWeight: 0.4
-  _specialAbility: 3
-  _healRadius: 0
-  _healPerSecond: 0
+  _specialAbility: 2
+  _healRadius: 3
+  _healPerSecond: 1.5
   _deathExplosionRadius: 2
   _deathExplosionForce: 5
   _spawnStartTime: 480
