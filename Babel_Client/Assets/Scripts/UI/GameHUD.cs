@@ -49,7 +49,7 @@ public class GameHUD : MonoBehaviour
 
     private void Start()
     {
-        if (_root != null) _root.SetActive(false);
+        // Always visible — game auto-starts on scene load
     }
 
     private void Update()
@@ -62,12 +62,11 @@ public class GameHUD : MonoBehaviour
     private void OnGameStart()
     {
         ClearSkillList();
-        if (_root != null) _root.SetActive(true);
     }
 
-    private void OnGamePaused()  { if (_root != null) _root.SetActive(false); }
-    private void OnGameResumed() { if (_root != null) _root.SetActive(true);  }
-    private void OnGameEnded()   { if (_root != null) _root.SetActive(false); }
+    private void OnGamePaused()  { }
+    private void OnGameResumed() { }
+    private void OnGameEnded()   { }
 
     // ── Skill list ────────────────────────────────────────────────────────────
 
