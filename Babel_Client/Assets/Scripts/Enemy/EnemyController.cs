@@ -11,8 +11,13 @@ public class EnemyController : MonoBehaviour, IPoolable
 {
     private static readonly Color HitFlashColor = new Color(1f, 0.3f, 0.3f);
 
+    // Shared buffer for Physics2D.OverlapCircleNonAlloc – avoids per-call allocation.
+    private static readonly Collider2D[] _auraBuffer = new Collider2D[256];
+
     // Aura tick interval in seconds
     private const float AURA_TICK_INTERVAL = 0.5f;
+
+    [SerializeField] private LayerMask _enemyLayer;
 
     private EnemyData _data;
     private float _currentHealth;
@@ -141,23 +146,23 @@ public class EnemyController : MonoBehaviour, IPoolable
         }
     }
 
-    // Priest: heal nearby allies
+    // Priest: heal nearby allies (zero-alloc query)
     private void TickHealAura()
     {
         float radius = _data.HealRadius;
         float healPerTick = _data.HealPerSecond * AURA_TICK_INTERVAL;
         if (radius <= 0f || healPerTick <= 0f) return;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius);
-        foreach (Collider2D col in hits)
+        int count = Physics2D.OverlapCircleNonAlloc(transform.position, radius, _auraBuffer, _enemyLayer);
+        for (int i = 0; i < count; i++)
         {
-            EnemyController ally = col.GetComponent<EnemyController>();
+            EnemyController ally = _auraBuffer[i].GetComponent<EnemyController>();
             if (ally == null || ally == this || !ally._isActive) continue;
             ally.Heal(healPerTick);
         }
     }
 
-    // Zealot: boost speed of nearby allies
+    // Zealot: boost speed of nearby allies (zero-alloc query)
     private void TickSpeedAura()
     {
         float radius = _data.HealRadius;   // reuse HealRadius field as aura radius
@@ -166,10 +171,10 @@ public class EnemyController : MonoBehaviour, IPoolable
         // HealPerSecond reused as speed multiplier (e.g. 1.5 = +50% speed)
         float mult = _data.HealPerSecond > 1f ? _data.HealPerSecond : 1.5f;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius);
-        foreach (Collider2D col in hits)
+        int count = Physics2D.OverlapCircleNonAlloc(transform.position, radius, _auraBuffer, _enemyLayer);
+        for (int i = 0; i < count; i++)
         {
-            EnemyController ally = col.GetComponent<EnemyController>();
+            EnemyController ally = _auraBuffer[i].GetComponent<EnemyController>();
             if (ally == null || ally == this || !ally._isActive) continue;
             ally.ApplySpeedBoost(mult);
         }

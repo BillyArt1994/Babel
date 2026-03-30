@@ -23,7 +23,10 @@ public class SkillSystem : MonoBehaviour
     private const float PLAGUE_RATIO = 0.2f;
     private const float PLAGUE_RADIUS = 2.0f;
     private const float RAGE_COOLDOWN_REDUCTION = 0.5f;
-    private const float AUTO_ATTACK_SEARCH_RADIUS = 100f;
+    private const float AUTO_ATTACK_SEARCH_RADIUS_DEFAULT = 30f;
+
+    /// <summary>Pre-allocated buffer for OverlapCircleNonAlloc to avoid per-frame GC allocation.</summary>
+    private static readonly Collider2D[] _autoAttackBuffer = new Collider2D[128];
 
     // Skill IDs — must match the skillId field in SkillData ScriptableObjects
     private const string SKILL_ID_RAGE = "rage";
@@ -59,6 +62,7 @@ public class SkillSystem : MonoBehaviour
 
     [SerializeField] private SkillData _defaultStarterSkill;
     [SerializeField] private LayerMask _enemyLayer;
+    [SerializeField] private float _autoAttackSearchRadius = AUTO_ATTACK_SEARCH_RADIUS_DEFAULT;
 
     private SkillData _activeClickForm;
     private List<PassiveEntry> _passives = new List<PassiveEntry>();
@@ -372,7 +376,7 @@ public class SkillSystem : MonoBehaviour
     private void OnAttackExecuted(AttackResult result)
     {
         if (_processingEffectPassives) return;
-        if (result.hits == null || result.hits.Length == 0) return;
+        if (result.hits == null || result.hits.Count == 0) return;
 
         if (_mods.HasAfterShock)
         {
@@ -381,7 +385,7 @@ public class SkillSystem : MonoBehaviour
             _processingEffectPassives = true;
             try
             {
-                for (int i = 0; i < result.hits.Length; i++)
+                for (int i = 0; i < result.hits.Count; i++)
                 {
                     HitInfo hit = result.hits[i];
                     AttackRequest request = new AttackRequest
@@ -408,7 +412,7 @@ public class SkillSystem : MonoBehaviour
 
         if (_mods.HasMark)
         {
-            for (int i = 0; i < result.hits.Length; i++)
+            for (int i = 0; i < result.hits.Count; i++)
             {
                 if (result.hits[i].enemy == null) continue;
                 result.hits[i].enemy.ApplySlow(0f, 0f);
@@ -444,8 +448,8 @@ public class SkillSystem : MonoBehaviour
     {
         if (data == null || ClickAttackSystem.Instance == null) return;
 
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTowerBasePosition(), AUTO_ATTACK_SEARCH_RADIUS, _enemyLayer);
-        if (colliders == null || colliders.Length == 0) return;
+        int hitCount = Physics2D.OverlapCircleNonAlloc(GetTowerBasePosition(), _autoAttackSearchRadius, _autoAttackBuffer, _enemyLayer);
+        if (hitCount == 0) return;
 
         AttackRequest request = new AttackRequest
         {
@@ -464,7 +468,7 @@ public class SkillSystem : MonoBehaviour
         {
             case SKILL_ID_THUNDER:
             {
-                EnemyController randomEnemy = FindRandomEnemy(colliders);
+                EnemyController randomEnemy = FindRandomEnemy(_autoAttackBuffer, hitCount);
                 if (randomEnemy == null) return;
                 request.worldPos = randomEnemy.transform.position;
                 request.attackType = AttackType.Single;
@@ -479,7 +483,7 @@ public class SkillSystem : MonoBehaviour
             }
             case SKILL_ID_TRACKING_ORB:
             {
-                EnemyController nearestEnemy = FindNearestEnemy(colliders, GetTowerBasePosition());
+                EnemyController nearestEnemy = FindNearestEnemy(_autoAttackBuffer, hitCount, GetTowerBasePosition());
                 if (nearestEnemy == null) return;
                 request.worldPos = nearestEnemy.transform.position;
                 request.attackType = AttackType.Single;
@@ -544,10 +548,10 @@ public class SkillSystem : MonoBehaviour
         return Vector2.zero;
     }
 
-    private EnemyController FindRandomEnemy(Collider2D[] colliders)
+    private EnemyController FindRandomEnemy(Collider2D[] colliders, int count)
     {
         _randomEnemyBuffer.Clear();
-        for (int i = 0; i < colliders.Length; i++)
+        for (int i = 0; i < count; i++)
         {
             if (colliders[i] == null) continue;
             EnemyController enemy = colliders[i].GetComponent<EnemyController>();
@@ -557,11 +561,11 @@ public class SkillSystem : MonoBehaviour
         return _randomEnemyBuffer[UnityEngine.Random.Range(0, _randomEnemyBuffer.Count)];
     }
 
-    private EnemyController FindNearestEnemy(Collider2D[] colliders, Vector2 origin)
+    private EnemyController FindNearestEnemy(Collider2D[] colliders, int count, Vector2 origin)
     {
         EnemyController nearestEnemy = null;
         float nearestSqrDistance = float.MaxValue;
-        for (int i = 0; i < colliders.Length; i++)
+        for (int i = 0; i < count; i++)
         {
             if (colliders[i] == null) continue;
             EnemyController enemy = colliders[i].GetComponent<EnemyController>();

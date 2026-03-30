@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -35,5 +36,5 @@ public struct HitInfo
 public struct AttackResult
 {
     public AttackRequest request;
-    public HitInfo[] hits;
+    public IReadOnlyList<HitInfo> hits;
 }

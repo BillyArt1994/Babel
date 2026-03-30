@@ -77,7 +77,7 @@ public class AttackVFXManager : MonoBehaviour
 
     private void OnAttackExecuted(AttackResult result)
     {
-        if (result.hits == null || result.hits.Length == 0)
+        if (result.hits == null || result.hits.Count == 0)
             return;
 
         if (!_showPassiveVFX && result.request.isPassiveAttack)
@@ -144,7 +144,7 @@ public class AttackVFXManager : MonoBehaviour
 
     private void SpawnChainVFX(AttackResult result)
     {
-        if (result.hits.Length < 2)
+        if (result.hits.Count < 2)
         {
             // Only one target hit; fall back to a single-style VFX
             SpawnSingleVFX(result);
@@ -153,9 +153,9 @@ public class AttackVFXManager : MonoBehaviour
 
         // Build the chain path from the attack origin through all hit positions
         // The first position is the click origin, followed by hit positions in order
-        Vector2[] positions = new Vector2[result.hits.Length + 1];
+        Vector2[] positions = new Vector2[result.hits.Count + 1];
         positions[0] = result.request.worldPos;
-        for (int i = 0; i < result.hits.Length; i++)
+        for (int i = 0; i < result.hits.Count; i++)
         {
             positions[i + 1] = result.hits[i].hitPosition;
         }

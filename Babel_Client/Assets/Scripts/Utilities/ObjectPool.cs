@@ -8,7 +8,7 @@ using UnityEngine;
 public class ObjectPool<T> : MonoBehaviour where T : Component
 {
     [SerializeField] private T _prefab;
-    [SerializeField] private int _initialSize = 20;
+    [SerializeField] private int _initialSize = 50;
     [SerializeField] private Transform _poolParent;
 
     private readonly Stack<T> _pool = new Stack<T>();

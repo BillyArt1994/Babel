@@ -69,12 +69,12 @@ public class ClickAttackSystem : MonoBehaviour
         }
 
         if (_hitBuffer.Count == 0)
-            return new AttackResult { request = request, hits = new HitInfo[0] };
+            return new AttackResult { request = request, hits = System.Array.Empty<HitInfo>() };
 
         AttackResult result = new AttackResult
         {
             request = request,
-            hits = _hitBuffer.ToArray()
+            hits = new System.Collections.Generic.List<HitInfo>(_hitBuffer)
         };
 
         CombatEvents.RaiseAttackExecuted(result);
