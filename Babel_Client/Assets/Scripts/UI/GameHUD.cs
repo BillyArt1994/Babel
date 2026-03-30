@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Player-facing HUD from design/gdd/游戏HUD.md.
-/// Shows: countdown timer, kill count, active skill name, cooldown bar, faith progress bar.
-/// Replaces DebugHUD for production use.
+/// Player-facing HUD.
+/// Layout:
+///   Top-center  — countdown timer
+///   Top-left    — pause button (separate GameObject, just needs _root control)
+///   Right side  — acquired skill list (dynamic, top-to-bottom)
 /// </summary>
 public class GameHUD : MonoBehaviour
 {
@@ -12,43 +15,36 @@ public class GameHUD : MonoBehaviour
     private static readonly Color NormalTimeColor  = Color.white;
     private static readonly Color WarningTimeColor = new Color(1f, 0.25f, 0.25f);
 
-    [Header("Timer")]
-    [SerializeField] private Text  _timerText;
-
-    [Header("Kill Count")]
-    [SerializeField] private Text  _killCountText;
-
-    [Header("Skill")]
-    [SerializeField] private Text  _skillNameText;
-    [SerializeField] private Image _cooldownBar;      // fillAmount driven
-
-    [Header("Faith")]
-    [SerializeField] private Image _faithBar;         // fillAmount driven
-    [SerializeField] private Text  _faithLevelText;   // "Lv N"
-
     [Header("Root (hidden during pause/gameover)")]
     [SerializeField] private GameObject _root;
 
-    private int _killCount;
+    [Header("Top-center: Timer")]
+    [SerializeField] private Text _timerText;
+
+    [Header("Right side: Skill list")]
+    [SerializeField] private Transform _skillListContainer;  // VerticalLayoutGroup parent
+    [SerializeField] private GameObject _skillEntryPrefab;   // Text prefab for each skill entry
+
+    private readonly List<GameObject> _skillEntries = new List<GameObject>();
 
     private void OnEnable()
     {
-        EnemyEvents.OnEnemyDied += OnEnemyDied;
-        GameEvents.OnGameStart  += OnGameStart;
-        GameEvents.OnGamePaused += OnGamePaused;
+        GameEvents.OnGameStart   += OnGameStart;
+        GameEvents.OnGamePaused  += OnGamePaused;
         GameEvents.OnGameResumed += OnGameResumed;
-        GameEvents.OnVictory    += OnGameEnded;
-        GameEvents.OnDefeat     += OnGameEnded;
+        GameEvents.OnVictory     += OnGameEnded;
+        GameEvents.OnDefeat      += OnGameEnded;
+        SkillEvents.OnSkillAdded += OnSkillAdded;
     }
 
     private void OnDisable()
     {
-        EnemyEvents.OnEnemyDied -= OnEnemyDied;
-        GameEvents.OnGameStart  -= OnGameStart;
-        GameEvents.OnGamePaused -= OnGamePaused;
+        GameEvents.OnGameStart   -= OnGameStart;
+        GameEvents.OnGamePaused  -= OnGamePaused;
         GameEvents.OnGameResumed -= OnGameResumed;
-        GameEvents.OnVictory    -= OnGameEnded;
-        GameEvents.OnDefeat     -= OnGameEnded;
+        GameEvents.OnVictory     -= OnGameEnded;
+        GameEvents.OnDefeat      -= OnGameEnded;
+        SkillEvents.OnSkillAdded -= OnSkillAdded;
     }
 
     private void Start()
@@ -59,16 +55,13 @@ public class GameHUD : MonoBehaviour
     private void Update()
     {
         RefreshTimer();
-        RefreshKillCount();
-        RefreshSkill();
-        RefreshFaith();
     }
 
-    // ── Events ────────────────────────────────────────────────────────────────
+    // ── Game events ───────────────────────────────────────────────────────────
 
     private void OnGameStart()
     {
-        _killCount = 0;
+        ClearSkillList();
         if (_root != null) _root.SetActive(true);
     }
 
@@ -76,9 +69,41 @@ public class GameHUD : MonoBehaviour
     private void OnGameResumed() { if (_root != null) _root.SetActive(true);  }
     private void OnGameEnded()   { if (_root != null) _root.SetActive(false); }
 
-    private void OnEnemyDied(EnemyData data, Vector2 pos) => _killCount++;
+    // ── Skill list ────────────────────────────────────────────────────────────
 
-    // ── Refresh helpers ───────────────────────────────────────────────────────
+    private void OnSkillAdded(SkillData skill)
+    {
+        if (skill == null || _skillListContainer == null || _skillEntryPrefab == null)
+            return;
+
+        // Check if entry already exists (passives can stack — update stack count)
+        foreach (GameObject entry in _skillEntries)
+        {
+            SkillEntryUI entryUI = entry.GetComponent<SkillEntryUI>();
+            if (entryUI != null && entryUI.SkillData == skill)
+            {
+                entryUI.IncrementStack();
+                return;
+            }
+        }
+
+        // New entry
+        GameObject go = Instantiate(_skillEntryPrefab, _skillListContainer);
+        SkillEntryUI ui = go.GetComponent<SkillEntryUI>();
+        if (ui != null)
+            ui.SetSkill(skill);
+
+        _skillEntries.Add(go);
+    }
+
+    private void ClearSkillList()
+    {
+        foreach (GameObject entry in _skillEntries)
+            if (entry != null) Destroy(entry);
+        _skillEntries.Clear();
+    }
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
 
     private void RefreshTimer()
     {
@@ -93,35 +118,5 @@ public class GameHUD : MonoBehaviour
         int seconds = total % 60;
         _timerText.text  = $"{minutes:00}:{seconds:00}";
         _timerText.color = remaining <= WARNING_THRESHOLD ? WarningTimeColor : NormalTimeColor;
-    }
-
-    private void RefreshKillCount()
-    {
-        if (_killCountText == null) return;
-        _killCountText.text = _killCount > 99999 ? "99999+" : _killCount.ToString();
-    }
-
-    private void RefreshSkill()
-    {
-        if (SkillSystem.Instance == null) return;
-
-        SkillData active = SkillSystem.Instance.GetActiveClickForm();
-
-        if (_skillNameText != null)
-            _skillNameText.text = active != null ? active.SkillName : "--";
-
-        if (_cooldownBar != null)
-            _cooldownBar.fillAmount = 1f - SkillSystem.Instance.GetCooldownProgress();
-    }
-
-    private void RefreshFaith()
-    {
-        if (UpgradeSystem.Instance == null) return;
-
-        if (_faithBar != null)
-            _faithBar.fillAmount = UpgradeSystem.Instance.GetFaithProgress();
-
-        if (_faithLevelText != null)
-            _faithLevelText.text = $"Lv {UpgradeSystem.Instance.GetLevelCount()}";
     }
 }
