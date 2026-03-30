@@ -20,6 +20,7 @@ public class EnemySpawnSystem : MonoBehaviour
     private float _spawnTimer;
     private bool _isSpawning;
     private bool _spawnFromLeft = true;
+    private readonly System.Collections.Generic.List<EnemyData> _spawnCandidates = new System.Collections.Generic.List<EnemyData>(8);
 
     private void Awake()
     {
@@ -95,15 +96,18 @@ public class EnemySpawnSystem : MonoBehaviour
 
         float elapsed = GameLoopManager.Instance.GetElapsedTime();
         float progress = GameLoopManager.Instance.GetGameProgress();
-        EnemyData[] candidates = _enemyDatabase != null ? _enemyDatabase.GetSpawnableAtTime(elapsed) : null;
 
-        if (candidates == null || candidates.Length == 0)
+        _spawnCandidates.Clear();
+        if (_enemyDatabase != null)
+            _enemyDatabase.GetSpawnableAtTime(elapsed, _spawnCandidates);
+
+        if (_spawnCandidates.Count == 0)
         {
             ResetSpawnTimer(progress);
             return;
         }
 
-        EnemyData selected = PickWeightedRandom(candidates);
+        EnemyData selected = PickWeightedRandom(_spawnCandidates);
         if (selected == null)
         {
             ResetSpawnTimer(progress);
@@ -139,56 +143,36 @@ public class EnemySpawnSystem : MonoBehaviour
         }
     }
 
-    private EnemyData PickWeightedRandom(EnemyData[] candidates)
+    private EnemyData PickWeightedRandom(System.Collections.Generic.List<EnemyData> candidates)
     {
-        if (candidates == null || candidates.Length == 0)
-        {
+        if (candidates == null || candidates.Count == 0)
             return null;
-        }
 
         float totalWeight = 0f;
         EnemyData firstValidCandidate = null;
 
-        for (int i = 0; i < candidates.Length; i++)
+        for (int i = 0; i < candidates.Count; i++)
         {
             EnemyData candidate = candidates[i];
-            if (candidate == null)
-            {
-                continue;
-            }
-
-            if (firstValidCandidate == null)
-            {
-                firstValidCandidate = candidate;
-            }
-
-            if (candidate.SpawnWeight > 0f)
-            {
-                totalWeight += candidate.SpawnWeight;
-            }
+            if (candidate == null) continue;
+            if (firstValidCandidate == null) firstValidCandidate = candidate;
+            if (candidate.SpawnWeight > 0f) totalWeight += candidate.SpawnWeight;
         }
 
         if (totalWeight <= 0f)
-        {
             return firstValidCandidate;
-        }
 
         float roll = Random.Range(0f, totalWeight);
         float cumulativeWeight = 0f;
 
-        for (int i = 0; i < candidates.Length; i++)
+        for (int i = 0; i < candidates.Count; i++)
         {
             EnemyData candidate = candidates[i];
-            if (candidate == null || candidate.SpawnWeight <= 0f)
-            {
-                continue;
-            }
+            if (candidate == null || candidate.SpawnWeight <= 0f) continue;
 
             cumulativeWeight += candidate.SpawnWeight;
             if (roll <= cumulativeWeight)
-            {
                 return candidate;
-            }
         }
 
         return firstValidCandidate;

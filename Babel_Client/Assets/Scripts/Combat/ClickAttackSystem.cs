@@ -13,10 +13,17 @@ public class ClickAttackSystem : MonoBehaviour
     private const float DEFAULT_CHAIN_DECAY = 0.8f;
     private const float PIERCE_HALF_WIDTH = 0.3f;
     private const float SINGLE_RADIUS = 0.5f;
+    private const int PHYSICS_BUFFER_SIZE = 64;
 
     public static ClickAttackSystem Instance { get; private set; }
 
     [SerializeField] private LayerMask _enemyLayer;
+
+    // Reusable buffers — avoids per-call heap allocation on hot paths
+    private readonly List<HitInfo> _hitBuffer = new List<HitInfo>(16);
+    private readonly HashSet<EnemyController> _hitEnemies = new HashSet<EnemyController>();
+    private readonly Collider2D[] _overlapBuffer = new Collider2D[PHYSICS_BUFFER_SIZE];
+    private readonly RaycastHit2D[] _castBuffer = new RaycastHit2D[PHYSICS_BUFFER_SIZE];
 
     private void Awake()
     {
@@ -39,81 +46,70 @@ public class ClickAttackSystem : MonoBehaviour
 
     public AttackResult ExecuteAttack(AttackRequest request)
     {
-        List<HitInfo> collectedHits = new List<HitInfo>();
-        HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>();
+        _hitBuffer.Clear();
+        _hitEnemies.Clear();
 
         switch (request.attackType)
         {
             case AttackType.Single:
-                CollectSingleHits(request, collectedHits, hitEnemies);
+                CollectSingleHits(request);
                 break;
 
             case AttackType.AOE:
-                CollectAoeHits(request, collectedHits, hitEnemies);
+                CollectAoeHits(request);
                 break;
 
             case AttackType.Chain:
-                CollectChainHits(request, collectedHits, hitEnemies);
+                CollectChainHits(request);
                 break;
 
             case AttackType.Pierce:
-                CollectPierceHits(request, collectedHits, hitEnemies);
+                CollectPierceHits(request);
                 break;
         }
 
-        if (collectedHits.Count == 0)
+        if (_hitBuffer.Count == 0)
             return new AttackResult { request = request, hits = new HitInfo[0] };
 
         AttackResult result = new AttackResult
         {
             request = request,
-            hits = collectedHits.ToArray()
+            hits = _hitBuffer.ToArray()
         };
 
         CombatEvents.RaiseAttackExecuted(result);
         return result;
     }
 
-    private void CollectSingleHits(AttackRequest request, List<HitInfo> hits, HashSet<EnemyController> hitEnemies)
+    private void CollectSingleHits(AttackRequest request)
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(request.worldPos, SINGLE_RADIUS, _enemyLayer);
-        if (colliders == null || colliders.Length == 0)
-        {
+        int count = Physics2D.OverlapCircleNonAlloc(request.worldPos, SINGLE_RADIUS, _overlapBuffer, _enemyLayer);
+        if (count == 0)
             return;
-        }
 
-        EnemyController enemy = colliders[0].GetComponent<EnemyController>();
+        EnemyController enemy = _overlapBuffer[0].GetComponent<EnemyController>();
         if (enemy == null)
-        {
             return;
-        }
 
-        TryApplyHit(enemy, request.damage, request, hits, hitEnemies);
+        TryApplyHit(enemy, request.damage, request);
     }
 
-    private void CollectAoeHits(AttackRequest request, List<HitInfo> hits, HashSet<EnemyController> hitEnemies)
+    private void CollectAoeHits(AttackRequest request)
     {
         float radius = Mathf.Max(0f, request.radius);
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(request.worldPos, radius, _enemyLayer);
+        int count = Physics2D.OverlapCircleNonAlloc(request.worldPos, radius, _overlapBuffer, _enemyLayer);
 
-        if (colliders == null || colliders.Length == 0)
+        for (int i = 0; i < count; i++)
         {
-            return;
-        }
-
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            EnemyController enemy = colliders[i].GetComponent<EnemyController>();
+            EnemyController enemy = _overlapBuffer[i].GetComponent<EnemyController>();
             if (enemy == null)
-            {
                 continue;
-            }
 
-            TryApplyHit(enemy, request.damage, request, hits, hitEnemies);
+            TryApplyHit(enemy, request.damage, request);
         }
     }
 
-    private void CollectPierceHits(AttackRequest request, List<HitInfo> hits, HashSet<EnemyController> hitEnemies)
+    private void CollectPierceHits(AttackRequest request)
     {
         Camera mainCamera = Camera.main;
         if (mainCamera == null)
@@ -129,80 +125,68 @@ public class ClickAttackSystem : MonoBehaviour
         Vector2 boxCenter = new Vector2((leftWorld.x + rightWorld.x) * 0.5f, request.worldPos.y);
         Vector2 boxSize = new Vector2(screenWidth, PIERCE_HALF_WIDTH * 2f);
 
-        RaycastHit2D[] hitsRaw = Physics2D.BoxCastAll(boxCenter, boxSize, 0f, Vector2.right, 0f, _enemyLayer);
-        if (hitsRaw == null || hitsRaw.Length == 0)
-        {
+        int count = Physics2D.BoxCastNonAlloc(boxCenter, boxSize, 0f, Vector2.right, _castBuffer, 0f, _enemyLayer);
+        if (count == 0)
             return;
-        }
 
-        System.Array.Sort(hitsRaw, ComparePierceHits);
+        System.Array.Sort(_castBuffer, 0, count, _pierceComparer);
 
-        for (int i = 0; i < hitsRaw.Length; i++)
+        for (int i = 0; i < count; i++)
         {
-            EnemyController enemy = hitsRaw[i].collider != null ? hitsRaw[i].collider.GetComponent<EnemyController>() : null;
+            EnemyController enemy = _castBuffer[i].collider != null
+                ? _castBuffer[i].collider.GetComponent<EnemyController>()
+                : null;
             if (enemy == null)
-            {
                 continue;
-            }
 
-            TryApplyHit(enemy, request.damage, request, hits, hitEnemies);
+            TryApplyHit(enemy, request.damage, request);
         }
     }
 
-    private void CollectChainHits(AttackRequest request, List<HitInfo> hits, HashSet<EnemyController> hitEnemies)
+    private void CollectChainHits(AttackRequest request)
     {
         float chainRadius = request.chainRadius > 0f ? request.chainRadius : DEFAULT_CHAIN_RADIUS;
         float chainDecay = request.chainDecay > 0f ? request.chainDecay : DEFAULT_CHAIN_DECAY;
 
-        EnemyController currentEnemy = FindClosestEnemy(request.worldPos, chainRadius, hitEnemies);
+        EnemyController currentEnemy = FindClosestEnemy(request.worldPos, chainRadius);
         if (currentEnemy == null)
-        {
             return;
-        }
 
         float currentDamage = request.damage;
         EnemyController lastHitEnemy = currentEnemy;
 
-        if (TryApplyHit(currentEnemy, currentDamage, request, hits, hitEnemies))
-        {
+        if (TryApplyHit(currentEnemy, currentDamage, request))
             lastHitEnemy = currentEnemy;
-        }
 
         for (int jumpIndex = 0; jumpIndex < request.chainCount; jumpIndex++)
         {
-            Vector2 searchOrigin = lastHitEnemy != null ? (Vector2)lastHitEnemy.transform.position : request.worldPos;
-            EnemyController nextEnemy = FindClosestEnemy(searchOrigin, chainRadius, hitEnemies);
+            Vector2 searchOrigin = lastHitEnemy != null
+                ? (Vector2)lastHitEnemy.transform.position
+                : request.worldPos;
+            EnemyController nextEnemy = FindClosestEnemy(searchOrigin, chainRadius);
             if (nextEnemy == null)
-            {
                 break;
-            }
 
             currentDamage *= chainDecay;
-            if (TryApplyHit(nextEnemy, currentDamage, request, hits, hitEnemies))
-            {
+            if (TryApplyHit(nextEnemy, currentDamage, request))
                 lastHitEnemy = nextEnemy;
-            }
         }
     }
 
-    private EnemyController FindClosestEnemy(Vector2 center, float radius, HashSet<EnemyController> excludedEnemies)
+    private EnemyController FindClosestEnemy(Vector2 center, float radius)
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(center, radius, _enemyLayer);
-        if (colliders == null || colliders.Length == 0)
-        {
+        int count = Physics2D.OverlapCircleNonAlloc(center, radius, _overlapBuffer, _enemyLayer);
+        if (count == 0)
             return null;
-        }
 
         EnemyController closestEnemy = null;
         float closestSqrDistance = float.MaxValue;
 
-        for (int i = 0; i < colliders.Length; i++)
+        for (int i = 0; i < count; i++)
         {
-            EnemyController enemy = colliders[i].GetComponent<EnemyController>();
-            if (enemy == null || excludedEnemies.Contains(enemy))
-            {
+            EnemyController enemy = _overlapBuffer[i].GetComponent<EnemyController>();
+            if (enemy == null || _hitEnemies.Contains(enemy))
                 continue;
-            }
 
             float sqrDistance = ((Vector2)enemy.transform.position - center).sqrMagnitude;
             if (sqrDistance < closestSqrDistance)
@@ -215,17 +199,10 @@ public class ClickAttackSystem : MonoBehaviour
         return closestEnemy;
     }
 
-    private bool TryApplyHit(
-        EnemyController enemy,
-        float damage,
-        AttackRequest request,
-        List<HitInfo> hits,
-        HashSet<EnemyController> hitEnemies)
+    private bool TryApplyHit(EnemyController enemy, float damage, AttackRequest request)
     {
-        if (enemy == null || hitEnemies.Contains(enemy))
-        {
+        if (enemy == null || _hitEnemies.Contains(enemy))
             return false;
-        }
 
         Vector2 hitPosition = enemy.transform.position;
         enemy.TakeDamage(damage);
@@ -236,8 +213,8 @@ public class ClickAttackSystem : MonoBehaviour
             enemy.ApplySlow(request.slowPercent, request.slowDuration);
         }
 
-        hitEnemies.Add(enemy);
-        hits.Add(new HitInfo
+        _hitEnemies.Add(enemy);
+        _hitBuffer.Add(new HitInfo
         {
             enemy = enemy,
             hitPosition = hitPosition,
@@ -247,10 +224,16 @@ public class ClickAttackSystem : MonoBehaviour
         return true;
     }
 
-    private int ComparePierceHits(RaycastHit2D left, RaycastHit2D right)
+    // Stateless comparer instance — avoids lambda allocation on each sort call
+    private static readonly PierceHitComparer _pierceComparer = new PierceHitComparer();
+
+    private class PierceHitComparer : System.Collections.Generic.IComparer<RaycastHit2D>
     {
-        float leftX = left.collider != null ? left.collider.transform.position.x : float.MaxValue;
-        float rightX = right.collider != null ? right.collider.transform.position.x : float.MaxValue;
-        return leftX.CompareTo(rightX);
+        public int Compare(RaycastHit2D left, RaycastHit2D right)
+        {
+            float leftX = left.collider != null ? left.collider.transform.position.x : float.MaxValue;
+            float rightX = right.collider != null ? right.collider.transform.position.x : float.MaxValue;
+            return leftX.CompareTo(rightX);
+        }
     }
 }

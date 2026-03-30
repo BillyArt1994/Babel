@@ -27,29 +27,23 @@ public class EnemyDatabase : ScriptableObject
         return null;
     }
 
-    public EnemyData[] GetSpawnableAtTime(float gameTime)
+    /// <summary>
+    /// Fills <paramref name="results"/> with all spawnable enemies at the given game time.
+    /// The caller owns the list and should Clear() it before passing.
+    /// </summary>
+    public void GetSpawnableAtTime(float gameTime, List<EnemyData> results)
     {
-        if (_allEnemies == null || _allEnemies.Length == 0)
-        {
-            return System.Array.Empty<EnemyData>();
-        }
-
-        List<EnemyData> spawnableEnemies = new List<EnemyData>();
+        if (_allEnemies == null)
+            return;
 
         for (int i = 0; i < _allEnemies.Length; i++)
         {
             EnemyData enemyData = _allEnemies[i];
             if (enemyData == null)
-            {
                 continue;
-            }
 
             if (enemyData.SpawnStartTime <= gameTime && enemyData.SpawnWeight > 0f)
-            {
-                spawnableEnemies.Add(enemyData);
-            }
+                results.Add(enemyData);
         }
-
-        return spawnableEnemies.ToArray();
     }
 }

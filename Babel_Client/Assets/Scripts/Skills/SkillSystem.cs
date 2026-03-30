@@ -25,6 +25,18 @@ public class SkillSystem : MonoBehaviour
     private const float RAGE_COOLDOWN_REDUCTION = 0.5f;
     private const float AUTO_ATTACK_SEARCH_RADIUS = 100f;
 
+    // Skill IDs — must match the skillId field in SkillData ScriptableObjects
+    private const string SKILL_ID_RAGE = "rage";
+    private const string SKILL_ID_DIVINE_POWER = "divine_power";
+    private const string SKILL_ID_CRIT_STRIKE = "crit_strike";
+    private const string SKILL_ID_EXECUTE = "execute";
+    private const string SKILL_ID_AFTERSHOCK = "aftershock";
+    private const string SKILL_ID_PLAGUE = "plague";
+    private const string SKILL_ID_MARK = "mark";
+    private const string SKILL_ID_THUNDER = "thunder";
+    private const string SKILL_ID_DIVINE_FIRE = "divine_fire";
+    private const string SKILL_ID_TRACKING_ORB = "tracking_orb";
+
     public static SkillSystem Instance { get; private set; }
 
     public struct PassiveEntry
@@ -52,6 +64,7 @@ public class SkillSystem : MonoBehaviour
     private List<PassiveEntry> _passives = new List<PassiveEntry>();
     private Dictionary<SkillData, float> _autoTimers = new Dictionary<SkillData, float>();
     private List<PassiveEntry> _autoPassives = new List<PassiveEntry>();
+    private readonly List<EnemyController> _randomEnemyBuffer = new List<EnemyController>(32);
     private PassiveModifiers _mods;
     private float _cooldownTimer;
     private bool _isCharging;
@@ -267,22 +280,22 @@ public class SkillSystem : MonoBehaviour
             {
                 case PassiveCategory.Frequency:
                     _mods.CooldownMult += data.Cooldown * stacks;
-                    if (data.SkillId == "rage") _mods.HasRage = true;
+                    if (data.SkillId == SKILL_ID_RAGE) _mods.HasRage = true;
                     break;
 
                 case PassiveCategory.Power:
-                    if (data.SkillId == "divine_power")
+                    if (data.SkillId == SKILL_ID_DIVINE_POWER)
                         _mods.DamageMult += data.Damage * stacks;
-                    else if (data.SkillId == "crit_strike")
+                    else if (data.SkillId == SKILL_ID_CRIT_STRIKE)
                         _mods.CritChance += 0.20f * stacks;
-                    else if (data.SkillId == "execute")
+                    else if (data.SkillId == SKILL_ID_EXECUTE)
                         _mods.HasExecute = true;
                     break;
 
                 case PassiveCategory.Effect:
-                    if (data.SkillId == "aftershock") _mods.HasAfterShock = true;
-                    else if (data.SkillId == "plague") _mods.HasPlague = true;
-                    else if (data.SkillId == "mark") _mods.HasMark = true;
+                    if (data.SkillId == SKILL_ID_AFTERSHOCK) _mods.HasAfterShock = true;
+                    else if (data.SkillId == SKILL_ID_PLAGUE) _mods.HasPlague = true;
+                    else if (data.SkillId == SKILL_ID_MARK) _mods.HasMark = true;
                     break;
 
                 case PassiveCategory.AutoAttack:
@@ -449,7 +462,7 @@ public class SkillSystem : MonoBehaviour
 
         switch (data.SkillId)
         {
-            case "thunder":
+            case SKILL_ID_THUNDER:
             {
                 EnemyController randomEnemy = FindRandomEnemy(colliders);
                 if (randomEnemy == null) return;
@@ -457,14 +470,14 @@ public class SkillSystem : MonoBehaviour
                 request.attackType = AttackType.Single;
                 break;
             }
-            case "divine_fire":
+            case SKILL_ID_DIVINE_FIRE:
             {
                 request.worldPos = GetTowerBasePosition();
                 request.attackType = AttackType.AOE;
                 request.radius = data.AoeRadius;
                 break;
             }
-            case "tracking_orb":
+            case SKILL_ID_TRACKING_ORB:
             {
                 EnemyController nearestEnemy = FindNearestEnemy(colliders, GetTowerBasePosition());
                 if (nearestEnemy == null) return;
@@ -533,15 +546,15 @@ public class SkillSystem : MonoBehaviour
 
     private EnemyController FindRandomEnemy(Collider2D[] colliders)
     {
-        List<EnemyController> validEnemies = new List<EnemyController>();
+        _randomEnemyBuffer.Clear();
         for (int i = 0; i < colliders.Length; i++)
         {
             if (colliders[i] == null) continue;
             EnemyController enemy = colliders[i].GetComponent<EnemyController>();
-            if (enemy != null) validEnemies.Add(enemy);
+            if (enemy != null) _randomEnemyBuffer.Add(enemy);
         }
-        if (validEnemies.Count == 0) return null;
-        return validEnemies[UnityEngine.Random.Range(0, validEnemies.Count)];
+        if (_randomEnemyBuffer.Count == 0) return null;
+        return _randomEnemyBuffer[UnityEngine.Random.Range(0, _randomEnemyBuffer.Count)];
     }
 
     private EnemyController FindNearestEnemy(Collider2D[] colliders, Vector2 origin)

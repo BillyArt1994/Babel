@@ -39,6 +39,7 @@ public class GameLoopManager : MonoBehaviour
         Time.timeScale = 1f;
 
         TowerEvents.OnTowerCompleted += OnTowerCompleted;
+        InputEvents.OnPausePressed += OnPausePressed;
     }
 
     private void OnDestroy()
@@ -49,6 +50,7 @@ public class GameLoopManager : MonoBehaviour
         }
 
         TowerEvents.OnTowerCompleted -= OnTowerCompleted;
+        InputEvents.OnPausePressed -= OnPausePressed;
     }
 
     private void Update()
@@ -61,8 +63,6 @@ public class GameLoopManager : MonoBehaviour
                 _pauseCooldown = 0f;
             }
         }
-
-        HandlePauseInput();
 
         if (_currentState != GameState.Playing)
         {
@@ -165,26 +165,15 @@ public class GameLoopManager : MonoBehaviour
         return _currentState == GameState.Victory || _currentState == GameState.Defeat;
     }
 
-    private void HandlePauseInput()
+    private void OnPausePressed()
     {
-        if (!Input.GetKeyDown(KeyCode.Escape))
-        {
-            return;
-        }
-
         if (IsGameOver() || _currentState == GameState.LevelingUp || _pauseCooldown > 0f)
-        {
             return;
-        }
 
         if (_currentState == GameState.Playing)
-        {
             TransitionTo(GameState.Paused);
-        }
         else if (_currentState == GameState.Paused)
-        {
             TransitionTo(GameState.Playing);
-        }
     }
 
     private void TransitionTo(GameState next)
