@@ -1053,3 +1053,987 @@ production/session-logs/session-log.md
 **全部 8 项任务完成** (S2-01 ~ S2-08)，3 个计划外 Bug 已修复。Sprint-2 关闭。
 ---
 
+## Session End: 20260330_184917
+### Commits
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+---
+
+## Session End: 20260330_185419
+### Commits
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_185607
+### Commits
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_185735
+### Commits
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_185836
+### Commits
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_190143
+### Commits
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_190456
+### Commits
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_191054
+### Commits
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_191517
+### Commits
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_191711
+### Commits
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_192506
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_192628
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+4a8bd26 fix: 修复 Sprint 1 代码审查发现的 4 个严重 Bug
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_192841
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_192940
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_193051
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_193316
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+42c0521 perf/refactor: 修复代码审查中等问题 (MED-001~003, 006, 008)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_193529
+### Commits
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_193958
+### Commits
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_194126
+### Commits
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_195015
+### Commits
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_195137
+### Commits
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_195245
+### Commits
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Scripts/Enemy/EnemyController.cs
+Babel_Client/Assets/Scripts/Skills/SkillSystem.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_195916
+### Commits
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Scripts/Combat/AttackTypes.cs
+Babel_Client/Assets/Scripts/Combat/ClickAttackSystem.cs
+Babel_Client/Assets/Scripts/Enemy/EnemyController.cs
+Babel_Client/Assets/Scripts/Skills/SkillSystem.cs
+Babel_Client/Assets/Scripts/Utilities/ObjectPool.cs
+Babel_Client/Assets/Scripts/VFX/AttackVFXManager.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_200120
+### Commits
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_200348
+### Commits
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Prefabs/Enemies/Elite.prefab
+Babel_Client/Assets/Prefabs/Enemies/Engineer.prefab
+Babel_Client/Assets/Prefabs/Enemies/Priest.prefab
+Babel_Client/Assets/Prefabs/Enemies/Worker.prefab
+Babel_Client/Assets/Prefabs/Enemies/Zealot.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_200937
+### Commits
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Prefabs/Enemies/Elite.prefab
+Babel_Client/Assets/Prefabs/Enemies/Engineer.prefab
+Babel_Client/Assets/Prefabs/Enemies/Priest.prefab
+Babel_Client/Assets/Prefabs/Enemies/Worker.prefab
+Babel_Client/Assets/Prefabs/Enemies/Zealot.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_201119
+### Commits
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Prefabs/Enemies/Elite.prefab
+Babel_Client/Assets/Prefabs/Enemies/Engineer.prefab
+Babel_Client/Assets/Prefabs/Enemies/Priest.prefab
+Babel_Client/Assets/Prefabs/Enemies/Worker.prefab
+Babel_Client/Assets/Prefabs/Enemies/Zealot.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_201837
+### Commits
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Prefabs/Enemies/Elite.prefab
+Babel_Client/Assets/Prefabs/Enemies/Engineer.prefab
+Babel_Client/Assets/Prefabs/Enemies/Priest.prefab
+Babel_Client/Assets/Prefabs/Enemies/Worker.prefab
+Babel_Client/Assets/Prefabs/Enemies/Zealot.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260330_202522
+### Commits
+db5dfed feat: 地图编辑器 + MapConfig 数据结构
+2e01361 perf: S3-01/02/03 性能优化 — NonAlloc + ObjectPool预热 + ToArray消除
+c638656 docs: Sprint-3 调整优先级 — S3-04 降为 Should Have
+2c99c37 design: 塔建造系统加入通道槽设计 + 更新S3-14任务描述
+06015e8 design: 塔建造系统 GDD 重构为固定槽位模型
+b363d22 docs: Sprint-3 新增 S3-14 敌人移动重构（Must Have）
+17153d0 docs: Sprint-3 新增 S3-13 数据表管线任务
+5f2b741 docs: 新增 Sprint-3 计划文档
+e08ba2d feat: 完成 Sprint-2 剩余任务 S2-07/S2-08 + Bug 修复
+4a310b9 docs: 更新会话日志 + 添加测试截图 (2026-03-30)
+7c46ae8 docs: 添加游戏参考截图和 Sprint-2 生产文档
+605f060 fix: 修复信仰条不更新和升级UI不弹出的问题
+45f55dc feat: HUD 补回信仰进度条
+577622d fix: 升级UI和结算UI布局修复
+d17e573 fix: 씬 파일 내 UI 노드 스케일 1.89 → 1.0 일괄 수정
+ca3a7f4 fix: HUD 표시 문제 수정 — Canvas 직속 RectTransform으로 재구성
+4ec460b feat: HUD布局重构 — 顶部居中倒计时 + 右侧技能列表 + 左上暂停键
+0ce0050 feat: S2-05/06 正式HUD + 敌人AI特殊行为
+0549fb3 feat: S2-02/03/04 升级系统重构 + 升级选择UI + 结算UI
+cd69c02 fix: 摄像机布局 — 地面/敌人置于屏幕底部
+75326d5 feat: S2-01 摄像机系统 — 随塔层 Lerp 跟随上升
+df6604d feat: 完成 Sprint 1 剩余任务 (S1-11, S1-12, S1-13, S1-14)
+### Uncommitted Changes
+.claude/settings.json
+.claude/settings.local.json
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+
+## Session: 20260330（Sprint-3 开发会话）
+
+### 完成工作
+
+**S3-01 光环系统 NonAlloc 优化（EnemyController）**
+- OverlapCircleAll → OverlapCircleNonAlloc + 静态缓冲区 Collider2D[256]
+- 新增 `_enemyLayer` SerializeField，用于 LayerMask 过滤
+
+**S3-02 SkillSystem 自动攻击 NonAlloc 优化**
+- OverlapCircleAll → OverlapCircleNonAlloc + 静态缓冲区 Collider2D[128]
+- `AUTO_ATTACK_SEARCH_RADIUS` 从 100 缩小为 SerializeField 默认 30
+
+**S3-03 ObjectPool 预热 + ToArray 消除**
+- ObjectPool `_initialSize` 默认值 20 → 50
+- `AttackResult.hits` 类型从 `HitInfo[]` 改为 `IReadOnlyList<HitInfo>`
+- `.ToArray()` 替换为 `new List<HitInfo>(_hitBuffer)`，消除 GC 分配
+
+**地图编辑器（新增，S3-14 前置工作）**
+- `MapConfig.cs` — ScriptableObject 数据结构（SlotData / LayerData / MapConfig）
+- `MapEditor.cs` — Unity EditorWindow（菜单: Babel/Map Editor）
+- 功能：新建/加载地图、生成默认地图、Scene View 可视化（白色普通槽/蓝色通道槽）、拖拽摆放、Ctrl+Z 撤销
+
+### 设计讨论
+
+- 敌人移动采用**静态槽位**方案，槽位数据提前在编辑器配置
+- 槽位类型：普通槽（Normal）+ 通道槽（Passage）
+- 敌人寻槽三段优先级：普通槽 → 通道槽 → 爬楼上层
+- 通道槽可配置数量（1 个或多个）和位置
+- 先到先得，不锁定槽位
+- 地图编辑器先做，设计好地图后再实现 S3-14 敌人移动重构
+
+### Sprint-3 范围调整
+
+- S3-04（效果被动）从 Must Have 降为 Should Have
+- S3-14 复杂度升级为"槽位寻路 + 通道系统"
+- 新增地图编辑器（为 S3-14 前置）
+
+### 待办（需用户手动操作）
+
+- 各 Enemy Prefab 的 `EnemyController._enemyLayer` 设为 Enemy 层
+- 场景中各 ObjectPool 组件 `_initialSize` 改为 50
+
+### 提交记录
+
+- `2e01361` — 性能优化（S3-01/02/03）
+- `db5dfed` — 地图编辑器
+---

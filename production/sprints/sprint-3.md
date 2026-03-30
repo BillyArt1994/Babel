@@ -36,11 +36,11 @@
 
 | ID | 任务 | 负责 Agent | 预计复杂度 | 依赖 | 验收标准 |
 |----|------|-----------|-----------|------|---------|
-| S3-01 | **性能优化 Phase 1**：EnemyController 光环系统 OverlapCircleAll -> OverlapCircleNonAlloc + 共享静态缓冲区 + LayerMask 过滤 | gameplay-programmer | 低 | 无 | 光环查询使用 NonAlloc + 静态 Collider2D[256] 缓冲区；传入 `_enemyLayer` 参数；零 GC 分配（Profiler 验证） |
-| S3-02 | **性能优化 Phase 1**：SkillSystem 自动攻击 OverlapCircleAll -> OverlapCircleNonAlloc + 预分配缓冲区 | gameplay-programmer | 低 | 无 | `FireAutoAttack` 使用 NonAlloc + 预分配缓冲区；radius 从 100 缩小到合理范围（如 30）或使用活体敌人列表；零 GC 分配 |
-| S3-03 | **性能优化 Phase 2**：ObjectPool 预热容量调整 + ClickAttackSystem ToArray 消除 | gameplay-programmer | 低 | 无 | 各敌人类型 ObjectPool `_initialSize` 调整为 50；`_hitBuffer.ToArray()` 替换为直接传递 List 或 ReadOnlySpan；100 单位同屏 GC spike 消除 |
+| S3-01 | **性能优化 Phase 1**：EnemyController 光环系统 OverlapCircleAll -> OverlapCircleNonAlloc + 共享静态缓冲区 + LayerMask 过滤 ✅ 已完成 | gameplay-programmer | 低 | 无 | 光环查询使用 NonAlloc + 静态 Collider2D[256] 缓冲区；传入 `_enemyLayer` 参数；零 GC 分配（Profiler 验证） |
+| S3-02 | **性能优化 Phase 1**：SkillSystem 自动攻击 OverlapCircleAll -> OverlapCircleNonAlloc + 预分配缓冲区 ✅ 已完成 | gameplay-programmer | 低 | 无 | `FireAutoAttack` 使用 NonAlloc + 预分配缓冲区；radius 从 100 缩小到合理范围（如 30）或使用活体敌人列表；零 GC 分配 |
+| S3-03 | **性能优化 Phase 2**：ObjectPool 预热容量调整 + ClickAttackSystem ToArray 消除 ✅ 已完成 | gameplay-programmer | 低 | 无 | 各敌人类型 ObjectPool `_initialSize` 调整为 50；`_hitBuffer.ToArray()` 替换为直接传递 List 或 ReadOnlySpan；100 单位同屏 GC spike 消除 |
 | S3-05 | **伤害数字浮动显示**：命中时在敌人头顶弹出伤害数字（白色常规 / 黄色暴击 / 红色处决），向上飘动后消失 | ui-programmer | 中 | 无 | 命中时显示伤害数字；暴击数字大 1.5 倍且为黄色；数字 0.8 秒后淡出消失；使用对象池管理（无 GC）；100 单位同屏不卡顿 |
-| S3-14 | **敌人移动重构（槽位寻路+通道系统）**：TowerConstructionSystem 改为槽位网格模型（普通槽+通道槽），EnemyController 寻路逻辑实现三段优先级（普通槽→通道槽→爬楼上层），MapConfig ScriptableObject 支持配置通道槽位置和数量 | gameplay-programmer | 高 | S3-01, S3-02 | 每层有普通槽和通道槽；敌人优先填普通槽，普通槽满后才填通道槽；通道槽填满后楼梯出现，敌人从通道位置爬上上层；通道槽位置和数量可在 MapConfig 中配置；与现有 TowerProgressEvents/GameLoop 兼容 |
+| S3-14 | **敌人移动重构（槽位寻路+通道系统）**：TowerConstructionSystem 改为槽位网格模型（普通槽+通道槽），EnemyController 寻路逻辑实现三段优先级（普通槽→通道槽→爬楼上层），MapConfig ScriptableObject 支持配置通道槽位置和数量 | gameplay-programmer | 高 | S3-01, S3-02 | 每层有普通槽和通道槽；敌人优先填普通槽，普通槽满后才填通道槽；通道槽填满后楼梯出现，敌人从通道位置爬上上层；通道槽位置和数量可在 MapConfig 中配置；与现有 TowerProgressEvents/GameLoop 兼容。**前置：地图编辑器已完成**（MapConfig.cs + MapEditor.cs） |
 
 ### Should Have（本冲刺内尽量完成）
 
