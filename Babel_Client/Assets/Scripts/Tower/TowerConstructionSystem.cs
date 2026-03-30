@@ -38,6 +38,12 @@ public class TowerConstructionSystem : MonoBehaviour
 
     public int GetCurrentLayer() => _currentActiveLayer;
 
+    public float GetActiveLayerWorldY()
+    {
+        float rootY = _towerRoot != null ? _towerRoot.position.y : 0f;
+        return rootY + _currentActiveLayer * LAYER_HEIGHT;
+    }
+
     public float GetLayerCompletion(int layerIndex)
     {
         if (layerIndex < 0 || layerIndex >= LAYER_COUNT) return 0f;
