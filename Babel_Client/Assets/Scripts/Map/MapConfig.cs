@@ -22,6 +22,8 @@ namespace Babel.Map
     {
         public int layerIndex;                              // 层编号 0-9
         public List<SlotData> slots = new List<SlotData>(); // 该层所有槽位（普通+通道混合）
+        public int layerWidth  = 6;                         // 该层格子宽度（格数），用于 TileMap 可视化
+        public int layerHeight = 1;                         // 该层格子高度（格数），用于 TileMap 可视化
     }
 
     /// <summary>

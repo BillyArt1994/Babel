@@ -20,9 +20,9 @@ public class MapEditor : EditorWindow
 {
     // ─────────────────────── 常量 ───────────────────────
     private const float PANEL_WIDTH = 280f;
-    private const float NORMAL_SLOT_RADIUS = 0.3f;
-    private const float PASSAGE_SLOT_RADIUS = 0.4f;
-    private const float SLOT_CLICK_THRESHOLD = 0.5f;
+    private const float SLOT_CLICK_THRESHOLD = 0.6f;
+    private const float CELL_SIZE = 1.0f;   // 格子大小（世界单位），与 Tilemap cellSize 一致
+    private const float LAYER_HEIGHT_EDITOR = 1.2f; // 层间距
     private const string DEFAULT_SAVE_FOLDER = "Assets/ScriptableObjects/Maps";
 
     // ─────────────────────── 序列化状态（跨域重载持久化） ───────────────────────
@@ -128,6 +128,11 @@ public class MapEditor : EditorWindow
             return;
         }
 
+        // ── 应用到场景 ──
+        if (GUILayout.Button("应用到场景 TowerConstructionSystem"))
+            ApplyToScene();
+        EditorGUILayout.Space(4);
+
         EditorGUILayout.Space(8);
 
         // ── 层列表 ──
@@ -173,6 +178,25 @@ public class MapEditor : EditorWindow
         EditorGUILayout.EndScrollView();
 
         EditorGUILayout.Space(8);
+
+        // ── 当前层尺寸编辑 ──
+        if (_mapConfig.layers != null && _selectedLayerIndex >= 0 && _selectedLayerIndex < _mapConfig.layers.Count)
+        {
+            var selectedLayer = _mapConfig.layers[_selectedLayerIndex];
+            EditorGUILayout.LabelField($"Layer {selectedLayer.layerIndex} 尺寸", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            int newW = EditorGUILayout.IntField("宽度（格）", selectedLayer.layerWidth);
+            int newH = EditorGUILayout.IntField("高度（格）", selectedLayer.layerHeight);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_mapConfig, "Resize Layer");
+                selectedLayer.layerWidth  = Mathf.Max(1, newW);
+                selectedLayer.layerHeight = Mathf.Max(1, newH);
+                EditorUtility.SetDirty(_mapConfig);
+                SceneView.RepaintAll();
+            }
+            EditorGUILayout.Space(4);
+        }
 
         // ── 添加槽位按钮 ──
         DrawAddSlotButtons();
@@ -311,16 +335,17 @@ public class MapEditor : EditorWindow
         EditorGUILayout.Space(8);
 
         EditorGUILayout.HelpBox(
-            "1. 在左侧选择一个层\n" +
+            "1. 在左侧选择一个层，设置层宽高\n" +
             "2. 点击 \"添加普通槽\" 或 \"添加通道槽\" 进入放置模式\n" +
-            "3. 在 Scene View 中点击空白处放置槽位\n" +
-            "4. 直接拖拽槽位圆圈可调整位置\n" +
+            "3. 在 Scene View 中点击格子放置槽位（自动吸附到格子中心）\n" +
+            "4. 拖拽已选槽位方块可调整位置\n" +
             "5. 点击已有槽位可选中并编辑属性\n" +
             "6. 按 Esc 退出放置模式\n\n" +
             "图例：\n" +
-            "  白色圆圈 = 普通槽（选中时黄色高亮）\n" +
-            "  蓝色填充圆圈 = 通道槽\n" +
-            "  半透明 = 非当前编辑层",
+            "  灰色方块 = 普通槽（选中时黄色）\n" +
+            "  蓝灰色方块 = 通道槽（选中时青色）\n" +
+            "  黄色边框 = 当前选中层边界\n" +
+            "  淡色网格 = 当前层可用格子",
             MessageType.None);
 
         if (_mapConfig != null)
@@ -386,88 +411,99 @@ public class MapEditor : EditorWindow
     {
         if (layer.slots == null) return;
 
+        const float HALF = CELL_SIZE * 0.5f;
+
+        // 绘制该层所有格子的背景网格（根据 layerWidth × layerHeight）
+        if (isCurrentLayer)
+        {
+            float originX = -(layer.layerWidth * CELL_SIZE) * 0.5f;
+            float originY = layer.layerIndex * LAYER_HEIGHT_EDITOR;
+
+            for (int gx = 0; gx < layer.layerWidth; gx++)
+            {
+                for (int gy = 0; gy < layer.layerHeight; gy++)
+                {
+                    float cx = originX + (gx + 0.5f) * CELL_SIZE;
+                    float cy = originY + (gy + 0.5f) * CELL_SIZE;
+                    Vector3 center = new Vector3(cx, cy, 0);
+                    Vector3[] corners = {
+                        center + new Vector3(-HALF, -HALF, 0),
+                        center + new Vector3( HALF, -HALF, 0),
+                        center + new Vector3( HALF,  HALF, 0),
+                        center + new Vector3(-HALF,  HALF, 0),
+                    };
+                    Handles.DrawSolidRectangleWithOutline(corners,
+                        new Color(1f, 1f, 1f, 0.03f),
+                        new Color(1f, 1f, 1f, 0.15f));
+                }
+            }
+        }
+
+        // 绘制已放置的槽位
         for (int si = 0; si < layer.slots.Count; si++)
         {
             var slot = layer.slots[si];
             Vector3 worldPos = new Vector3(slot.position.x, slot.position.y, 0);
             bool isSelectedSlot = isCurrentLayer && si == _selectedSlotIndex;
 
+            Vector3[] corners = {
+                worldPos + new Vector3(-HALF, -HALF, 0),
+                worldPos + new Vector3( HALF, -HALF, 0),
+                worldPos + new Vector3( HALF,  HALF, 0),
+                worldPos + new Vector3(-HALF,  HALF, 0),
+            };
+
+            Color fillColor, outlineColor;
             if (slot.isPassage)
             {
-                // 通道槽：蓝色圆圈 + 半透明填充
-                Color fillColor = isCurrentLayer
-                    ? new Color(0.3f, 0.5f, 1f, 0.3f)
-                    : new Color(0.3f, 0.5f, 1f, 0.1f);
-                Color outlineColor = isCurrentLayer
-                    ? new Color(0.3f, 0.5f, 1f, 1f)
-                    : new Color(0.3f, 0.5f, 1f, 0.3f);
-
-                if (isSelectedSlot)
-                {
-                    fillColor = new Color(0.3f, 0.8f, 1f, 0.5f);
-                    outlineColor = Color.cyan;
-                }
-
-                Handles.color = fillColor;
-                Handles.DrawSolidDisc(worldPos, Vector3.forward, PASSAGE_SLOT_RADIUS);
-                Handles.color = outlineColor;
-                Handles.DrawWireDisc(worldPos, Vector3.forward, PASSAGE_SLOT_RADIUS);
+                fillColor   = isCurrentLayer ? (isSelectedSlot ? new Color(0.3f, 0.8f, 1f, 0.5f) : new Color(0.4f, 0.4f, 0.5f, 0.3f)) : new Color(0.4f, 0.4f, 0.5f, 0.1f);
+                outlineColor = isCurrentLayer ? (isSelectedSlot ? Color.cyan : new Color(0.4f, 0.4f, 0.8f, 1f)) : new Color(0.4f, 0.4f, 0.8f, 0.3f);
             }
             else
             {
-                // 普通槽：白色圆圈，选中时黄色高亮
-                Color color;
-                if (isSelectedSlot)
-                    color = Color.yellow;
-                else if (isCurrentLayer)
-                    color = Color.white;
-                else
-                    color = new Color(1f, 1f, 1f, 0.25f);
-
-                Handles.color = color;
-                Handles.DrawWireDisc(worldPos, Vector3.forward, NORMAL_SLOT_RADIUS);
-
-                if (isSelectedSlot)
-                {
-                    Handles.color = new Color(1f, 1f, 0f, 0.15f);
-                    Handles.DrawSolidDisc(worldPos, Vector3.forward, NORMAL_SLOT_RADIUS);
-                }
+                fillColor   = isCurrentLayer ? (isSelectedSlot ? new Color(1f, 1f, 0f, 0.3f) : new Color(0.55f, 0.55f, 0.55f, 0.3f)) : new Color(0.55f, 0.55f, 0.55f, 0.1f);
+                outlineColor = isCurrentLayer ? (isSelectedSlot ? Color.yellow : new Color(0.8f, 0.8f, 0.8f, 1f)) : new Color(0.8f, 0.8f, 0.8f, 0.2f);
             }
 
-            // 标签（仅当前层）
+            Handles.DrawSolidRectangleWithOutline(corners, fillColor, outlineColor);
+
             if (isCurrentLayer)
             {
                 string label = slot.isPassage ? "P" : "N";
-                Handles.Label(worldPos + new Vector3(0.35f, 0.15f, 0),
-                    $"{label}{si}", EditorStyles.miniLabel);
+                Handles.Label(worldPos + new Vector3(HALF + 0.05f, 0.1f, 0), $"{label}{si}", EditorStyles.miniLabel);
             }
         }
     }
 
     private void DrawLayerGuides()
     {
-        const float LAYER_HEIGHT = 1.2f;
-        const float GUIDE_HALF_WIDTH = 8f;
+        if (_mapConfig == null || _mapConfig.layers == null) return;
 
-        Handles.color = new Color(1f, 1f, 1f, 0.08f);
-        for (int i = 0; i < MapConfig.MAX_LAYERS; i++)
+        for (int i = 0; i < _mapConfig.layers.Count; i++)
         {
-            float y = i * LAYER_HEIGHT;
-            Vector3 left = new Vector3(-GUIDE_HALF_WIDTH, y, 0);
-            Vector3 right = new Vector3(GUIDE_HALF_WIDTH, y, 0);
-            Handles.DrawLine(left, right);
-            Handles.Label(new Vector3(-GUIDE_HALF_WIDTH - 1f, y, 0),
-                $"L{i}", EditorStyles.miniLabel);
-        }
+            var layer = _mapConfig.layers[i];
+            float w = layer.layerWidth * CELL_SIZE;
+            float h = layer.layerHeight * CELL_SIZE;
+            float x0 = -w * 0.5f;
+            float y0 = layer.layerIndex * LAYER_HEIGHT_EDITOR;
 
-        // 当前选中层高亮
-        if (_selectedLayerIndex >= 0 && _selectedLayerIndex < MapConfig.MAX_LAYERS)
-        {
-            float y = _selectedLayerIndex * LAYER_HEIGHT;
-            Handles.color = new Color(1f, 1f, 0f, 0.15f);
-            Vector3 left = new Vector3(-GUIDE_HALF_WIDTH, y, 0);
-            Vector3 right = new Vector3(GUIDE_HALF_WIDTH, y, 0);
-            Handles.DrawLine(left, right);
+            bool isSelected = (i == _selectedLayerIndex);
+            Handles.color = isSelected
+                ? new Color(1f, 1f, 0f, 0.4f)
+                : new Color(1f, 1f, 1f, 0.08f);
+
+            // 绘制层边界矩形
+            Vector3 bl = new Vector3(x0,     y0,     0);
+            Vector3 br = new Vector3(x0 + w, y0,     0);
+            Vector3 tr = new Vector3(x0 + w, y0 + h, 0);
+            Vector3 tl = new Vector3(x0,     y0 + h, 0);
+            Handles.DrawLine(bl, br);
+            Handles.DrawLine(br, tr);
+            Handles.DrawLine(tr, tl);
+            Handles.DrawLine(tl, bl);
+
+            // 层标签
+            Handles.Label(new Vector3(x0 - 1.2f, y0, 0), $"L{i}", EditorStyles.miniLabel);
         }
     }
 
@@ -511,12 +547,13 @@ public class MapEditor : EditorWindow
             }
             else if (_addNormalSlotMode || _addPassageSlotMode)
             {
-                // 添加新槽位
-                Undo.RecordObject(_mapConfig, "Add Slot");
+                // 吸附到最近格子中心
+                Vector2 snapped = SnapToGrid(mouseWorld, layer);
 
+                Undo.RecordObject(_mapConfig, "Add Slot");
                 var newSlot = new SlotData
                 {
-                    position = mouseWorld,
+                    position = snapped,
                     isPassage = _addPassageSlotMode,
                     requiredCount = 1
                 };
@@ -534,6 +571,28 @@ public class MapEditor : EditorWindow
         {
             HandleUtility.AddDefaultControl(controlId);
         }
+    }
+
+    /// <summary>
+    /// 将世界坐标吸附到该层最近的格子中心。
+    /// 格子以塔中心为原点，向左右扩展 layerWidth/2 格。
+    /// </summary>
+    private Vector2 SnapToGrid(Vector2 worldPos, LayerData layer)
+    {
+        float originX = -(layer.layerWidth * CELL_SIZE) * 0.5f;
+        float originY = layer.layerIndex * LAYER_HEIGHT_EDITOR;
+
+        // 转换到层本地坐标，四舍五入到最近整数格
+        float localX = worldPos.x - originX;
+        float localY = worldPos.y - originY;
+
+        int gx = Mathf.Clamp(Mathf.FloorToInt(localX / CELL_SIZE), 0, layer.layerWidth - 1);
+        int gy = Mathf.Clamp(Mathf.FloorToInt(localY / CELL_SIZE), 0, layer.layerHeight - 1);
+
+        // 返回格子中心世界坐标
+        float cx = originX + (gx + 0.5f) * CELL_SIZE;
+        float cy = originY + (gy + 0.5f) * CELL_SIZE;
+        return new Vector2(cx, cy);
     }
 
     private int FindSlotAtPosition(LayerData layer, Vector2 worldPos)
@@ -593,65 +652,57 @@ public class MapEditor : EditorWindow
     private void GenerateDefaultMap()
     {
         if (_mapConfig == null)
-        {
             CreateNewMapConfig();
-        }
 
         Undo.RecordObject(_mapConfig, "Generate Default Map");
 
-        const float BOTTOM_WIDTH = 10f;
-        const float TOP_WIDTH = 2f;
-        const float LAYER_HEIGHT = 1.2f;
-        const int BOTTOM_SLOTS = 10;
-        const int TOP_SLOTS = 1;
+        const float BASE_WIDTH_G = 10f;
+        const float TOP_WIDTH_RATIO_G = 0.2f;
+        const float LAYER_HEIGHT_G = 1.2f;
+        const int NORMAL_SLOTS = 4;
+        const int PASSAGE_SLOTS = 2;
 
         _mapConfig.layers = new List<LayerData>();
 
         for (int i = 0; i < MapConfig.MAX_LAYERS; i++)
         {
-            float t = (float)i / (MapConfig.MAX_LAYERS - 1);
-            float layerWidth = Mathf.Lerp(BOTTOM_WIDTH, TOP_WIDTH, t);
-            int totalSlotCount = Mathf.RoundToInt(Mathf.Lerp(BOTTOM_SLOTS, TOP_SLOTS, t));
-            totalSlotCount = Mathf.Max(1, totalSlotCount);
-            float y = i * LAYER_HEIGHT;
+            float step = (1f - TOP_WIDTH_RATIO_G) / (MapConfig.MAX_LAYERS - 1f);
+            float layerWidth = BASE_WIDTH_G * (1f - i * step);
+            float halfWidth = layerWidth * 0.5f;
+            float y = i * LAYER_HEIGHT_G;
 
             var layerData = new LayerData
             {
                 layerIndex = i,
-                slots = new List<SlotData>()
+                slots      = new List<SlotData>(),
+                layerWidth  = 6,
+                layerHeight = 1,
             };
 
-            // 通道槽：每层 1 个，位于中心（X=0）
-            layerData.slots.Add(new SlotData
+            // 普通槽：均匀分布在层宽内
+            for (int s = 0; s < NORMAL_SLOTS; s++)
             {
-                position = new Vector2(0f, y),
-                isPassage = true,
-                requiredCount = 1
-            });
-
-            // 普通槽：均匀分布，排除通道位置（X=0 附近）
-            int normalSlotCount = totalSlotCount - 1; // 减去通道槽
-            if (normalSlotCount > 0)
-            {
-                float halfWidth = layerWidth * 0.5f;
-                float spacing = layerWidth / (normalSlotCount + 1);
-
-                for (int s = 0; s < normalSlotCount; s++)
+                float t = NORMAL_SLOTS > 1 ? (float)s / (NORMAL_SLOTS - 1) : 0.5f;
+                float x = Mathf.Lerp(-halfWidth * 0.8f, halfWidth * 0.8f, t);
+                layerData.slots.Add(new SlotData
                 {
-                    float x = -halfWidth + spacing * (s + 1);
-                    // 如果太靠近中心（通道位置），稍微偏移
-                    if (Mathf.Abs(x) < 0.3f)
-                    {
-                        x = x >= 0 ? 0.35f : -0.35f;
-                    }
+                    position = new Vector2(x, y),
+                    isPassage = false,
+                    requiredCount = 1
+                });
+            }
 
-                    layerData.slots.Add(new SlotData
-                    {
-                        position = new Vector2(x, y),
-                        isPassage = false,
-                        requiredCount = 1
-                    });
-                }
+            // 通道槽：居中分布
+            for (int s = 0; s < PASSAGE_SLOTS; s++)
+            {
+                float t = PASSAGE_SLOTS > 1 ? (float)s / (PASSAGE_SLOTS - 1) : 0.5f;
+                float x = Mathf.Lerp(-halfWidth * 0.3f, halfWidth * 0.3f, t);
+                layerData.slots.Add(new SlotData
+                {
+                    position = new Vector2(x, y),
+                    isPassage = true,
+                    requiredCount = 1
+                });
             }
 
             _mapConfig.layers.Add(layerData);
@@ -664,10 +715,37 @@ public class MapEditor : EditorWindow
         _selectedSlotIndex = -1;
         SceneView.RepaintAll();
 
-        Debug.Log("[MapEditor] 默认地图已生成：10 层，底层宽 10，顶层宽 2，线性插值槽位数。");
+        Debug.Log($"[MapEditor] 默认地图已生成：{MapConfig.MAX_LAYERS} 层，每层 {NORMAL_SLOTS} 普通槽 + {PASSAGE_SLOTS} 通道槽。");
     }
 
     // ─────────────────────── 工具方法 ───────────────────────
+    private void ApplyToScene()
+    {
+        var tower = FindObjectOfType<TowerConstructionSystem>();
+        if (tower == null)
+        {
+            EditorUtility.DisplayDialog("提示", "场景中未找到 TowerConstructionSystem。", "OK");
+            return;
+        }
+
+        Undo.RecordObject(tower, "Apply MapConfig to Scene");
+
+        // 通过 SerializedObject 设置私有 SerializeField
+        var so = new SerializedObject(tower);
+        var prop = so.FindProperty("_mapConfig");
+        if (prop != null)
+        {
+            prop.objectReferenceValue = _mapConfig;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(tower);
+            Debug.Log($"[MapEditor] MapConfig '{_mapConfig.name}' 已应用到场景 TowerConstructionSystem。");
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("错误", "找不到 TowerConstructionSystem._mapConfig 字段。", "OK");
+        }
+    }
+
     private static void EnsureFolderExists(string folderPath)
     {
         if (AssetDatabase.IsValidFolder(folderPath))

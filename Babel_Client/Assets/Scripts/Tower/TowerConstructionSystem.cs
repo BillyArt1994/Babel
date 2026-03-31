@@ -1,42 +1,45 @@
+using System.Collections.Generic;
+using Babel.Map;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Implements the tower construction system from design/gdd/塔建造系统.md.
-/// Manages 10 tower layers, per-layer progress, visual representation,
-/// and fires TowerEvents.RaiseTowerCompleted() when the top layer finishes.
+/// Tower construction system with TileMap-based visuals.
+/// Each SlotData maps to a Tilemap cell; enemies arriving reveal tiles in place.
+/// EnemyController and LayerSlotManager are unchanged — SlotData.position remains world-space Vector2.
 /// </summary>
 public class TowerConstructionSystem : MonoBehaviour
 {
-    private const int LAYER_COUNT = 10;
-    private const float BASE_WIDTH = 10f;
-    private const float TOP_WIDTH_RATIO = 0.2f;
+    public const int LAYER_COUNT = 10;
     private const float LAYER_HEIGHT = 1.2f;
-    private const float REQUIRED_POINTS_BOTTOM = 100f;
-    private const float REQUIRED_POINTS_TOP = 20f;
+
+    private static readonly Color TILE_HIDDEN  = Color.clear;
+    private static readonly Color TILE_NORMAL  = new Color(0.55f, 0.55f, 0.55f, 1f);
+    private static readonly Color TILE_PASSAGE = new Color(0.4f,  0.4f,  0.5f,  1f);
 
     [SerializeField] private Transform _towerRoot;
-    [SerializeField] private Sprite _layerSprite;
+    [SerializeField] private MapConfig _mapConfig;
+    [SerializeField] private Tilemap   _tilemap;   // assign the Tilemap child in Inspector
+    [SerializeField] private TileBase  _baseTile;  // assign Assets/Tiles/BlockTile.asset
 
-    private TowerLayer[] _layers;
-    private SpriteRenderer[] _layerRenderers;
-    private int _currentActiveLayer;
+    private TowerLayer[]        _layers;
+    private int                 _currentActiveLayer;
+    private LayerSlotManager[]  _slotManagers;
 
-    // ── Public query API ──────────────────────────────────────────────────────
+    // slot → cell coord cache (avoids repeated WorldToCell calls)
+    private readonly Dictionary<SlotData, Vector3Int> _slotCells = new Dictionary<SlotData, Vector3Int>();
 
-    /// <summary>Returns overall tower completion as a value in [0, 100].</summary>
-    public float GetTotalCompletionPercent()
-    {
-        float currentTotal = 0f;
-        float requiredTotal = 0f;
-        for (int i = 0; i < LAYER_COUNT; i++)
-        {
-            currentTotal += _layers[i].CurrentPoints;
-            requiredTotal += _layers[i].RequiredPoints;
-        }
-        return requiredTotal > 0f ? currentTotal / requiredTotal * 100f : 0f;
-    }
+    // ── Public query API ─────────────────────────────────────────────────────
 
     public int GetCurrentLayer() => _currentActiveLayer;
+
+    public LayerSlotManager GetSlotManager(int layerIndex)
+    {
+        if (_slotManagers == null || layerIndex < 0 || layerIndex >= LAYER_COUNT) return null;
+        return _slotManagers[layerIndex];
+    }
+
+    public LayerSlotManager GetCurrentSlotManager() => GetSlotManager(_currentActiveLayer);
 
     public float GetActiveLayerWorldY()
     {
@@ -47,7 +50,19 @@ public class TowerConstructionSystem : MonoBehaviour
     public float GetLayerCompletion(int layerIndex)
     {
         if (layerIndex < 0 || layerIndex >= LAYER_COUNT) return 0f;
-        return _layers[layerIndex].CompletionPercent;
+        LayerSlotManager mgr = GetSlotManager(layerIndex);
+        return (mgr != null && mgr.AreAllSlotsBuilt()) ? 100f : 0f;
+    }
+
+    public float GetTotalCompletionPercent()
+    {
+        int built = 0;
+        for (int i = 0; i < LAYER_COUNT; i++)
+        {
+            LayerSlotManager mgr = GetSlotManager(i);
+            if (mgr != null && mgr.AreAllSlotsBuilt()) built++;
+        }
+        return (float)built / LAYER_COUNT * 100f;
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -56,8 +71,8 @@ public class TowerConstructionSystem : MonoBehaviour
     {
         if (_towerRoot == null) _towerRoot = transform;
         InitializeLayers();
-        BuildLayerVisuals();
-        RefreshAllVisuals();
+        InitializeSlotManagers();
+        BuildSlotVisuals();
     }
 
     private void OnEnable()  => GameEvents.OnGameStart += OnGameStart;
@@ -66,29 +81,52 @@ public class TowerConstructionSystem : MonoBehaviour
     private void InitializeLayers()
     {
         _layers = new TowerLayer[LAYER_COUNT];
-        _layerRenderers = new SpriteRenderer[LAYER_COUNT];
         _currentActiveLayer = 0;
-
         for (int i = 0; i < LAYER_COUNT; i++)
         {
             float t = LAYER_COUNT > 1 ? (float)i / (LAYER_COUNT - 1) : 0f;
-            float required = Mathf.Lerp(REQUIRED_POINTS_BOTTOM, REQUIRED_POINTS_TOP, t);
+            float required = Mathf.Lerp(100f, 20f, t);
             _layers[i] = new TowerLayer(i, required, unlocked: i == 0);
         }
     }
 
-    private void BuildLayerVisuals()
+    private void InitializeSlotManagers()
     {
+        _slotManagers = new LayerSlotManager[LAYER_COUNT];
         for (int i = 0; i < LAYER_COUNT; i++)
         {
-            var go = new GameObject($"TowerLayer_{i + 1}");
-            go.transform.SetParent(_towerRoot, worldPositionStays: false);
-            go.transform.localPosition = new Vector3(0f, i * LAYER_HEIGHT, 0f);
+            List<SlotData> normal  = _mapConfig != null ? _mapConfig.GetNormalSlots(i)  : new List<SlotData>();
+            List<SlotData> passage = _mapConfig != null ? _mapConfig.GetPassageSlots(i) : new List<SlotData>();
+            _slotManagers[i] = new LayerSlotManager(i, normal, passage);
+        }
+    }
 
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = _layerSprite;
-            sr.drawMode = SpriteDrawMode.Sliced;
-            _layerRenderers[i] = sr;
+    /// <summary>
+    /// Pre-populate the Tilemap with hidden tiles at every slot position.
+    /// Also caches the cell coordinate for each SlotData.
+    /// </summary>
+    private void BuildSlotVisuals()
+    {
+        _slotCells.Clear();
+
+        if (_tilemap == null || _baseTile == null || _mapConfig == null) return;
+
+        _tilemap.ClearAllTiles();
+
+        for (int i = 0; i < LAYER_COUNT; i++)
+        {
+            var layerData = _mapConfig.GetLayer(i);
+            if (layerData == null) continue;
+
+            foreach (var slot in layerData.slots)
+            {
+                Vector3Int cell = WorldToCell(slot.position);
+                _slotCells[slot] = cell;
+
+                _tilemap.SetTile(cell, _baseTile);
+                _tilemap.SetTileFlags(cell, TileFlags.None); // allow runtime color
+                _tilemap.SetColor(cell, TILE_HIDDEN);
+            }
         }
     }
 
@@ -98,84 +136,120 @@ public class TowerConstructionSystem : MonoBehaviour
         for (int i = 0; i < LAYER_COUNT; i++)
         {
             _layers[i].Reset();
-            _layers[i].SetUnlocked(i == 0);   // only layer 0 starts unlocked
+            _layers[i].SetUnlocked(i == 0);
+            _slotManagers[i]?.Reset();
         }
-        RefreshAllVisuals();
+        // Reset all tiles to hidden
+        foreach (var kvp in _slotCells)
+        {
+            _tilemap.SetColor(kvp.Value, TILE_HIDDEN);
+        }
     }
 
     // ── Core gameplay ─────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Called by EnemySpawnSystem when an enemy reaches the tower.
-    /// Adds enemyData.BuildContribution points to the current active layer.
+    /// Called by EnemyController on arrival at its slot.
+    /// Reveals the corresponding Tilemap cell and checks layer/tower completion.
     /// </summary>
-    public void AddProgress(EnemyData enemyData)
+    public void BuildSlotAtPosition(EnemyController enemy, int layerIndex)
     {
-        if (enemyData == null) return;
+        if (enemy == null) return;
         if (GameLoopManager.Instance == null || !GameLoopManager.Instance.IsPlaying()) return;
-        if (_currentActiveLayer < 0 || _currentActiveLayer >= LAYER_COUNT) return;
 
-        TowerLayer active = _layers[_currentActiveLayer];
-        if (!active.IsUnlocked || active.IsCompleted) return;
+        LayerSlotManager mgr = GetSlotManager(layerIndex);
+        if (mgr == null) return;
 
-        active.AddPoints(enemyData.BuildContribution);
-        TowerProgressEvents.RaiseLayerProgressChanged(_currentActiveLayer, active.CompletionPercent);
-        UpdateLayerVisual(_currentActiveLayer);
+        SlotData slot = mgr.GetSlotForOccupant(enemy);
+        if (slot == null) return;
 
-        if (!active.IsCompleted) return;
-
-        TowerProgressEvents.RaiseLayerCompleted(_currentActiveLayer);
-
-        if (_currentActiveLayer == LAYER_COUNT - 1)
+        // Reveal tile
+        if (_tilemap != null && _slotCells.TryGetValue(slot, out Vector3Int cell))
         {
-            RefreshAllVisuals();
-            TowerEvents.RaiseTowerCompleted();  // ← triggers GameLoopManager defeat
+            _tilemap.SetColor(cell, slot.isPassage ? TILE_PASSAGE : TILE_NORMAL);
+        }
+
+        mgr.MarkBuilt(slot);
+
+        BabelLogger.AC("S3-14", string.Concat(
+            "Block revealed at layer=", layerIndex.ToString(),
+            " pos=", slot.position.ToString(),
+            " isPassage=", slot.isPassage.ToString()));
+
+        TowerProgressEvents.RaiseLayerProgressChanged(layerIndex, GetLayerCompletion(layerIndex));
+
+        if (!mgr.AreAllSlotsBuilt()) return;
+
+        TowerProgressEvents.RaiseLayerCompleted(layerIndex);
+        BabelLogger.AC("S3-14", string.Concat("Layer complete: layer=", layerIndex.ToString()));
+
+        if (layerIndex == LAYER_COUNT - 1)
+        {
+            TowerEvents.RaiseTowerCompleted();
             return;
         }
 
-        int justCompleted = _currentActiveLayer;
-        _currentActiveLayer++;
+        _currentActiveLayer = layerIndex + 1;
         _layers[_currentActiveLayer].Unlock();
-
-        UpdateLayerVisual(justCompleted);
-        UpdateLayerVisual(_currentActiveLayer);
     }
 
-    // ── Visuals ───────────────────────────────────────────────────────────────
-
-    private void RefreshAllVisuals()
+    /// <summary>
+    /// Called by EnemyController when it arrives at a passage slot.
+    /// Reveals the tile and marks it built. Does NOT check layer completion here —
+    /// the enemy continues climbing immediately after.
+    /// </summary>
+    /// <summary>Returns true if this was the first build (enemy should be consumed). False if already built.</summary>
+    public bool BuildPassageAtPosition(Vector2 passageWorldPos, int layerIndex)
     {
-        for (int i = 0; i < LAYER_COUNT; i++)
-            UpdateLayerVisual(i);
+        if (GameLoopManager.Instance == null || !GameLoopManager.Instance.IsPlaying()) return false;
+
+        LayerSlotManager mgr = GetSlotManager(layerIndex);
+        if (mgr == null) return false;
+
+        bool built = mgr.TryMarkPassageBuiltAt(passageWorldPos);
+        if (!built) return false; // already built by another enemy
+
+        // Reveal the tile at this world position
+        foreach (var kvp in _slotCells)
+        {
+            if (kvp.Key.isPassage && Vector2.SqrMagnitude(kvp.Key.position - passageWorldPos) < 0.04f)
+            {
+                if (_tilemap != null)
+                    _tilemap.SetColor(kvp.Value, TILE_PASSAGE);
+                break;
+            }
+        }
+
+        BabelLogger.AC("S3-14", string.Concat(
+            "Passage built at layer=", layerIndex.ToString(),
+            " pos=", passageWorldPos.ToString()));
+
+        TowerProgressEvents.RaiseLayerProgressChanged(layerIndex, GetLayerCompletion(layerIndex));
+
+        if (!mgr.AreAllSlotsBuilt()) return true;
+
+        TowerProgressEvents.RaiseLayerCompleted(layerIndex);
+        BabelLogger.AC("S3-14", string.Concat("Layer complete: layer=", layerIndex.ToString()));
+
+        if (layerIndex == LAYER_COUNT - 1)
+        {
+            TowerEvents.RaiseTowerCompleted();
+            return true;
+        }
+
+        _currentActiveLayer = layerIndex + 1;
+        _layers[_currentActiveLayer].Unlock();
+        return true;
     }
 
-    private void UpdateLayerVisual(int layerIndex)
+    /// <summary>Legacy: kept for EnemySpawnSystem compatibility, no longer drives visuals.</summary>
+    public void AddProgress(EnemyData enemyData) { }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private Vector3Int WorldToCell(Vector2 worldPos)
     {
-        if (_layerRenderers == null || layerIndex < 0 || layerIndex >= _layerRenderers.Length) return;
-
-        SpriteRenderer sr = _layerRenderers[layerIndex];
-        if (sr == null) return;
-
-        TowerLayer layer = _layers[layerIndex];
-        float targetWidth = GetLayerTargetWidth(layerIndex);
-        float visibleWidth = Mathf.Max(0.001f, targetWidth * Mathf.Clamp01(layer.CompletionPercent / 100f));
-
-        sr.transform.localScale = new Vector3(visibleWidth, LAYER_HEIGHT, 1f);
-
-        Color c = Color.white;
-        if (layer.IsCompleted)
-            c.a = 0.7f;
-        else if (layerIndex == _currentActiveLayer && layer.IsUnlocked)
-            c.a = 1.0f;
-        else
-            c.a = 0.3f;
-
-        sr.color = c;
-    }
-
-    private float GetLayerTargetWidth(int layerIndex)
-    {
-        float step = (1f - TOP_WIDTH_RATIO) / (LAYER_COUNT - 1f);
-        return BASE_WIDTH * (1f - layerIndex * step);
+        if (_tilemap == null) return Vector3Int.zero;
+        return _tilemap.WorldToCell(new Vector3(worldPos.x, worldPos.y, 0f));
     }
 }

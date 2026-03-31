@@ -17,4 +17,10 @@ public static class TowerProgressEvents
 
     public static void RaiseLayerCompleted(int layerIndex)
         => OnLayerCompleted?.Invoke(layerIndex);
+
+    /// <summary>Fired when all passage slots on a layer are occupied — triggers stair climbing.</summary>
+    public static event Action<int> OnLayerPassageSlotsFull;
+
+    public static void RaiseLayerPassageSlotsFull(int layerIndex)
+        => OnLayerPassageSlotsFull?.Invoke(layerIndex);
 }

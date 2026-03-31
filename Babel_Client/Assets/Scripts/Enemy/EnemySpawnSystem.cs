@@ -129,7 +129,7 @@ public class EnemySpawnSystem : MonoBehaviour
             return;
         }
 
-        enemy.Initialize(selected, targetPos);
+        enemy.Initialize(selected, targetPos, _towerSystem, startLayer: 0);
 
         float interval = Mathf.Max(MIN_INTERVAL, BASE_INTERVAL / (1f + progress * DIFFICULTY_SCALE));
         _spawnTimer = interval;

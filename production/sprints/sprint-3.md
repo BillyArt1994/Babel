@@ -40,7 +40,7 @@
 | S3-02 | **性能优化 Phase 1**：SkillSystem 自动攻击 OverlapCircleAll -> OverlapCircleNonAlloc + 预分配缓冲区 ✅ 已完成 | gameplay-programmer | 低 | 无 | `FireAutoAttack` 使用 NonAlloc + 预分配缓冲区；radius 从 100 缩小到合理范围（如 30）或使用活体敌人列表；零 GC 分配 |
 | S3-03 | **性能优化 Phase 2**：ObjectPool 预热容量调整 + ClickAttackSystem ToArray 消除 ✅ 已完成 | gameplay-programmer | 低 | 无 | 各敌人类型 ObjectPool `_initialSize` 调整为 50；`_hitBuffer.ToArray()` 替换为直接传递 List 或 ReadOnlySpan；100 单位同屏 GC spike 消除 |
 | S3-05 | **伤害数字浮动显示**：命中时在敌人头顶弹出伤害数字（白色常规 / 黄色暴击 / 红色处决），向上飘动后消失 | ui-programmer | 中 | 无 | 命中时显示伤害数字；暴击数字大 1.5 倍且为黄色；数字 0.8 秒后淡出消失；使用对象池管理（无 GC）；100 单位同屏不卡顿 |
-| S3-14 | **敌人移动重构（槽位寻路+通道系统）**：TowerConstructionSystem 改为槽位网格模型（普通槽+通道槽），EnemyController 寻路逻辑实现三段优先级（普通槽→通道槽→爬楼上层），MapConfig ScriptableObject 支持配置通道槽位置和数量 | gameplay-programmer | 高 | S3-01, S3-02 | 每层有普通槽和通道槽；敌人优先填普通槽，普通槽满后才填通道槽；通道槽填满后楼梯出现，敌人从通道位置爬上上层；通道槽位置和数量可在 MapConfig 中配置；与现有 TowerProgressEvents/GameLoop 兼容。**前置：地图编辑器已完成**（MapConfig.cs + MapEditor.cs） |
+| S3-14 | **敌人移动重构（槽位寻路+通道系统）** ✅ 已完成 | gameplay-programmer | 高 | S3-01, S3-02 | 每层有普通槽和通道槽；敌人优先填普通槽，普通槽满后走向通道槽建造通道（消耗自身），通道建好后后续敌人可直接爬楼；TileMap 方块积木视觉；Waypoint 路径系统（水平先行+垂直爬梯）；通道槽位置和数量可在 MapConfig 中配置；与现有 TowerProgressEvents/GameLoop 兼容。**附加完成：BabelLogger 日志系统、AI 选卡工具、TileMap 视觉重构、MapEditor 格子编辑** |
 
 ### Should Have（本冲刺内尽量完成）
 
