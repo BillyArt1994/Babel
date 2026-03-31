@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class DebugUpgradeShortcut : MonoBehaviour
 {
-    [SerializeField] private bool _autoTriggerOnStart = true;
+    [SerializeField] private bool _autoTriggerOnStart = false;
     [SerializeField] private float _autoTriggerDelay  = 2f;
 
     private IEnumerator Start()

@@ -184,6 +184,10 @@ public class GameLoopManager : MonoBehaviour
         switch (next)
         {
             case GameState.Playing:
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                BabelLogger.Event(BabelLogger.Tags.Game, string.Concat(
+                    "State\u2192Playing (from=", previous.ToString(), ")"));
+#endif
                 Time.timeScale = 1f;
 
                 if (previous == GameState.Paused)
@@ -202,22 +206,38 @@ public class GameLoopManager : MonoBehaviour
                 break;
 
             case GameState.Paused:
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                BabelLogger.Event(BabelLogger.Tags.Game, "State\u2192Paused");
+#endif
                 Time.timeScale = 0f;
                 _pauseCooldown = PAUSE_COOLDOWN;
                 GameEvents.RaiseGamePaused();
                 break;
 
             case GameState.LevelingUp:
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                BabelLogger.Event(BabelLogger.Tags.Game, string.Concat(
+                    "State\u2192LevelingUp faith=",
+                    UpgradeSystem.Instance != null ? UpgradeSystem.Instance.GetFaithProgress().ToString("F2") : "?",
+                    " level=",
+                    UpgradeSystem.Instance != null ? UpgradeSystem.Instance.GetLevelCount().ToString() : "?"));
+#endif
                 Time.timeScale = 0f;
                 GameEvents.RaiseLevelUpStart();
                 break;
 
             case GameState.Victory:
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                BabelLogger.Event(BabelLogger.Tags.Game, "State\u2192Victory");
+#endif
                 Time.timeScale = 0f;
                 GameEvents.RaiseVictory();
                 break;
 
             case GameState.Defeat:
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                BabelLogger.Event(BabelLogger.Tags.Game, "State\u2192Defeat");
+#endif
                 Time.timeScale = 0f;
                 GameEvents.RaiseDefeat();
                 break;

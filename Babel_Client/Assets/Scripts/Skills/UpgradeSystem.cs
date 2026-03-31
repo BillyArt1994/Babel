@@ -99,6 +99,14 @@ public class UpgradeSystem : MonoBehaviour
         if (GameLoopManager.Instance != null)
             GameLoopManager.Instance.RequestLevelUp();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        BabelLogger.Event(BabelLogger.Tags.Skill, string.Concat(
+            "[UPGRADE_READY] level=", _levelCount.ToString(),
+            " options=", _pendingOptions != null ? _pendingOptions.Length.ToString() : "0",
+            " opt0=", (_pendingOptions != null && _pendingOptions.Length > 0 && _pendingOptions[0] != null) ? _pendingOptions[0].SkillName : "?",
+            " opt1=", (_pendingOptions != null && _pendingOptions.Length > 1 && _pendingOptions[1] != null) ? _pendingOptions[1].SkillName : "?",
+            " opt2=", (_pendingOptions != null && _pendingOptions.Length > 2 && _pendingOptions[2] != null) ? _pendingOptions[2].SkillName : "?"));
+#endif
         UpgradeEvents.RaiseOptionsGenerated(_pendingOptions);
     }
 
