@@ -6,9 +6,11 @@ public class SceneBootstrap : MonoBehaviour
     [Header("Scene References")]
     [SerializeField] private GameLoopManager _gameLoopManager;
     [SerializeField] private PlayerInputHandler _inputHandler;
-    [SerializeField] private EnemySpawnSystem _spawnSystem;
+    [SerializeField] private WaveSpawnSystem _spawnSystem;
     [SerializeField] private TowerConstructionSystem _towerSystem;
     [SerializeField] private EnemyPool _enemyPool;
+
+    [SerializeField] private EnemyStatsLoader _statsLoader;
 
     [Header("Enemy Pools")]
     [SerializeField] private EnemyControllerPool[] _enemyPoolComponents;
@@ -39,6 +41,9 @@ public class SceneBootstrap : MonoBehaviour
         ValidateRuntimeSingleton(EnemyPool.Instance, nameof(EnemyPool));
 
         RegisterEnemyPools();
+
+        if (_statsLoader != null)
+            _statsLoader.LoadAndApply();
 
         if (!_autoStartForTesting)
         {

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class SkillEntryUI : MonoBehaviour
 {
     [SerializeField] private Text _label;
+    [SerializeField] private Image _icon;
 
     public SkillData SkillData { get; private set; }
     private int _stacks = 1;
@@ -16,6 +17,11 @@ public class SkillEntryUI : MonoBehaviour
     {
         SkillData = skill;
         _stacks = 1;
+        if (_icon != null)
+        {
+            _icon.sprite = skill.Icon;
+            _icon.enabled = skill.Icon != null;
+        }
         Refresh();
     }
 

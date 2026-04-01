@@ -131,8 +131,7 @@ public class PerformanceBenchmark : MonoBehaviour
         if (EnemyPool.Instance == null)
             return false;
 
-        // We need an EnemyData to use the pool. Try to find one from the
-        // EnemyDatabase via EnemySpawnSystem, or from an existing EnemyController.
+        // We need an EnemyData to use the pool.
         EnemyData workerData = FindWorkerEnemyData();
         if (workerData == null)
         {
@@ -210,13 +209,7 @@ public class PerformanceBenchmark : MonoBehaviour
 
     private EnemyData FindWorkerEnemyData()
     {
-        // Try to find via EnemySpawnSystem's database
-        EnemySpawnSystem spawnSystem = FindFirstObjectByType<EnemySpawnSystem>();
-        if (spawnSystem != null)
-        {
-            // Use reflection or a known database reference
-            // Since EnemyDatabase is a serialized field, try FindFirstObjectByType on the database
-        }
+        // Search all loaded EnemyData ScriptableObjects
 
         // Search all loaded EnemyData ScriptableObjects
         EnemyData[] allData = Resources.FindObjectsOfTypeAll<EnemyData>();

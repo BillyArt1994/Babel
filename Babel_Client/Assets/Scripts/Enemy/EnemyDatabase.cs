@@ -31,19 +31,10 @@ public class EnemyDatabase : ScriptableObject
     /// Fills <paramref name="results"/> with all spawnable enemies at the given game time.
     /// The caller owns the list and should Clear() it before passing.
     /// </summary>
+    [System.Obsolete("Use WaveSpawnSystem with level_waves.csv instead.")]
     public void GetSpawnableAtTime(float gameTime, List<EnemyData> results)
     {
-        if (_allEnemies == null)
-            return;
-
-        for (int i = 0; i < _allEnemies.Length; i++)
-        {
-            EnemyData enemyData = _allEnemies[i];
-            if (enemyData == null)
-                continue;
-
-            if (enemyData.SpawnStartTime <= gameTime && enemyData.SpawnWeight > 0f)
-                results.Add(enemyData);
-        }
+        // Legacy method — kept for backward compatibility but no longer used.
+        // EnemyData no longer has SpawnStartTime/SpawnWeight fields.
     }
 }

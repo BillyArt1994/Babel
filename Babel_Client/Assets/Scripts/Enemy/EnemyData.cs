@@ -13,7 +13,6 @@ public class EnemyData : ScriptableObject
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _faithValue;
     [SerializeField] private float _buildContribution = 1.0f;
-    [SerializeField] private float _spawnWeight = 1.0f;
 
     [Header("Special Ability")]
     [SerializeField] private EnemySpecialAbility _specialAbility;
@@ -21,9 +20,6 @@ public class EnemyData : ScriptableObject
     [SerializeField] private float _healPerSecond;
     [SerializeField] private float _deathExplosionRadius;
     [SerializeField] private float _deathExplosionForce;
-
-    [Header("Spawn Timing")]
-    [SerializeField] private float _spawnStartTime;
 
     [Header("Visuals")]
     [SerializeField] private Sprite _sprite;
@@ -37,23 +33,46 @@ public class EnemyData : ScriptableObject
     public float MoveSpeed => _moveSpeed;
     public float FaithValue => _faithValue;
     public float BuildContribution => _buildContribution;
-    public float SpawnWeight => _spawnWeight;
     public EnemySpecialAbility SpecialAbility => _specialAbility;
     public float HealRadius => _healRadius;
     public float HealPerSecond => _healPerSecond;
     public float DeathExplosionRadius => _deathExplosionRadius;
     public float DeathExplosionForce => _deathExplosionForce;
-    public float SpawnStartTime => _spawnStartTime;
     public Sprite Sprite => _sprite;
     public RuntimeAnimatorController AnimatorController => _animatorController;
     public GameObject Prefab => _prefab;
+
+    /// <summary>
+    /// Runtime override: replaces serialized stat values with CSV-loaded data.
+    /// Called by EnemyStatsLoader on game start. Does NOT modify the .asset file on disk.
+    /// </summary>
+    public void OverrideStats(
+        float maxHealth,
+        float moveSpeed,
+        float faithValue,
+        float buildContribution,
+        EnemySpecialAbility specialAbility,
+        float healRadius,
+        float healPerSecond,
+        float deathExplosionRadius,
+        float deathExplosionForce)
+    {
+        _maxHealth = Mathf.Max(0.01f, maxHealth);
+        _moveSpeed = Mathf.Max(0.01f, moveSpeed);
+        _faithValue = Mathf.Max(0.01f, faithValue);
+        _buildContribution = Mathf.Max(0.1f, buildContribution);
+        _specialAbility = specialAbility;
+        _healRadius = healRadius;
+        _healPerSecond = healPerSecond;
+        _deathExplosionRadius = deathExplosionRadius;
+        _deathExplosionForce = deathExplosionForce;
+    }
 
     private void OnValidate()
     {
         _maxHealth = Mathf.Max(0.01f, _maxHealth);
         _moveSpeed = Mathf.Max(0.01f, _moveSpeed);
         _faithValue = Mathf.Max(0.01f, _faithValue);
-        _spawnWeight = Mathf.Max(0.01f, _spawnWeight);
         _buildContribution = Mathf.Max(0.1f, _buildContribution);
 
 #if UNITY_EDITOR

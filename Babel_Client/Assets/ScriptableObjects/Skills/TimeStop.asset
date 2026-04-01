@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: time_stop
   _skillName: 时间凝滞
   _description: 点击区域内时间减缓，大幅降低敌人移动速度，低伤害强控制。
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 5085d4b6d15119b4ca565cac9b12c68c, type: 3}
   _skillType: 0
   _passiveCategory: 0
   _damage: 10

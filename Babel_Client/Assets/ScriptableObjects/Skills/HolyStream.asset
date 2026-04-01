@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: holy_stream
   _skillName: 圣光洪流
   _description: 释放横贯全屏的圣光光束，穿透击中路径上所有敌人。
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 7cf33d9ea9d27884e9783a2fc0fb3fd9, type: 3}
   _skillType: 0
   _passiveCategory: 0
   _damage: 45

@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: meteor
   _skillName: 天降陨石
   _description: 召唤陨石砸向目标位置，造成大范围爆炸伤害。
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: aed03d19f2fe8ae42a65fa7b6a33ac1a, type: 3}
   _skillType: 0
   _passiveCategory: 0
   _damage: 60
