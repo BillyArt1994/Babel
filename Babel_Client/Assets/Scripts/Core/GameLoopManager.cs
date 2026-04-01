@@ -20,9 +20,23 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private float _remainingTime = TOTAL_DURATION;
     [SerializeField] private float _pauseCooldown;
 
+    private float _gameSpeedMultiplier = 1f;
+
     public GameState CurrentState => _currentState;
     public float RemainingTime => _remainingTime;
     public float PauseCooldown => _pauseCooldown;
+    public float GameSpeedMultiplier => _gameSpeedMultiplier;
+
+    /// <summary>
+    /// Set the game speed multiplier (1, 2, 4, 8, etc.).
+    /// Applied immediately if currently playing; preserved across pause/resume.
+    /// </summary>
+    public void SetGameSpeed(float multiplier)
+    {
+        _gameSpeedMultiplier = Mathf.Max(1f, multiplier);
+        if (_currentState == GameState.Playing)
+            Time.timeScale = _gameSpeedMultiplier;
+    }
 
     private void Awake()
     {
@@ -36,6 +50,7 @@ public class GameLoopManager : MonoBehaviour
         _currentState = GameState.NotStarted;
         _remainingTime = TOTAL_DURATION;
         _pauseCooldown = 0f;
+        _gameSpeedMultiplier = 1f;
         Time.timeScale = 1f;
 
         TowerEvents.OnTowerCompleted += OnTowerCompleted;
@@ -188,7 +203,7 @@ public class GameLoopManager : MonoBehaviour
                 BabelLogger.Event(BabelLogger.Tags.Game, string.Concat(
                     "State\u2192Playing (from=", previous.ToString(), ")"));
 #endif
-                Time.timeScale = 1f;
+                Time.timeScale = _gameSpeedMultiplier;
 
                 if (previous == GameState.Paused)
                 {
