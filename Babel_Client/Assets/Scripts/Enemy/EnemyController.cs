@@ -195,7 +195,8 @@ public class EnemyController : MonoBehaviour, IPoolable
         Vector2 pos = transform.position;
         if (mgr.TryOccupyNormalSlot(this, pos, out Vector2 slotPos))
         {
-            EnqueuePath(slotPos);
+            // Only move horizontally — enemy delivers building material at slot X, no vertical shift needed
+            SetDirectWaypoint(new Vector2(slotPos.x, pos.y));
             _slotOccupied = true;
             BabelLogger.AC("S3-14", string.Concat(
                 "Enemy seeking normal slot layer=", _currentLayerIndex.ToString(),
@@ -222,7 +223,8 @@ public class EnemyController : MonoBehaviour, IPoolable
         {
             // Move to passage slot — use _slotOccupied as "en route" guard (no exclusive lock on slot)
             _passageTargetPos = slotPos; // save exact position for BuildPassageAtPosition
-            EnqueuePath(slotPos);
+            // Only move horizontally — enemy delivers building material at slot X, no vertical shift needed
+            SetDirectWaypoint(new Vector2(slotPos.x, pos.y));
             _slotOccupied = true; // prevents UpdatePathfinding from resetting waypoint each frame
             BabelLogger.AC("S3-14", string.Concat(
                 "Enemy moving to passage slot layer=", _currentLayerIndex.ToString(),
@@ -270,7 +272,9 @@ public class EnemyController : MonoBehaviour, IPoolable
     private void FallbackToEnterTower()
     {
         _pathState = PathState.EnterTower;
-        SetDirectWaypoint((Vector2)_towerSystem.transform.position);
+        // Only move horizontally — no vertical shift to tower center
+        Vector2 cur = transform.position;
+        SetDirectWaypoint(new Vector2(_towerSystem.transform.position.x, cur.y));
     }
 
     /// <summary>

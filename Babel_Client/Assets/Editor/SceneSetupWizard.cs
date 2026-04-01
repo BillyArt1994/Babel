@@ -290,7 +290,7 @@ public static class SceneSetupWizard
         public PlayerInputHandler    inputHandler;
         public EnemyPool             enemyPool;
         public TowerConstructionSystem towerSystem;
-        public EnemySpawnSystem      spawnSystem;
+        public WaveSpawnSystem       spawnSystem;
         public ClickAttackSystem     clickAttack;
         public SkillSystem           skillSystem;
         public UpgradeSystemPlaceholder upgrade;
@@ -338,9 +338,9 @@ public static class SceneSetupWizard
         h.towerGO.transform.position = Vector3.zero;
         h.towerSystem = h.towerGO.AddComponent<TowerConstructionSystem>();
 
-        var spawnGO = CreateChild(gameplay, "EnemySpawnSystem");
+        var spawnGO = CreateChild(gameplay, "WaveSpawnSystem");
         h.spawnSystemGO = spawnGO;
-        h.spawnSystem   = spawnGO.AddComponent<EnemySpawnSystem>();
+        h.spawnSystem   = spawnGO.AddComponent<WaveSpawnSystem>();
 
         h.skillSystemGO = CreateChild(gameplay, "SkillSystem");
         h.skillSystem   = h.skillSystemGO.AddComponent<SkillSystem>();
@@ -461,7 +461,7 @@ public static class SceneSetupWizard
         Wire(h.towerSystem, "_towerRoot",   h.towerGO.transform);
         Wire(h.towerSystem, "_layerSprite", layerSprite);
 
-        // EnemySpawnSystem
+        // WaveSpawnSystem
         Wire(h.spawnSystem, "_enemyDatabase",    enemyDb);
         Wire(h.spawnSystem, "_towerSystem",      h.towerSystem);
         Wire(h.spawnSystem, "_leftSpawnPoint",   h.leftSpawnPoint.transform);
