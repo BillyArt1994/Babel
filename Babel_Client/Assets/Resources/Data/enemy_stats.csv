@@ -1,6 +1,0 @@
-enemyId,maxHealth,moveSpeed,faithValue,buildContribution,specialAbility,healRadius,healPerSecond,deathExplosionRadius,deathExplosionForce
-worker,40,1.5,5,1.0,None,0,0,0,0
-elite,160,2.0,15,1.0,None,0,0,0,0
-priest,80,1.2,10,0.5,Heal,3,5,0,0
-engineer,100,1.8,10,3.0,BuildFaster,3,1.5,0,0
-zealot,250,2.5,25,1.0,DeathExplosion,0,0,2,5
