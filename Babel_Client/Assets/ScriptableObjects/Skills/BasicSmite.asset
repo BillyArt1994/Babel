@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: divine_finger
   _skillName: 神罚之指
   _description: 天神之指降下神罚，精准打击单个目标。可蓄力增幅伤害。
-  _icon: {fileID: 21300000, guid: 67a01dff860ab44448607ee9c40c9cb3, type: 3}
+  _icon: {fileID: 21300000, guid: 69284d59522d83c4f976bbea90b1b332, type: 3}
   _skillType: 0
   _passiveCategory: 0
   _damage: 20

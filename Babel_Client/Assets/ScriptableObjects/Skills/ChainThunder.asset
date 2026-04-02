@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: chain_thunder
   _skillName: 神雷锁链
   _description: 雷电击中目标后跳跃至附近敌人，最多连锁3次，每跳衰减伤害。
-  _icon: {fileID: 21300000, guid: 911c7d1762e49c547a95188ba7ee5fae, type: 3}
+  _icon: {fileID: 21300000, guid: a62c392e9d0a59644a2d1c4090045812, type: 3}
   _skillType: 0
   _passiveCategory: 0
   _damage: 35

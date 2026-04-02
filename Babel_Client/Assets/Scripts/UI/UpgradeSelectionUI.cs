@@ -1,21 +1,20 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Upgrade selection UI. Subscribes in Awake/OnDestroy so the listener
 /// survives Hide() toggling _root inactive.
+/// Cards are dynamically instantiated from a prefab instead of hard-coded arrays.
 /// </summary>
 public class UpgradeSelectionUI : MonoBehaviour
 {
     [SerializeField] private GameObject _root;
     [SerializeField] private Image _overlay;
-    [SerializeField] private GameObject[] _cardRoots;
-    [SerializeField] private Image[] _cardIcons;
-    [SerializeField] private Text[] _cardNames;
-    [SerializeField] private Text[] _cardTypes;
-    [SerializeField] private Text[] _cardDescriptions;
-    [SerializeField] private Button[] _cardButtons;
+    [SerializeField] private Transform _cardContainer;
+    [SerializeField] private UpgradeCardUI _cardPrefab;
 
+    private readonly List<UpgradeCardUI> _spawnedCards = new List<UpgradeCardUI>();
     private SkillData[] _currentOptions;
     private bool _accepted;
 
@@ -34,41 +33,35 @@ public class UpgradeSelectionUI : MonoBehaviour
         if (_root != null) _root.SetActive(false);
     }
 
+    private void ClearCards()
+    {
+        foreach (UpgradeCardUI card in _spawnedCards)
+        {
+            if (card != null)
+                Destroy(card.gameObject);
+        }
+        _spawnedCards.Clear();
+    }
+
     private void OnOptionsGenerated(SkillData[] options)
     {
         _currentOptions = options;
         _accepted = false;
 
-        int count = options != null ? options.Length : 0;
+        ClearCards();
 
-        for (int i = 0; i < _cardRoots.Length; i++)
+        if (options != null)
         {
-            bool visible = i < count && options[i] != null;
-            _cardRoots[i].SetActive(visible);
-
-            if (!visible) continue;
-
-            SkillData skill = options[i];
-
-            if (_cardIcons != null && i < _cardIcons.Length && _cardIcons[i] != null)
+            for (int i = 0; i < options.Length; i++)
             {
-                _cardIcons[i].sprite = skill.Icon;
-                _cardIcons[i].enabled = skill.Icon != null;
-            }
+                if (options[i] == null) continue;
 
-            if (_cardNames[i] != null)
-                _cardNames[i].text = skill.SkillName;
-
-            if (_cardTypes[i] != null)
-                _cardTypes[i].text = skill.SkillType == SkillType.ClickForm ? "点击形态" : "被动增强";
-
-            if (_cardDescriptions[i] != null)
-            {
-                int stacks = SkillSystem.Instance != null
-                    ? SkillSystem.Instance.GetPassiveStacks(skill)
-                    : 0;
-                string prefix = stacks > 0 ? $"Lv{stacks} → Lv{stacks + 1}\n" : "";
-                _cardDescriptions[i].text = prefix + skill.Description;
+                UpgradeCardUI card = Instantiate(_cardPrefab, _cardContainer);
+                var le = card.gameObject.AddComponent<LayoutElement>();
+                le.flexibleWidth = 1f;
+                le.flexibleHeight = 1f;
+                card.Setup(options[i], i, this);
+                _spawnedCards.Add(card);
             }
         }
 
@@ -79,6 +72,8 @@ public class UpgradeSelectionUI : MonoBehaviour
     {
         if (_accepted) return;
         _accepted = true;
+
+        ClearCards();
 
         if (_root != null) _root.SetActive(false);
 

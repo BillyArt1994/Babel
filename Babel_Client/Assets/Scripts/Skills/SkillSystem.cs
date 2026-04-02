@@ -15,6 +15,8 @@ using UnityEngine;
 public class SkillSystem : MonoBehaviour
 {
     private const float CHARGE_MULT = 1.5f;
+    private const float CHARGE_RADIUS_MIN = 0.5f;
+    private const float CHARGE_SLOW_MIN = 0.5f;
     private const float CRIT_MULT = 2.0f;
     private const float MAX_CRIT_CHANCE = 0.8f;
     private const float MIN_COOLDOWN_MULT = 0.2f;
@@ -207,6 +209,9 @@ public class SkillSystem : MonoBehaviour
         _processingEffectPassives = false;
 
         RecalculateModifiers();
+
+        if (starterSkill != null)
+            SkillEvents.RaiseClickFormChanged(starterSkill);
     }
 
     public void AddSkill(SkillData skill)
@@ -219,6 +224,7 @@ public class SkillSystem : MonoBehaviour
             _cooldownTimer = 0f;
             RecalculateModifiers();
             SkillEvents.RaiseSkillAdded(skill);
+            SkillEvents.RaiseClickFormChanged(skill);
             return;
         }
 
@@ -348,24 +354,28 @@ public class SkillSystem : MonoBehaviour
 
         float chargeRatio = GetChargeRatio(holdDuration);
         bool isCrit = UnityEngine.Random.value < _mods.CritChance;
+        float chargeFactor = Mathf.Lerp(1f, CHARGE_MULT, chargeRatio);
 
         float damage =
             _activeClickForm.Damage *
-            Mathf.Lerp(1f, CHARGE_MULT, chargeRatio) *
+            chargeFactor *
             _mods.DamageMult *
             (isCrit ? CRIT_MULT : 1f);
+
+        float radiusFactor = Mathf.Lerp(CHARGE_RADIUS_MIN, 1f, chargeRatio);
+        float slowFactor = Mathf.Lerp(CHARGE_SLOW_MIN, 1f, chargeRatio);
 
         AttackRequest request = new AttackRequest
         {
             worldPos = worldPos,
             attackType = InferAttackType(_activeClickForm),
             damage = damage,
-            radius = _activeClickForm.AoeRadius,
+            radius = _activeClickForm.AoeRadius * radiusFactor,
             chainCount = _activeClickForm.ChainCount,
             chainRadius = 0f,
             chainDecay = 0f,
-            slowPercent = _activeClickForm.SlowPercent,
-            slowDuration = _activeClickForm.SlowDuration,
+            slowPercent = _activeClickForm.SlowPercent * slowFactor,
+            slowDuration = _activeClickForm.SlowDuration * slowFactor,
             isPassiveAttack = false
         };
 
@@ -515,7 +525,7 @@ public class SkillSystem : MonoBehaviour
 
     private float GetChargeRatio(float holdDuration)
     {
-        if (_activeClickForm == null || _activeClickForm.ChargeTime <= 0f) return 1f;
+        if (_activeClickForm == null || _activeClickForm.ChargeTime <= 0f) return 0f;
         return Mathf.Clamp01(holdDuration / _activeClickForm.ChargeTime);
     }
 

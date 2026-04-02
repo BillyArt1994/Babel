@@ -12,21 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 782c2782a5cffc14785ac477215b5a49, type: 3}
   m_Name: HolyStream
   m_EditorClassIdentifier: 
-  _skillId: holy_stream
-  _skillName: 圣光洪流
-  _description: 释放横贯全屏的圣光光束，穿透击中路径上所有敌人。
-  _icon: {fileID: 21300000, guid: 7cf33d9ea9d27884e9783a2fc0fb3fd9, type: 3}
+  _skillId: tidal_surge
+  _skillName: "\u6D8C\u6F6E\u51B2\u51FB"
+  _description: "\u70B9\u51FB\u5904\u6D8C\u51FA\u4E00\u9053\u5F3A\u529B\u6C34\u67F1\uFF0C\u5BF9\u8303\u56F4\u5185\u654C\u4EBA\u9020\u6210\u51B2\u51FB\u4F24\u5BB3\u3002"
+  _icon: {fileID: 21300000, guid: 08fe4cda3385c74499e45ce16409766e, type: 3}
   _skillType: 0
   _passiveCategory: 0
-  _damage: 45
+  _damage: 40
   _bonusDamagePerStack: 0
-  _cooldown: 1.2
-  _chargeTime: 0.8
-  _aoeRadius: 0
+  _cooldown: 1
+  _chargeTime: 0.5
+  _aoeRadius: 1.5
   _chainCount: 0
-  _piercing: 1
-  _slowPercent: 0
-  _slowDuration: 0
+  _piercing: 0
+  _slowPercent: 0.2
+  _slowDuration: 1
   _triggerInterval: 0
   _maxStackCount: 1
   _spreadOnKill: 0

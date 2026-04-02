@@ -29,6 +29,9 @@ public class GameHUD : MonoBehaviour
     [SerializeField] private Transform _skillListContainer;  // VerticalLayoutGroup parent
     [SerializeField] private GameObject _skillEntryPrefab;   // Text prefab for each skill entry
 
+    [Header("Right side: Active click-form skill")]
+    [SerializeField] private Image _activeSkillIcon;
+
     private readonly List<GameObject> _skillEntries = new List<GameObject>();
 
     private void OnEnable()
@@ -39,6 +42,7 @@ public class GameHUD : MonoBehaviour
         GameEvents.OnVictory     += OnGameEnded;
         GameEvents.OnDefeat      += OnGameEnded;
         SkillEvents.OnSkillAdded += OnSkillAdded;
+        SkillEvents.OnClickFormChanged += OnClickFormChanged;
     }
 
     private void OnDisable()
@@ -49,6 +53,7 @@ public class GameHUD : MonoBehaviour
         GameEvents.OnVictory     -= OnGameEnded;
         GameEvents.OnDefeat      -= OnGameEnded;
         SkillEvents.OnSkillAdded -= OnSkillAdded;
+        SkillEvents.OnClickFormChanged -= OnClickFormChanged;
     }
 
     private void Start()
@@ -72,6 +77,15 @@ public class GameHUD : MonoBehaviour
     private void OnGamePaused()  { }
     private void OnGameResumed() { }
     private void OnGameEnded()   { }
+
+    // ── Active click-form skill ─────────────────────────────────────────────
+
+    private void OnClickFormChanged(SkillData skill)
+    {
+        if (_activeSkillIcon == null || skill == null) return;
+        _activeSkillIcon.sprite = skill.Icon;
+        _activeSkillIcon.enabled = skill.Icon != null;
+    }
 
     // ── Skill list ────────────────────────────────────────────────────────────
 
