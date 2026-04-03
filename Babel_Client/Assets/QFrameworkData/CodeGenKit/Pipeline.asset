@@ -20,7 +20,7 @@ MonoBehaviour:
     NameToFullName: []
     BindInfos: []
     ScriptsFolder: Assets/Scripts/Game
-    ClassName: GameUIController
+    ClassName: BuildPoint
     Namespace: Babel
     MainCode: 
     DesignerCode: 

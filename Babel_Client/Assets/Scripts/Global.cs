@@ -13,6 +13,7 @@ namespace Babel
         public static IBindableProperty<int> Exp = new BindableProperty<int>() ;
         public static IBindableProperty<int> Level = new BindableProperty<int>() ;
 
+        public static IBindableProperty<float> CurrentTime = new BindableProperty<float>() ;
 
     }
 }

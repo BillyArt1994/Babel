@@ -246,7 +246,7 @@ GameObject:
   - component: {fileID: 1433800627}
   - component: {fileID: 1433800626}
   m_Layer: 0
-  m_Name: UIGameOverPanel
+  m_Name: UIGamePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -297,12 +297,6 @@ PrefabInstance:
     - target: {fileID: 2995151790391740547, guid: ba982c82b951da943be9e0f5cdb65cbd, type: 3}
       propertyPath: m_Name
       value: UIGamePanel
-      objectReference: {fileID: 0}
-    - target: {fileID: 7992434576240696945, guid: ba982c82b951da943be9e0f5cdb65cbd, type: 3}
-      propertyPath: m_Text
-      value: 'Lv : 1
-
-'
       objectReference: {fileID: 0}
     - target: {fileID: 8393150274257605151, guid: ba982c82b951da943be9e0f5cdb65cbd, type: 3}
       propertyPath: m_Pivot.x

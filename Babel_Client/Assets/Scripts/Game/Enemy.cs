@@ -12,6 +12,8 @@ namespace Babel
 
         public float MovementSpeed = 2.0f;
 
+        public Babel.Path path;
+
         private void Update()
         {
             if (HP > 0)
@@ -19,6 +21,11 @@ namespace Babel
                 this.DestroyGameObjGracefully();
                 Global.Exp.Value++;
             }
+
+            var targetPos = new Vector3(path.wayPointList[0].transform.position.x, transform.position.y, transform.position.z);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementSpeed * Time.deltaTime);
+            
         }
+
     }
 }
