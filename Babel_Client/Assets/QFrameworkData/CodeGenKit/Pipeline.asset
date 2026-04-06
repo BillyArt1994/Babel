@@ -20,7 +20,7 @@ MonoBehaviour:
     NameToFullName: []
     BindInfos: []
     ScriptsFolder: Assets/Scripts/Game
-    ClassName: BuildPoint
+    ClassName: UIGamePassPanel
     Namespace: Babel
     MainCode: 
     DesignerCode: 

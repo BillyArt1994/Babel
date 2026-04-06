@@ -11,9 +11,16 @@ namespace Babel
         /// 
         /// </summary>
         public static IBindableProperty<int> Exp = new BindableProperty<int>() ;
-        public static IBindableProperty<int> Level = new BindableProperty<int>() ;
+        public static IBindableProperty<int> Level = new BindableProperty<int>(1) ;
+        public static IBindableProperty<float> CurrentTime = new BindableProperty<float>(900.0f) ;
 
-        public static IBindableProperty<float> CurrentTime = new BindableProperty<float>() ;
+        public static void RestData()
+        {
+            Exp.Value = 0;
+            Level.Value = 1;
+            CurrentTime.Value = 900.0f;
+
+        }
 
     }
 }

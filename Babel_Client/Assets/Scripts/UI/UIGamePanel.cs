@@ -16,21 +16,22 @@ namespace Babel
             // please add init code here
             Global.Exp.RegisterWithInitValue(exp =>
             {
-                EXPScrollbar.value = exp % 20;
+                var num = exp / 5.0f;
+                EXPScrollbar.size = num - MathF.Truncate(exp / 5.0f);
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
-            Global.Exp.RegisterWithInitValue(level =>
-            {
-                LevelText.text = "Lv:" + level.ToString();
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-            Global.Exp.RegisterWithInitValue(exp =>
-            {
-                Global.Level.Value = (int)Mathf.Floor(Global.Exp.Value / 20.0f);
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+           Global.Exp.RegisterWithInitValue(exp =>
+           {
+               if (exp >= 5) 
+               {
+                   Global.Level.Value++;
+                   Global.Exp.Value -= 5;
+               }
+           }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
             Global.Level.Register(Level =>
             {
+                LevelText.text = "LV:" + (Level).ToString();
                 Time.timeScale = 0;
                 UpgradePanel.Show();
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
@@ -48,6 +49,10 @@ namespace Babel
             ActionKit.OnUpdate.Register(() =>
             {
                 Global.CurrentTime.Value -= Time.deltaTime;
+                if (Global.CurrentTime.Value <= 0)
+                {
+                    UIKit.OpenPanel<UIGamePassPanel>();
+                }
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
