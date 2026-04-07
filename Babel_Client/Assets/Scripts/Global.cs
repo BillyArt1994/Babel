@@ -19,7 +19,6 @@ namespace Babel
             Exp.Value = 0;
             Level.Value = 1;
             CurrentTime.Value = 900.0f;
-
         }
 
     }

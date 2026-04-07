@@ -69,13 +69,5 @@ namespace Babel
                 }
             }
         }
-
-
-        void OnMouseDown()
-        {
-            this.DestroyGameObjGracefully();
-            Global.Exp.Value ++;
-        }
-
     }
 }

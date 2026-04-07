@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using QFramework;
 using System;
+using Unity.VisualScripting;
 
 namespace Babel
 {
@@ -10,9 +11,19 @@ namespace Babel
     }
     public partial class UIGamePanel : UIPanel
     {
+
+        private Canvas _canvas;
+        private RectTransform _panelRectTransform;
+
         protected override void OnInit(IUIData uiData = null)
         {
             mData = uiData as UIGamePanelData ?? new UIGamePanelData();
+
+            _canvas = GetComponentInParent<Canvas>();
+            _panelRectTransform = transform as RectTransform;
+            ChargeRing.gameObject.SetActive(false);
+            ChargeRing_Fill.fillAmount = 0;
+
             // please add init code here
             Global.Exp.RegisterWithInitValue(exp =>
             {
@@ -54,11 +65,17 @@ namespace Babel
                     UIKit.OpenPanel<UIGamePassPanel>();
                 }
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
+
+
+
         }
 
         protected override void OnOpen(IUIData uiData = null)
         {
-
+            InputEvents.OnPointerDown += OnPointerDown;
+            InputEvents.OnPointerHold += OnPointerHold;
+            InputEvents.OnPointerUp += OnPointerUp;
+            InputEvents.OnPointerCancel += OnPointerCancel;
         }
 
         protected override void OnShow()
@@ -73,7 +90,52 @@ namespace Babel
 
         protected override void OnClose()
         {
-
+            InputEvents.OnPointerDown -= OnPointerDown;
+            InputEvents.OnPointerHold -= OnPointerHold;
+            InputEvents.OnPointerUp -= OnPointerUp;
+            InputEvents.OnPointerCancel -= OnPointerCancel;
         }
+        private void OnPointerDown(PointerInputContext context)
+        {
+            ChargeRing.gameObject.SetActive(true);
+            UpdateChargeRingPosition(context.ScreenPosition);
+            ChargeRing_Fill.fillAmount = 0f;
+        }
+
+        private void OnPointerHold(PointerInputContext context)
+        {
+            UpdateChargeRingPosition(context.ScreenPosition);
+            ChargeRing_Fill.fillAmount = context.ChargeRatio;
+        }
+
+        private void OnPointerUp(PointerInputContext context)
+        {
+            ChargeRing.gameObject.SetActive(false);
+            ChargeRing_Fill.fillAmount = 0f;
+        }
+
+        private void OnPointerCancel(PointerInputContext context)
+        {
+            ChargeRing.gameObject.SetActive(false);
+            ChargeRing_Fill.fillAmount = 0f;
+        }
+
+        private void UpdateChargeRingPosition(Vector2 screenPosition)
+        {
+            Camera uiCamera = _canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? _canvas.worldCamera
+                : null;
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _panelRectTransform,
+                screenPosition,
+                uiCamera,
+                out var localPoint))
+            {
+                ChargeRing.anchoredPosition = localPoint;
+            }
+        }
+
+
     }
 }

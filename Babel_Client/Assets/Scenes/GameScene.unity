@@ -122,6 +122,57 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &120796899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 120796900}
+  - component: {fileID: 120796901}
+  m_Layer: 0
+  m_Name: ClickAttackSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &120796900
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120796899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335455501}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &120796901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120796899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48a3e19a005521747b9a48b22eeb6b93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Namespace: Babel
+  ScriptName: ClickAttackSystem
+  ScriptsFolder: Assets/Scripts/Game
+  GeneratePrefab: 0
+  PrefabFolder: Assets/Art/Prefab
+  ArchitectureFullTypeName: 
+  ViewControllerFullTypeName: 
 --- !u!1001 &137170081
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -473,6 +524,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec3b076766e6944c9487e8da3d61061, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &634205353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 634205354}
+  - component: {fileID: 634205355}
+  m_Layer: 0
+  m_Name: InputSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &634205354
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634205353}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335455501}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &634205355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634205353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ba2f8460dd9c7d47844351ce53cf17b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Namespace: Babel
+  ScriptName: InputSystem
+  ScriptsFolder: Assets/Scripts/Game
+  GeneratePrefab: 0
+  PrefabFolder: Assets/Art/Prefab
+  ArchitectureFullTypeName: 
+  ViewControllerFullTypeName: 
+  _maxChargeDuration: 1
+  _blockPointerWhenOverUI: 1
+  _ignoreInputWhenTimeScaleIsZero: 1
+  _cancelChargeWhenFocusLost: 1
 --- !u!1 &693060221
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,6 +631,10 @@ MonoBehaviour:
   PrefabFolder: Assets/Art/Prefab
   ArchitectureFullTypeName: 
   ViewControllerFullTypeName: 
+  enemyWaves:
+  - generateDuration: 0
+    enemyPrefab: {fileID: 1819552786581738308, guid: 58c643e66465287418d28f787369134b, type: 3}
+    currentWaveSeconds: 400
   Enemy: {fileID: 137170083}
 --- !u!1 &706296283
 GameObject:
@@ -539,7 +649,7 @@ GameObject:
   - component: {fileID: 706296284}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1070,6 +1180,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &995629636
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 995629637}
+  - component: {fileID: 995629638}
+  m_Layer: 0
+  m_Name: SkillSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &995629637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995629636}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1335455501}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &995629638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995629636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8ed4d508c6ded94d93e597136fd56ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Namespace: Babel
+  ScriptName: SkillSystem
+  ScriptsFolder: Assets/Scripts/Game
+  GeneratePrefab: 0
+  PrefabFolder: Assets/Art/Prefab
+  ArchitectureFullTypeName: 
+  ViewControllerFullTypeName: 
 --- !u!1001 &1303632778
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1154,6 +1315,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec3b076766e6944c9487e8da3d61061, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1335455500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1335455501}
+  m_Layer: 0
+  m_Name: Managers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1335455501
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335455500}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 634205354}
+  - {fileID: 120796900}
+  - {fileID: 995629637}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1417715727
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1307,17 +1502,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 58c643e66465287418d28f787369134b, type: 3}
---- !u!114 &1455311231 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2196138061323441046, guid: 58c643e66465287418d28f787369134b, type: 3}
-  m_PrefabInstance: {fileID: 1455311230}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68fc02128d6bc274e89a32b98494b44e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1455311232 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4378328256217946724, guid: 58c643e66465287418d28f787369134b, type: 3}
@@ -1406,7 +1590,11 @@ MonoBehaviour:
   PrefabFolder: Assets/Art/Prefab
   ArchitectureFullTypeName: 
   ViewControllerFullTypeName: 
-  Enemy: {fileID: 1455311231}
+  enemyWaves:
+  - generateDuration: 0
+    enemyPrefab: {fileID: 1819552786581738308, guid: 58c643e66465287418d28f787369134b, type: 3}
+    currentWaveSeconds: 400
+  Enemy: {fileID: 2196138061323441046, guid: 58c643e66465287418d28f787369134b, type: 3}
 --- !u!4 &1706980749
 Transform:
   m_ObjectHideFlags: 0
@@ -1920,3 +2108,4 @@ SceneRoots:
   - {fileID: 693060222}
   - {fileID: 1706980749}
   - {fileID: 1984367299}
+  - {fileID: 1335455501}

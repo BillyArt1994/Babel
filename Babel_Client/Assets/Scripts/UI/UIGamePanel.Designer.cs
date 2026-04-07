@@ -5,7 +5,7 @@ using QFramework;
 
 namespace Babel
 {
-	// Generate Id:78536547-017b-4149-8bb4-841af4ef95c8
+	// Generate Id:772a681f-6387-4b62-80b5-2458cfb12a96
 	public partial class UIGamePanel
 	{
 		public const string Name = "UIGamePanel";
@@ -32,6 +32,12 @@ namespace Babel
 		public UnityEngine.UI.Button Card2Btn;
 		[SerializeField]
 		public UnityEngine.UI.Button Card3Btn;
+		[SerializeField]
+		public RectTransform ChargeRing;
+		[SerializeField]
+		public UnityEngine.UI.Image ChargeRing_Background;
+		[SerializeField]
+		public UnityEngine.UI.Image ChargeRing_Fill;
 		
 		private UIGamePanelData mPrivateData = null;
 		
@@ -48,6 +54,9 @@ namespace Babel
 			Card1Btn = null;
 			Card2Btn = null;
 			Card3Btn = null;
+			ChargeRing = null;
+			ChargeRing_Background = null;
+			ChargeRing_Fill = null;
 			
 			mData = null;
 		}
