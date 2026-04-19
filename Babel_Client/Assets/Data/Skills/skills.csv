@@ -1,0 +1,9 @@
+﻿skillId,skillName,description,iconPath,triggerType,cooldown,chargeTime,interval,chance,effectType,damage,damageRatio,radius,dps,duration,statName,statValue,effect2Type,e2Damage,e2DamageRatio,e2Radius,e2Dps,e2Duration,e2StatName,e2StatValue,effect3Type,e3Damage,e3DamageRatio,e3Radius,e3Dps,e3Duration,e3StatName,e3StatValue,level,weight,isStarterSkill,upgradesFrom
+divine_finger,神罚之指,天神之怒降临指尖,Icons/divine_finger,OnClick,1.0,0.5,,,hit_single,50,,,,,,,,,,,,,,,,,,,,,,,1,1.0,true,
+meteor,天降陨石,陨石从天而降,Icons/meteor,OnClick,2.5,1.0,,,hit_aoe,150,,3.0,,,,,,,,,,,,,,,,,,,,,1,1.0,true,
+thunder_auto,天雷,自动降下雷击,Icons/thunder,OnTimer,,,3.0,,hit_single,80,,,,,,,,,,,,,,,,,,,,,,,1,0.8,false,
+aftershock,余震,攻击引发二次爆炸,Icons/aftershock,OnHit,,,,0.3,hit_aoe,,0.3,1.5,,,,,,,,,,,,,,,,,,,,,1,0.7,false,
+plague,瘟疫,击杀传播死亡,Icons/plague,OnKill,,,,1.0,hit_aoe,20,,2.0,,,,,,,,,,,,,,,,,,,,,1,0.6,false,
+rage,狂怒,击杀加速技能冷却,Icons/rage,OnKill,,,,1.0,stat_buff,,,,,5.0,cooldownMult,-0.5,,,,,,,,,,,,,,,,,1,0.6,false,
+meteor_evolved,天降陨石·炎,陨石撞击后留下灼烧地面,Icons/meteor_fire,OnClick,3.0,1.2,,,hit_aoe,200,,3.5,,,,,dot_aoe,,,3.5,30,3.0,,,,,,,,,,,2,0.8,false,meteor
+berserker_pact,狂战契约,以防御换取力量,Icons/berserker,OnKill,,,,1.0,stat_buff,,,,,8.0,damageMult,0.4,stat_buff,,,,,8.0,defenseReduction,0.2,,,,,,,,,1,0.5,false,
