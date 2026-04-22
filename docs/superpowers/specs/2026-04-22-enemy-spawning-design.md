@@ -1,8 +1,8 @@
 # 怪物生成系统设计
 
-> **状态：** 已批准（讨论阶段，待完整设计后更新）
+> **状态：** 已批准
 > **日期：** 2026-04-22
-> **范围：** WaveEvent 数据结构 / CSV 波次时间线 / 3 种生成模式 / 模块化生成位置 / 对象池集成 / WaveScheduler
+> **范围：** WaveEvent 数据结构 / CSV 波次时间线 / 3 种生成模式 / 场景 SpawnPoint 标记 / 敌人移动状态机 / 对象池集成 / WaveScheduler
 > **参考：** Death Must Die 波次系统（多模式 CSV 时间线 + 全局上限 + 对象池）
 
 ## 1. 设计决策摘要
@@ -13,7 +13,8 @@
 | 生成模式 | 3 种：Burst / Maintain / Timed | 简化自 DMD 的 4 种，去掉 Treasure（预算制太复杂）和 Elite（Maintain 够用） |
 | 生成时机 | 固定间隔触发 | 可预测的节奏感更好，随机性放在类型和数量上 |
 | 怪物选择 | 加权随机池 | 不用 EliteChance，Babel 的 5 种敌人是独立类型 |
-| 生成位置 | ISpawnPositionProvider 接口 + ScreenEdgeSpawnProvider 实现 | 模块化可插拔，当前从屏幕边缘生成 |
+| 生成位置 | 场景内 SpawnPoint 标记物 + ISpawnPositionProvider 接口 | 多地图支持，设计师可视化拖拽配置 |
+| 敌人移动 | 状态机（MovingToBuild → Building → MovingToPassage → Climbing → ...） | 支持 buildCharges 多次建造 + 通道爬层 |
 | 同屏上限 | 全局最大 100 只 | Babel 规模比 DMD(300) 小 |
 | 实例管理 | 对象池 Get/Return | 参考 GDD 对象池系统设计 |
 
@@ -69,7 +70,7 @@ startTime,endTime,mode,enemyPool,countMin,countMax,interval,spawnSide
 
 **Maintain 模式特殊规则：**
 - `countMin` 作为目标数量，`countMax` 忽略
-- 追踪方式：每次 Maintain 事件生成的怪物记录其所属 waveEventId，死亡时从计数中移除
+- 追踪方式：每次 Maintain 事件生成的怪物记录其所属 waveEventId，死亡或 buildCharges 耗尽回收时从计数中移除
 - 如果同屏上限已满，Maintain 暂时不补充，等有空间再补
 
 ## 4. 核心数据结构
@@ -106,7 +107,31 @@ public struct PoolEntry
 - 验证必填列、模式名、权重总和
 - 失败时 fail-fast
 
-## 5. 生成位置模块化
+## 5. 生成位置：场景 SpawnPoint 标记
+
+### SpawnPoint 组件
+
+场景中放置空 GameObject 并挂载 `SpawnPoint` 组件，标记出生点位置。
+
+```csharp
+public class SpawnPoint : MonoBehaviour
+{
+    public SpawnSide Side;              // Left / Right（CSV 中引用）
+    public float SpreadRadius = 0.5f;   // 出生点附近的随机散布半径
+}
+```
+
+每张地图场景可以有任意数量的 SpawnPoint，布局由关卡设计师拖拽决定。
+
+**示例场景布局：**
+
+```
+Scene: Map_Desert
+├── Tower
+├── SpawnPoint_Left    ← position=(-12, 0), Side=Left, SpreadRadius=0.5
+├── SpawnPoint_Right   ← position=(12, 0), Side=Right, SpreadRadius=0.5
+└── ...
+```
 
 ### ISpawnPositionProvider 接口
 
@@ -117,14 +142,15 @@ public interface ISpawnPositionProvider
 }
 ```
 
-### ScreenEdgeSpawnProvider（当前实现）
+### SceneSpawnProvider（当前实现）
 
-从屏幕左/右边缘外侧生成。
+启动时扫描场景中所有 SpawnPoint 组件，按 Side 分组缓存。
 
 ```csharp
-public class ScreenEdgeSpawnProvider : ISpawnPositionProvider
+public class SceneSpawnProvider : ISpawnPositionProvider
 {
-    private const float SPAWN_OFFSET = 1.5f;
+    private List<SpawnPoint> _leftPoints;
+    private List<SpawnPoint> _rightPoints;
 
     public Vector2 GetSpawnPosition(SpawnSide side)
     {
@@ -135,19 +161,96 @@ public class ScreenEdgeSpawnProvider : ISpawnPositionProvider
             _ => side
         };
 
-        float screenEdgeX = actualSide == SpawnSide.Left
-            ? GetScreenLeftEdge() - SPAWN_OFFSET
-            : GetScreenRightEdge() + SPAWN_OFFSET;
+        var points = actualSide == SpawnSide.Left ? _leftPoints : _rightPoints;
+        var point = points[Random.Range(0, points.Count)];
 
-        float y = GetGroundY();
-        return new Vector2(screenEdgeX, y);
+        // 在 SpreadRadius 范围内随机散布
+        Vector2 offset = Random.insideUnitCircle * point.SpreadRadius;
+        return (Vector2)point.transform.position + offset;
     }
 }
 ```
 
-WaveScheduler 通过构造函数注入 `ISpawnPositionProvider`，不直接依赖具体实现。
+**多地图支持：** 每张地图场景有自己的 SpawnPoint 布局。SceneSpawnProvider 在场景加载时重新扫描，无需代码修改。
 
-## 6. WaveScheduler（核心调度器）
+## 6. 敌人移动与建造状态机
+
+### 敌人生命周期
+
+敌人携带 `buildCharges`（可建造次数），到达建造点后贡献建造度并消耗 1 次 charge。charge 耗尽则回收到对象池。
+
+```
+出生（buildCharges = N）→ 找当前层空 BuildPoint → 走过去 → 建造 → charges--
+    → charges > 0?
+        → 同层还有空位? → 找下一个 BuildPoint
+        → 同层满了? → 走到通道 → 爬到上层 → 找上层空 BuildPoint
+    → charges == 0? → 回收到对象池
+```
+
+### EnemyMoveState 状态机
+
+```csharp
+public enum EnemyMoveState
+{
+    MovingToBuildPoint,  // 走向目标建造点
+    Building,            // 到达，贡献建造度（可以是瞬间完成）
+    MovingToPassage,     // 当前层满了，走向通道
+    ClimbingPassage,     // 通过通道爬到上一层
+    Finished             // buildCharges 用完，等待回收
+}
+```
+
+**状态转换：**
+
+```
+MovingToBuildPoint ──到达──→ Building ──charges-- ──→ charges > 0?
+    ├── 同层有空位 → MovingToBuildPoint（下一个目标）
+    ├── 同层满了 → MovingToPassage ──到达通道──→ ClimbingPassage ──到达上层──→ MovingToBuildPoint
+    └── charges == 0 → Finished → ObjectPool.Return()
+```
+
+### buildCharges 示例
+
+| 敌人类型 | buildCharges | 说明 |
+|---------|-------------|------|
+| Worker | 1 | 建一个点就消失 |
+| Elite | 1 | 建一个点就消失（但贡献更多建造度） |
+| Engineer | 2 | 能建两个点才消失 |
+| Priest | 1 | 建一个点就消失（但有治疗能力） |
+| Zealot | 1 | 建一个点就消失（但有速度光环） |
+
+### 通道（Passage）场景标记
+
+场景中放置 `Passage` 标记物，连接相邻层。
+
+```csharp
+public class Passage : MonoBehaviour
+{
+    public int FromLayer;    // 从哪层
+    public int ToLayer;      // 到哪层
+    public Transform ExitPoint;  // 到达上层后的出口位置
+}
+```
+
+**场景布局示例：**
+
+```
+Scene: Map_Desert
+├── Tower
+│   ├── Layer1/
+│   │   ├── BuildPoint_1_1 ... BuildPoint_1_10
+│   │   └── Passage_1to2   ← FromLayer=1, ToLayer=2, ExitPoint=Layer2入口
+│   ├── Layer2/
+│   │   ├── BuildPoint_2_1 ... BuildPoint_2_9
+│   │   └── Passage_2to3
+│   └── ...
+├── SpawnPoint_Left
+└── SpawnPoint_Right
+```
+
+敌人到达 Passage 后，位置移动到 ExitPoint，状态切到 `ClimbingPassage`（可播放爬升动画），然后切回 `MovingToBuildPoint` 在新层找目标。
+
+## 7. WaveScheduler（核心调度器）
 
 管理所有 WaveEvent 的生命周期和触发。
 
@@ -156,15 +259,13 @@ public class WaveScheduler
 {
     private List<WaveEvent> _events;
     private ISpawnPositionProvider _positionProvider;
-    private List<ActiveWave> _activeWaves;  // 正在运行的波次
+    private IEnemyPool _pool;
+    private List<ActiveWave> _activeWaves;
 
-    // 每帧调用
     void Update(float elapsedTime, float deltaTime)
     {
-        // 1. 激活到时间的新事件
         StartPendingEvents(elapsedTime);
 
-        // 2. 更新所有活跃波次
         foreach (var wave in _activeWaves)
         {
             wave.Timer -= deltaTime;
@@ -175,7 +276,6 @@ public class WaveScheduler
             }
         }
 
-        // 3. 移除过期波次
         RemoveExpiredWaves(elapsedTime);
     }
 }
@@ -193,13 +293,13 @@ private class ActiveWave
 }
 ```
 
-## 7. 同屏上限与对象池
+## 8. 同屏上限与对象池
 
 **全局上限：** `MAX_ENEMIES = 100`
 
 WaveScheduler 在每次 ProcessWave 时检查当前同屏敌人数，超过上限则跳过本次生成。
 
-**对象池接口（与 GDD 对象池系统对齐）：**
+**对象池接口：**
 
 ```csharp
 public interface IEnemyPool
@@ -209,17 +309,9 @@ public interface IEnemyPool
 }
 ```
 
-WaveScheduler 通过构造函数注入 `IEnemyPool`。
+**预热数量：** Worker×50, Elite×15, Priest×10, Engineer×10, Zealot×15 = 总计 100。
 
-**预热数量：**
-- Worker: 50
-- Elite: 15
-- Priest: 10
-- Engineer: 10
-- Zealot: 15
-- 总计: 100
-
-## 8. 与现有系统的集成
+## 9. 与现有系统的集成
 
 | 方向 | 系统 | 接口 |
 |------|------|------|
@@ -228,30 +320,35 @@ WaveScheduler 通过构造函数注入 `IEnemyPool`。
 | 调用 | 对象池 | `IEnemyPool.Get/Return` |
 | 调用 | ISpawnPositionProvider | `GetSpawnPosition(side)` |
 | 订阅 | EnemyEvents.OnEnemyDied | Maintain 模式递减存活计数 |
+| 订阅 | Enemy.OnChargesExhausted | Maintain 模式递减存活计数（非死亡回收） |
+| 查询 | TowerBuildSystem | 获取当前活跃层、空 BuildPoint、Passage 位置 |
 | 响应 | GameLoopManager 状态 | Paused → 暂停调度，Playing → 恢复 |
 
-## 9. 需要新增的文件
+## 10. 需要新增的文件
 
 | 文件 | 内容 |
 |------|------|
 | `Assets/Data/Waves/waves.csv` | 波次时间线数据 |
-| `Scripts/Spawning/WaveEvent.cs` | WaveEvent + PoolEntry + 枚举 |
+| `Scripts/Spawning/WaveEvent.cs` | WaveEvent + PoolEntry + SpawnMode + SpawnSide 枚举 |
 | `Scripts/Spawning/WaveParser.cs` | CSV 解析器 |
 | `Scripts/Spawning/WaveScheduler.cs` | 核心调度器 |
+| `Scripts/Spawning/SpawnPoint.cs` | 场景出生点标记组件 |
+| `Scripts/Spawning/Passage.cs` | 场景通道标记组件 |
 | `Scripts/Spawning/ISpawnPositionProvider.cs` | 位置策略接口 |
-| `Scripts/Spawning/ScreenEdgeSpawnProvider.cs` | 屏幕边缘位置实现 |
+| `Scripts/Spawning/SceneSpawnProvider.cs` | 场景 SpawnPoint 扫描实现 |
 | `Scripts/Spawning/IEnemyPool.cs` | 对象池接口 |
 
-## 10. 需要修改的文件
+## 11. 需要修改的文件
 
 | 文件 | 变更 |
 |------|------|
-| `Scripts/Game/EnemyGenerator.cs` | 替换为 WaveScheduler 的 MonoBehaviour 宿主，或直接重写 |
+| `Scripts/Game/EnemyGenerator.cs` | 替换为 WaveScheduler 的 MonoBehaviour 宿主 |
+| `Scripts/Game/Enemy.cs` | 添加 EnemyMoveState 状态机 + buildCharges + Passage 爬层逻辑 |
 
-## 11. 不在本次范围内
+## 12. 不在本次范围内
 
 - 对象池的具体实现（预热、扩容逻辑）— 单独 spec
-- EnemyData ScriptableObject 定义 — 单独 spec
+- EnemyData ScriptableObject 定义（5 种敌人的属性配表）— 单独 spec
 - 敌人特殊能力（Priest 治疗、Zealot 光环）— 敌人 AI 系统
-- 塔建造系统集成 — 已有 GDD
-- 难度缩放 / Act 分级 — 未来迭代
+- TowerBuildSystem 建造逻辑细节 — 已有 GDD
+- 难度缩放 / 多难度配置 / Act 分级 — 未来迭代
