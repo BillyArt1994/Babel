@@ -15,6 +15,8 @@
 | 怪物选择 | 加权随机池 | 不用 EliteChance，Babel 的 5 种敌人是独立类型 |
 | 生成位置 | 场景内 SpawnPoint 标记物 + ISpawnPositionProvider 接口 | 多地图支持，设计师可视化拖拽配置 |
 | 敌人移动 | 状态机（MovingToBuild → Building → MovingToPassage → Climbing → ...） | 支持 buildCharges 多次建造 + 通道爬层 |
+| 层完成检测 | 事件驱动（BuildPoint 建完时通知 Path 递增 completedCount） | 替代每帧遍历，O(1) 查询 |
+| 多层导航 | Enemy 持有 currentPath 引用，Path 为链表结构 | 保留现有设计，敌人不需要层编号 |
 | 同屏上限 | 全局最大 100 只 | Babel 规模比 DMD(300) 小 |
 | 实例管理 | 对象池 Get/Return | 参考 GDD 对象池系统设计 |
 
@@ -208,6 +210,42 @@ MovingToBuildPoint ──到达──→ Building ──charges-- ──→ char
     ├── 同层满了 → MovingToPassage ──到达通道──→ ClimbingPassage ──到达上层──→ MovingToBuildPoint
     └── charges == 0 → Finished → ObjectPool.Return()
 ```
+
+### 多层导航
+
+Enemy 持有 `currentPath` 引用（`Babel.Path` 类型），Path 是链表结构：
+
+```
+Layer1.Path → nextLayerPath → Layer2.Path → nextLayerPath → Layer3.Path → ... → null（塔顶）
+```
+
+- 出生时注入 `currentPath = Layer1的Path`
+- 当前层建完后：`currentPath = currentPath.nextLayerPath` 切到下一层
+- `nextLayerPath == null` 表示塔顶已到 → Game Over
+
+Enemy 不需要层编号，通过 currentPath 可以直接访问：
+- `currentPath.wayPointList` — 当前层的 BuildPoint 列表
+- `currentPath.IsCompleted` — 当前层是否建完
+- `currentPath.getGatewayIndex()` — 通道位置
+- `currentPath.nextLayerPath` — 下一层
+
+### 层完成检测（事件驱动）
+
+替代当前每帧遍历所有 BuildPoint 的方式：
+
+```
+BuildPoint 建造完成 → 调用 path.OnBuildPointCompleted()
+    ↓
+Path._completedCount++ → 如果 _completedCount == wayPointList.Length → IsCompleted = true
+    ↓
+Enemy 每帧读 currentPath.IsCompleted（O(1) bool 查询）
+```
+
+Path 新增字段：
+- `private int _completedCount` — 已完成的 BuildPoint 数量
+- `public bool IsCompleted` — 当前层是否全部建完（`_completedCount >= wayPointList.Length`）
+
+BuildPoint 建完时调用 `path.OnBuildPointCompleted()` 递增计数，而不是每只敌人每帧遍历。
 
 ### buildCharges 示例
 
