@@ -1,12 +1,2 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public abstract class SkillTrigger 
-{
-    public virtual void Gain() { }
-    public virtual void Lose() { }
-    public virtual void Tick(float deltaTime) { }
-    public virtual bool Force() => false;
-   // public virtual void Repeat(in TriggerContext context) => Fire(context);
-}
+// 旧的 SkillTrigger 抽象类已废弃，由 TriggerBase.cs 替代。
+// 保留此文件避免 Unity .meta 引用断裂，后续清理时删除。
