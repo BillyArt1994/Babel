@@ -126,7 +126,30 @@ _ability = data.AbilityType switch
 _ability?.Init(this, data);
 ```
 
-## 6. HealAura 实现
+## 6. 友军范围检测方式
+
+光环能力使用 `Physics2D.OverlapCircleNonAlloc` + `LayerMask` 检测范围内友军。
+
+**前置要求：** Unity 项目中配置 "Enemy" Layer，所有敌人 Prefab 的 GameObject Layer 设为 "Enemy"。
+
+```csharp
+private static readonly Collider2D[] _auraBuffer = new Collider2D[64];
+private static readonly int EnemyLayerMask = LayerMask.GetMask("Enemy");
+
+// 检测范围内友军
+int count = Physics2D.OverlapCircleNonAlloc(owner.Position, radius, _auraBuffer, EnemyLayerMask);
+for (int i = 0; i < count; i++)
+{
+    if (_auraBuffer[i].TryGetComponent<Enemy>(out var enemy) && enemy != _owner && enemy.IsAlive)
+    {
+        // 治疗 / 加速
+    }
+}
+```
+
+**优势：** NonAlloc 零 GC，LayerMask 底层 C++ 过滤非 Enemy 物体，与 DamageEffect 的 Physics2D 检测方式一致。
+
+## 7. HealAura 实现
 
 **行为：** 每隔 `abilityCooldown` 秒，对半径 `abilityRadius` 内的友方敌人恢复 `abilityValue` 点 HP。
 
@@ -138,6 +161,9 @@ public class HealAura : IEnemyAbility
     private float _healAmount;
     private float _cooldown;
     private float _cdTimer;
+
+    private static readonly Collider2D[] _buffer = new Collider2D[64];
+    private static readonly int EnemyLayerMask = LayerMask.GetMask("Enemy");
 
     public void Init(Enemy owner, EnemyData data)
     {
@@ -154,20 +180,25 @@ public class HealAura : IEnemyAbility
         if (_cdTimer > 0) return;
         _cdTimer = _cooldown;
 
-        // Physics2D.OverlapCircleAll 找友军
-        // 对每个 IDamageable（且 IsAlive）恢复 HP
-        // 不治疗自己
+        int count = Physics2D.OverlapCircleNonAlloc(_owner.Position, _radius, _buffer, EnemyLayerMask);
+        for (int i = 0; i < count; i++)
+        {
+            if (_buffer[i].TryGetComponent<Enemy>(out var enemy) && enemy != _owner && enemy.IsAlive)
+            {
+                enemy.Heal(_healAmount);
+            }
+        }
     }
 
     public void OnRemoved() { }
 }
 ```
 
-**注意：** IDamageable 当前只有 TakeDamage（扣血），需要在 Enemy 上加一个 `Heal(float amount)` 方法，或者直接 `enemy.HP += amount`。
+**注意：** Enemy 需新增 `Heal(float amount)` 方法：`HP = Mathf.Min(HP + amount, maxHp)`。
 
-## 7. SpeedAura 实现
+## 8. SpeedAura 实现
 
-**行为：** 存活时持续影响半径 `abilityRadius` 内友方敌人的移动速度，乘以 `abilityValue` 倍率。
+**行为：** 存活时每 0.5 秒扫描半径 `abilityRadius` 内友方敌人，设置速度倍率 `abilityValue`。
 
 ```csharp
 public class SpeedAura : IEnemyAbility
@@ -177,6 +208,9 @@ public class SpeedAura : IEnemyAbility
     private float _speedMultiplier;
     private float _checkTimer;
     private const float CHECK_INTERVAL = 0.5f;
+
+    private static readonly Collider2D[] _buffer = new Collider2D[64];
+    private static readonly int EnemyLayerMask = LayerMask.GetMask("Enemy");
 
     public void Init(Enemy owner, EnemyData data)
     {
@@ -191,21 +225,26 @@ public class SpeedAura : IEnemyAbility
         if (_checkTimer > 0) return;
         _checkTimer = CHECK_INTERVAL;
 
-        // Physics2D.OverlapCircleAll 找友军
-        // 标记为被加速（设置 speedBuff 标记）
+        int count = Physics2D.OverlapCircleNonAlloc(_owner.Position, _radius, _buffer, EnemyLayerMask);
+        for (int i = 0; i < count; i++)
+        {
+            if (_buffer[i].TryGetComponent<Enemy>(out var enemy) && enemy != _owner && enemy.IsAlive)
+            {
+                enemy.ApplySpeedBuff(_speedMultiplier);
+            }
+        }
     }
 
-    public void OnRemoved()
-    {
-        // 清除所有被自己加速的友军标记
-    }
+    public void OnRemoved() { }
 }
 ```
 
 **速度光环实现注意：**
 - Enemy 需要一个 `SpeedMultiplier` 属性，实际移动速度 = `MoveSpeed * SpeedMultiplier`
-- 多个 Zealot 光环不叠加（取最大值），一个 Zealot 死后其他 Zealot 的光环仍然生效
-- 简单做法：每次检查时重新计算受影响的敌人，不维护"谁加速了谁"的状态
+- `ApplySpeedBuff(float mult)` 设置 SpeedMultiplier，每 0.5 秒刷新
+- Enemy.Update 中在移动前重置 `SpeedMultiplier = 1.0f`，光环 Tick 再设回倍率值
+- 这样 Zealot 死后，下一个 0.5 秒周期友军的 SpeedMultiplier 自然回到 1.0
+- 多个 Zealot 光环取最大值：`SpeedMultiplier = Mathf.Max(SpeedMultiplier, mult)`
 
 ## 8. Enemy.Init 集成
 
