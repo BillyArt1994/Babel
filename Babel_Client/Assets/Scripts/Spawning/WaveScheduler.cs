@@ -145,7 +145,7 @@ namespace Babel
         private void SpawnOneEnemy(ActiveWave wave)
         {
             string enemyId = PickFromPool(wave.Event.EnemyPool);
-            Vector2 pos = _positionProvider.GetSpawnPosition(wave.Event.Side);
+            Vector2 pos = _positionProvider.GetSpawnPosition(wave.Event.SpawnPointId);
             GameObject go = _pool.Get(enemyId, pos);
 
             if (go == null) return;

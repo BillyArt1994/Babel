@@ -4,6 +4,6 @@ namespace Babel
 {
     public interface ISpawnPositionProvider
     {
-        Vector2 GetSpawnPosition(SpawnSide side);
+        Vector2 GetSpawnPosition(string spawnPointId);
     }
 }

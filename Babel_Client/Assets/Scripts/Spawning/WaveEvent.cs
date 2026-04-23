@@ -3,7 +3,6 @@ using System.Collections.Generic;
 namespace Babel
 {
     public enum SpawnMode { Burst, Maintain, Timed }
-    public enum SpawnSide { Left, Right, Both, Random }
 
     public struct PoolEntry
     {
@@ -20,12 +19,12 @@ namespace Babel
     public class WaveEvent
     {
         public float StartTime;
-        public float EndTime;           // 0 = no end (until game ends)
+        public float EndTime;
         public SpawnMode Mode;
         public List<PoolEntry> EnemyPool = new();
         public int CountMin;
         public int CountMax;
         public float Interval;
-        public SpawnSide Side;
+        public string SpawnPointId = "default";
     }
 }

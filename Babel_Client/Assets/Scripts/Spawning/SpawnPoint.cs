@@ -4,18 +4,20 @@ namespace Babel
 {
     public class SpawnPoint : MonoBehaviour
     {
-        [Tooltip("此出生点所属的方向（Left/Right），CSV 中 spawnSide 引用")]
-        public SpawnSide Side;
+        [Tooltip("出生点 ID，CSV 中 spawnPointId 引用此值")]
+        public string Id = "default";
 
-        [Tooltip("出生点附近的随机散布半径")]
+        [Tooltip("出生点 X 轴随机散布宽度")]
         [Min(0f)]
-        public float SpreadRadius = 0.5f;
+        public float SpreadWidth = 1.0f;
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Side == SpawnSide.Left ? Color.blue : Color.green;
-            Gizmos.DrawWireSphere(transform.position, SpreadRadius);
-            Gizmos.DrawIcon(transform.position, "d_Animation.Play", true);
+            Gizmos.color = Color.cyan;
+            var pos = transform.position;
+            var halfWidth = SpreadWidth / 2f;
+            Gizmos.DrawLine(pos + Vector3.left * halfWidth, pos + Vector3.right * halfWidth);
+            Gizmos.DrawWireSphere(pos, 0.2f);
         }
     }
 }

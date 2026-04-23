@@ -25,7 +25,7 @@ namespace Babel
             for (int i = 0; i < header.Length; i++)
                 colMap[header[i].Trim().ToLower()] = i;
 
-            string[] required = { "starttime", "endtime", "mode", "enemypool", "countmin", "countmax", "interval", "spawnside" };
+            string[] required = { "starttime", "endtime", "mode", "enemypool", "countmin", "countmax", "interval", "spawnpointid" };
             foreach (var col in required)
             {
                 if (!colMap.ContainsKey(col))
@@ -48,7 +48,7 @@ namespace Babel
                         CountMin = int.Parse(fields[colMap["countmin"]].Trim()),
                         CountMax = int.Parse(fields[colMap["countmax"]].Trim()),
                         Interval = ParseFloat(fields[colMap["interval"]]),
-                        Side = ParseSide(fields[colMap["spawnside"]].Trim())
+                        SpawnPointId = fields[colMap["spawnpointid"]].Trim()
                     };
                     results.Add(evt);
                 }
@@ -74,18 +74,6 @@ namespace Babel
                 "Maintain" => SpawnMode.Maintain,
                 "Timed" => SpawnMode.Timed,
                 _ => throw new FormatException($"Unknown spawn mode: '{value}'")
-            };
-        }
-
-        private static SpawnSide ParseSide(string value)
-        {
-            return value switch
-            {
-                "Left" => SpawnSide.Left,
-                "Right" => SpawnSide.Right,
-                "Both" => SpawnSide.Both,
-                "Random" => SpawnSide.Random,
-                _ => throw new FormatException($"Unknown spawn side: '{value}'")
             };
         }
 
