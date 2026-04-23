@@ -6,7 +6,7 @@ namespace Babel
     public partial class EnemyGenerator : ViewController
     {
         [SerializeField] private TextAsset wavesCSV;
-        [SerializeField] private Babel.Path startPath;
+        [SerializeField] private TowerManager towerManager;
 
         private WaveScheduler _scheduler;
         private SceneSpawnProvider _spawnProvider;
@@ -19,9 +19,9 @@ namespace Babel
                 return;
             }
 
-            if (startPath == null)
+            if (towerManager == null)
             {
-                Debug.LogWarning("[BABEL][EnemyGenerator] No start path assigned");
+                Debug.LogWarning("[BABEL][EnemyGenerator] No TowerManager assigned");
                 return;
             }
 
@@ -33,7 +33,7 @@ namespace Babel
             Debug.Log($"[BABEL][EnemyGenerator] Loaded {events.Count} wave events");
             // WaveScheduler instantiation requires IEnemyPool implementation.
             // Uncomment when object pool system is ready:
-            // _scheduler = new WaveScheduler(events, _spawnProvider, pool, startPath);
+            // _scheduler = new WaveScheduler(events, _spawnProvider, pool, towerManager.StartPath);
         }
 
         private void Update()
