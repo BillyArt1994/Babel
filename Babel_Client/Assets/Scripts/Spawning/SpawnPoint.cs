@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Babel
 {
@@ -18,6 +21,14 @@ namespace Babel
             var halfWidth = SpreadWidth / 2f;
             Gizmos.DrawLine(pos + Vector3.left * halfWidth, pos + Vector3.right * halfWidth);
             Gizmos.DrawWireSphere(pos, 0.2f);
+
+#if UNITY_EDITOR
+            var style = new GUIStyle();
+            style.normal.textColor = Color.cyan;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.MiddleCenter;
+            Handles.Label(pos + Vector3.up * 0.5f, Id, style);
+#endif
         }
     }
 }
