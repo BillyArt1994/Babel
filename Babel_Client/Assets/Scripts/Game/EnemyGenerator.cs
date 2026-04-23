@@ -1,63 +1,52 @@
 using UnityEngine;
 using QFramework;
-using System;
-using System.Collections.Generic;
 
 namespace Babel
 {
-    [Serializable]
-    public class EnemyWave
-    {
-        public float generateDuration  =1;
-        public GameObject enemyPrefab;
-        public int currentWaveSeconds = 10;
-    }
-
     public partial class EnemyGenerator : ViewController
     {
-        private float currentGenerateSecontds = 0f;
-        private float currentWaveSeconds = 0f;
-        [SerializeField]
-        public List<EnemyWave> enemyWaves = new List<EnemyWave>();
-        private Queue<EnemyWave> enemyWaveQueue = new Queue<EnemyWave>();
+        [SerializeField] private TextAsset wavesCSV;
+        [SerializeField] private Babel.Path startPath;
+
+        private WaveScheduler _scheduler;
+        private SceneSpawnProvider _spawnProvider;
 
         private void Start()
         {
-            foreach (var enemyWave in enemyWaves)
+            if (wavesCSV == null)
             {
-                enemyWaveQueue.Enqueue(enemyWave);
+                Debug.LogWarning("[BABEL][EnemyGenerator] No waves CSV assigned");
+                return;
             }
+
+            if (startPath == null)
+            {
+                Debug.LogWarning("[BABEL][EnemyGenerator] No start path assigned");
+                return;
+            }
+
+            var events = WaveParser.Parse(wavesCSV.text);
+
+            _spawnProvider = new SceneSpawnProvider();
+            _spawnProvider.ScanScene();
+
+            Debug.Log($"[BABEL][EnemyGenerator] Loaded {events.Count} wave events");
+            // WaveScheduler instantiation requires IEnemyPool implementation.
+            // Uncomment when object pool system is ready:
+            // _scheduler = new WaveScheduler(events, _spawnProvider, pool, startPath);
         }
 
-        private EnemyWave currentWave = null;
-
-        void Update()
+        private void Update()
         {
-            if (currentWave == null)
-            {
-                if (enemyWaveQueue.Count > 0)
-                {
-                    currentWave = enemyWaveQueue.Dequeue();
-                    currentGenerateSecontds = 0;
-                    currentWaveSeconds = 0;
-                }
-            }
+            if (_scheduler == null) return;
 
-            if (currentWave != null)
-            {
-                currentGenerateSecontds += Time.deltaTime;
-                currentWaveSeconds += Time.deltaTime;
+            float elapsedTime = 900f - Global.CurrentTime.Value;
+            _scheduler.Update(elapsedTime, Time.deltaTime);
+        }
 
-            }
-
-            //currentSecontds += Time.deltaTime;
-            //if (currentSecontds > 1f)
-            //{
-            //    currentSecontds = 0;
-            //    Enemy.Instantiate()
-            //    .Position(transform.position)
-            //    .Show();
-            //}
+        private void OnDestroy()
+        {
+            _scheduler?.Dispose();
         }
     }
 }
