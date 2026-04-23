@@ -1,0 +1,8 @@
+startTime,endTime,mode,enemyPool,countMin,countMax,interval,spawnSide
+0,120,Timed,worker:1.0,1,2,4,Both
+120,300,Timed,worker:0.7|elite:0.3,2,3,3.5,Both
+120,0,Maintain,elite:1.0,2,2,5,Random
+300,480,Timed,worker:0.5|priest:0.2|engineer:0.3,2,3,3,Both
+480,720,Timed,worker:0.3|elite:0.3|zealot:0.4,3,4,2.5,Both
+720,870,Timed,worker:0.2|elite:0.3|priest:0.2|zealot:0.3,4,6,2,Both
+870,900,Burst,elite:0.5|zealot:0.5,6,8,0,Both
