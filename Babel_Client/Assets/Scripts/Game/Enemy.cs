@@ -27,11 +27,17 @@ namespace Babel
         private int _targetBuildPointIndex = -1;
         private Transform _passageTarget;
 
+        private IEnemyAbility _ability;
+        private EnemyData _data;
+        private float _speedBuffTimer;
+        private float _speedBuffMult = 1.0f;
+
         public static event Action<int> OnChargesExhausted;
 
         // IDamageable
         public Vector2 Position => (Vector2)transform.position;
         public bool IsAlive => HP > 0;
+        public float EffectiveSpeed => MovementSpeed * _speedBuffMult;
 
         public void TakeDamage(float damage, bool isCrit)
         {
@@ -39,14 +45,42 @@ namespace Babel
             HP -= damage;
         }
 
-        public void Init(Babel.Path startPath, int charges, int eventId)
+        public void Heal(float amount)
         {
+            if (!IsAlive) return;
+            HP += amount;
+        }
+
+        public void ApplySpeedBuff(float mult, float duration)
+        {
+            _speedBuffMult = Mathf.Max(_speedBuffMult, mult);
+            _speedBuffTimer = Mathf.Max(_speedBuffTimer, duration);
+        }
+
+        public void Init(Babel.Path startPath, EnemyData data, int eventId)
+        {
+            _data = data;
+            HP = data.Hp;
+            MovementSpeed = data.MoveSpeed;
+            buildAbility = data.BuildContribution;
+            buildCharges = data.BuildCharges;
             currentPath = startPath;
-            buildCharges = charges;
             waveEventId = eventId;
             _moveState = EnemyMoveState.MovingToBuildPoint;
             _targetBuildPointIndex = -1;
+            _speedBuffTimer = 0;
+            _speedBuffMult = 1.0f;
             FindNextTarget();
+
+            // Ability
+            _ability?.OnRemoved();
+            _ability = data.AbilityType switch
+            {
+                "heal_aura" => new HealAura(),
+                "speed_aura" => new SpeedAura(),
+                _ => null
+            };
+            _ability?.Init(this, data);
         }
 
         private void Update()
@@ -58,9 +92,21 @@ namespace Babel
                 {
                     OnChargesExhausted?.Invoke(waveEventId);
                 }
+                _ability?.OnRemoved();
+                _ability = null;
                 this.DestroyGameObjGracefully();
-                Global.Exp.Value++;
+                Global.Exp.Value += _data != null ? _data.ExpReward : 1;
                 return;
+            }
+
+            // Ability tick
+            _ability?.Tick(Time.deltaTime);
+
+            // Speed buff tick
+            if (_speedBuffTimer > 0)
+            {
+                _speedBuffTimer -= Time.deltaTime;
+                if (_speedBuffTimer <= 0) _speedBuffMult = 1.0f;
             }
 
             switch (_moveState)
@@ -96,7 +142,7 @@ namespace Babel
 
             var target = currentPath.wayPointList[_targetBuildPointIndex];
             var targetPos = new Vector3(target.transform.position.x, target.transform.position.y - 0.5f, transform.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
 
             if ((transform.position - targetPos).magnitude <= 0.1f)
             {
@@ -157,7 +203,7 @@ namespace Babel
             if (_passageTarget == null) return;
 
             var targetPos = new Vector3(_passageTarget.position.x, transform.position.y, transform.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
 
             if ((transform.position - targetPos).magnitude <= 0.1f)
             {
@@ -178,6 +224,8 @@ namespace Babel
             {
                 OnChargesExhausted?.Invoke(waveEventId);
             }
+            _ability?.OnRemoved();
+            _ability = null;
             this.DestroyGameObjGracefully();
         }
 

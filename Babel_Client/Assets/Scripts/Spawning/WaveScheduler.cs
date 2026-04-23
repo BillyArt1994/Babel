@@ -145,6 +145,13 @@ namespace Babel
         private void SpawnOneEnemy(ActiveWave wave)
         {
             string enemyId = PickFromPool(wave.Event.EnemyPool);
+            EnemyData data = EnemyDatabase.GetById(enemyId);
+            if (data == null)
+            {
+                Debug.LogWarning($"[BABEL][WaveScheduler] Unknown enemy type: '{enemyId}'");
+                return;
+            }
+
             Vector2 pos = _positionProvider.GetSpawnPosition(wave.Event.SpawnPointId);
             GameObject go = _pool.Get(enemyId, pos);
 
@@ -153,7 +160,7 @@ namespace Babel
             var enemy = go.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.Init(_startPath, 1, wave.EventIndex);
+                enemy.Init(_startPath, data, wave.EventIndex);
             }
         }
 
