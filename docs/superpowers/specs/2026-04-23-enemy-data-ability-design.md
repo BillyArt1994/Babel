@@ -239,12 +239,38 @@ public class SpeedAura : IEnemyAbility
 }
 ```
 
-**速度光环实现注意：**
-- Enemy 需要一个 `SpeedMultiplier` 属性，实际移动速度 = `MoveSpeed * SpeedMultiplier`
-- `ApplySpeedBuff(float mult)` 设置 SpeedMultiplier，每 0.5 秒刷新
-- Enemy.Update 中在移动前重置 `SpeedMultiplier = 1.0f`，光环 Tick 再设回倍率值
-- 这样 Zealot 死后，下一个 0.5 秒周期友军的 SpeedMultiplier 自然回到 1.0
-- 多个 Zealot 光环取最大值：`SpeedMultiplier = Mathf.Max(SpeedMultiplier, mult)`
+**速度 Buff 机制（Buff 栈模式）：**
+
+光环每 0.5 秒给范围内友军施加一个 **0.6 秒的短时限 Buff**。友军走出范围或 Zealot 死亡后，Buff 自然过期，加速消失。
+
+Enemy 上用 2 个字段实现（当前只有速度 Buff 一种，YAGNI 不做通用容器）：
+
+```csharp
+// Enemy 新增
+private float _speedBuffTimer;
+private float _speedBuffMult = 1.0f;
+
+public float EffectiveSpeed => MoveSpeed * _speedBuffMult;
+
+public void ApplySpeedBuff(float mult, float duration)
+{
+    _speedBuffMult = Mathf.Max(_speedBuffMult, mult);   // 多光环取最大
+    _speedBuffTimer = Mathf.Max(_speedBuffTimer, duration); // 取最长时间
+}
+
+void TickBuffs(float dt)
+{
+    if (_speedBuffTimer > 0)
+    {
+        _speedBuffTimer -= dt;
+        if (_speedBuffTimer <= 0) _speedBuffMult = 1.0f; // 过期恢复
+    }
+}
+```
+
+SpeedAura 调用：`enemy.ApplySpeedBuff(1.5f, 0.6f)`（0.5 秒扫描间隔 + 0.6 秒 Buff 时限 = 范围内永不过期，离开后 0.6 秒消失）。
+
+移动时使用 `EffectiveSpeed` 而非 `MoveSpeed`。未来需要更多 Buff 类型时再提取为通用容器。
 
 ## 8. Enemy.Init 集成
 
