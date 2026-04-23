@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine;
-
 
 namespace Babel
 {
@@ -8,50 +6,52 @@ namespace Babel
     {
         public BuildPoint[] wayPointList;
         public Babel.Path nextLayerPath;
-        // Start is called before the first frame update
+
+        private int _completedCount;
+
+        public bool IsCompleted => _completedCount >= wayPointList.Length;
+
+        public void OnBuildPointCompleted()
+        {
+            _completedCount++;
+        }
+
+        public int GetGatewayIndex()
+        {
+            for (int i = 0; i < wayPointList.Length; i++)
+            {
+                if (wayPointList[i].isGateway)
+                    return i;
+            }
+            return 0;
+        }
+
+        public int FindNearestEmptyBuildPoint(Vector3 fromPosition)
+        {
+            int bestIndex = -1;
+            float bestDistance = float.MaxValue;
+            for (int i = 0; i < wayPointList.Length; i++)
+            {
+                if (wayPointList[i].IsBuildCompleted) continue;
+                if (wayPointList[i].IsBilding) continue;
+                float dist = Vector3.Distance(wayPointList[i].transform.position, fromPosition);
+                if (dist < bestDistance)
+                {
+                    bestDistance = dist;
+                    bestIndex = i;
+                }
+            }
+            return bestIndex;
+        }
 
         private void OnDrawGizmos()
         {
-            if (wayPointList.Length > 0)
+            if (wayPointList == null || wayPointList.Length == 0) return;
+            for (int i = 0; i < wayPointList.Length - 1; i++)
             {
-                for (int i = 0; i < wayPointList.Length; i++)
-                {
-                    if (i < wayPointList.Length - 1)
-                    {
-                        Gizmos.color = Color.gray;
-                        Gizmos.DrawLine(wayPointList[i].transform.position, wayPointList[i + 1].transform.position);
-                    }
-                }
+                Gizmos.color = Color.gray;
+                Gizmos.DrawLine(wayPointList[i].transform.position, wayPointList[i + 1].transform.position);
             }
-        }
-
-        public bool IsCurrentLayerBuildCompleted()
-        {
-            bool isCurrentLayerBuildCompleted = true;
-            for (int i = 0; i < wayPointList.Length; i++)
-            {
-                if (wayPointList[i].IsBuildCompleted == false)
-                {
-                    isCurrentLayerBuildCompleted = false;
-                    break;
-                }
-            }
-            return isCurrentLayerBuildCompleted;
-        }
-
-        public int getGatewayIndex()
-        {
-            var index = 0;
-            for (int i = 0;i< wayPointList.Length; i++)
-            {
-                if (wayPointList[i].isGateway == true)
-                {
-                    index = i; break;
-                }
-            }
-
-            return index;
         }
     }
 }
-
