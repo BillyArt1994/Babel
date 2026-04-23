@@ -1,0 +1,293 @@
+# 敌人数据层 + 能力系统设计
+
+> **状态：** 已批准
+> **日期：** 2026-04-23
+> **范围：** EnemyData CSV 定义 / EnemyParser / EnemyDatabase / IEnemyAbility 接口 / HealAura + SpeedAura 实现 / Enemy.Init 集成
+> **参考：** Death Must Die（CSV 单一数据源 + 运行时动态挂载能力）
+
+## 1. 设计决策摘要
+
+| 决策点 | 结论 | 理由 |
+|--------|------|------|
+| 数据存储 | CSV（enemies.csv） | 与 skills.csv / waves.csv 一致，数据驱动 |
+| 属性列表 | 8 基础属性 + 4 能力属性 | 覆盖 5 种敌人需求，不过度设计 |
+| 敌人能力架构 | 独立 IEnemyAbility 接口 | 敌人能力（辅助/增强）与玩家技能（进攻）职责不同，不混用 |
+| 能力创建 | CSV 配置 abilityType + switch-case 创建 | 只有 2 种能力，不需要工厂/数据库 |
+| 能力生命周期 | 只要敌人活着就生效，与移动状态无关 | 简单清晰，Priest 边走边治疗，Zealot 边走边加速 |
+| 能力冷却 | 各实现自行管理 CD | HealAura 有 CD，SpeedAura 无 CD（被动光环） |
+| 碰撞半径 | 不放 EnemyData，在 Prefab Collider2D 上配 | 运行时由物理系统读取 |
+
+## 2. enemies.csv 格式
+
+**文件路径：** `Assets/Data/Enemies/enemies.csv`
+
+```csv
+enemyId,enemyName,hp,moveSpeed,buildContribution,buildCharges,expReward,prefab,abilityType,abilityRadius,abilityValue,abilityCooldown
+worker,工人,30,2.0,25,1,1,Enemies/Worker,,,,
+elite,精英,120,3.0,25,1,5,Enemies/Elite,,,,
+priest,祭司,60,1.5,25,1,3,Enemies/Priest,heal_aura,3.0,10,2.0
+engineer,工程师,60,2.0,50,2,3,Enemies/Engineer,,,,
+zealot,狂信者,20,4.5,25,1,2,Enemies/Zealot,speed_aura,4.0,1.5,0
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `enemyId` | string | 唯一标识，waves.csv 的 enemyPool 引用此 ID |
+| `enemyName` | string | 显示名称 |
+| `hp` | float | 生命值 |
+| `moveSpeed` | float | 移动速度（Unity 单位/秒） |
+| `buildContribution` | int | 每次到达 BuildPoint 贡献的建造量 |
+| `buildCharges` | int | 可建造次数（耗尽后回收） |
+| `expReward` | int | 击杀奖励经验值 |
+| `prefab` | string | Prefab 的 Resources 路径 |
+| `abilityType` | string | 能力类型（空=无，heal_aura/speed_aura） |
+| `abilityRadius` | float | 能力作用半径 |
+| `abilityValue` | float | 能力数值（治疗量/速度倍率） |
+| `abilityCooldown` | float | 能力冷却时间（秒），0=无冷却 |
+
+## 3. EnemyData 数据结构
+
+```csharp
+public class EnemyData
+{
+    public string EnemyId = "";
+    public string EnemyName = "";
+    public float Hp;
+    public float MoveSpeed;
+    public int BuildContribution;
+    public int BuildCharges;
+    public int ExpReward;
+    public string Prefab = "";
+
+    // 能力
+    public string AbilityType = "";
+    public float AbilityRadius;
+    public float AbilityValue;
+    public float AbilityCooldown;
+}
+```
+
+## 4. EnemyParser + EnemyDatabase
+
+### EnemyParser
+
+静态 CSV 解析器，与 SkillParser / WaveParser 同风格：
+- 解析 enemies.csv 为 `List<EnemyData>`
+- BOM 处理、列名映射、类型转换
+- 必填列验证：enemyId, enemyName, hp, moveSpeed, buildContribution, buildCharges, expReward, prefab
+- 能力列可选（空=无能力）
+
+### EnemyDatabase
+
+静态数据库，启动时加载：
+
+```csharp
+public static class EnemyDatabase
+{
+    private static Dictionary<string, EnemyData> _byId;
+
+    public static void Init(string csvText);
+    public static EnemyData GetById(string enemyId);
+    public static IReadOnlyList<EnemyData> GetAll();
+}
+```
+
+WaveScheduler 在 SpawnOneEnemy 时通过 `EnemyDatabase.GetById(enemyId)` 获取敌人配置。
+
+## 5. IEnemyAbility 接口
+
+```csharp
+public interface IEnemyAbility
+{
+    void Init(Enemy owner, EnemyData data);
+    void Tick(float deltaTime);
+    void OnRemoved();
+}
+```
+
+**生命周期：**
+- `Init`：Enemy 出生时调用，从 EnemyData 读取能力参数
+- `Tick`：Enemy.Update 中每帧调用（不管移动状态，只要活着就调用）
+- `OnRemoved`：Enemy 死亡或 buildCharges 耗尽回收时调用
+
+### 能力创建（switch-case）
+
+在 Enemy.Init 中：
+
+```csharp
+_ability = data.AbilityType switch
+{
+    "heal_aura" => new HealAura(),
+    "speed_aura" => new SpeedAura(),
+    _ => null
+};
+_ability?.Init(this, data);
+```
+
+## 6. HealAura 实现
+
+**行为：** 每隔 `abilityCooldown` 秒，对半径 `abilityRadius` 内的友方敌人恢复 `abilityValue` 点 HP。
+
+```csharp
+public class HealAura : IEnemyAbility
+{
+    private Enemy _owner;
+    private float _radius;
+    private float _healAmount;
+    private float _cooldown;
+    private float _cdTimer;
+
+    public void Init(Enemy owner, EnemyData data)
+    {
+        _owner = owner;
+        _radius = data.AbilityRadius;
+        _healAmount = data.AbilityValue;
+        _cooldown = data.AbilityCooldown;
+        _cdTimer = _cooldown;
+    }
+
+    public void Tick(float deltaTime)
+    {
+        _cdTimer -= deltaTime;
+        if (_cdTimer > 0) return;
+        _cdTimer = _cooldown;
+
+        // Physics2D.OverlapCircleAll 找友军
+        // 对每个 IDamageable（且 IsAlive）恢复 HP
+        // 不治疗自己
+    }
+
+    public void OnRemoved() { }
+}
+```
+
+**注意：** IDamageable 当前只有 TakeDamage（扣血），需要在 Enemy 上加一个 `Heal(float amount)` 方法，或者直接 `enemy.HP += amount`。
+
+## 7. SpeedAura 实现
+
+**行为：** 存活时持续影响半径 `abilityRadius` 内友方敌人的移动速度，乘以 `abilityValue` 倍率。
+
+```csharp
+public class SpeedAura : IEnemyAbility
+{
+    private Enemy _owner;
+    private float _radius;
+    private float _speedMultiplier;
+    private float _checkTimer;
+    private const float CHECK_INTERVAL = 0.5f;
+
+    public void Init(Enemy owner, EnemyData data)
+    {
+        _owner = owner;
+        _radius = data.AbilityRadius;
+        _speedMultiplier = data.AbilityValue;
+    }
+
+    public void Tick(float deltaTime)
+    {
+        _checkTimer -= deltaTime;
+        if (_checkTimer > 0) return;
+        _checkTimer = CHECK_INTERVAL;
+
+        // Physics2D.OverlapCircleAll 找友军
+        // 标记为被加速（设置 speedBuff 标记）
+    }
+
+    public void OnRemoved()
+    {
+        // 清除所有被自己加速的友军标记
+    }
+}
+```
+
+**速度光环实现注意：**
+- Enemy 需要一个 `SpeedMultiplier` 属性，实际移动速度 = `MoveSpeed * SpeedMultiplier`
+- 多个 Zealot 光环不叠加（取最大值），一个 Zealot 死后其他 Zealot 的光环仍然生效
+- 简单做法：每次检查时重新计算受影响的敌人，不维护"谁加速了谁"的状态
+
+## 8. Enemy.Init 集成
+
+Enemy.Init 扩展为：
+
+```csharp
+public void Init(Babel.Path startPath, EnemyData data, int waveEventId)
+{
+    // 基础属性
+    HP = data.Hp;
+    MovementSpeed = data.MoveSpeed;
+    buildAbility = data.BuildContribution;
+    buildCharges = data.BuildCharges;
+    currentPath = startPath;
+    waveEventId = eventId;
+
+    // 移动状态机重置
+    _moveState = EnemyMoveState.MovingToBuildPoint;
+    _targetBuildPointIndex = -1;
+    FindNextTarget();
+
+    // 能力初始化
+    _ability?.OnRemoved();
+    _ability = data.AbilityType switch
+    {
+        "heal_aura" => new HealAura(),
+        "speed_aura" => new SpeedAura(),
+        _ => null
+    };
+    _ability?.Init(this, data);
+}
+```
+
+**Init 签名变更：** 从 `Init(Path, int charges, int eventId)` 改为 `Init(Path, EnemyData, int eventId)`。EnemyData 包含了所有需要的数据。
+
+## 9. Enemy.Update 流程
+
+```csharp
+void Update()
+{
+    // 1. 死亡检查
+    if (HP <= 0) { HandleDeath(); return; }
+
+    // 2. 能力 Tick（只要活着就执行，不管移动状态）
+    _ability?.Tick(Time.deltaTime);
+
+    // 3. 移动状态机
+    switch (_moveState) { ... }
+}
+```
+
+## 10. 与现有系统的集成变更
+
+| 变更点 | 说明 |
+|--------|------|
+| WaveScheduler.SpawnOneEnemy | 从 EnemyDatabase 获取 EnemyData，传给 Enemy.Init |
+| Enemy.Init 签名 | 从 (Path, int, int) 改为 (Path, EnemyData, int) |
+| Enemy 新增 | `_ability` 字段、Heal() 方法、SpeedMultiplier 属性 |
+| Global.Exp.Value++ | 改为 `Global.Exp.Value += data.ExpReward` |
+
+## 11. 需要新增的文件
+
+| 文件 | 内容 |
+|------|------|
+| `Assets/Data/Enemies/enemies.csv` | 敌人数据 |
+| `Scripts/Spawning/EnemyData.cs` | EnemyData 数据结构 |
+| `Scripts/Spawning/EnemyParser.cs` | CSV 解析器 |
+| `Scripts/Spawning/EnemyDatabase.cs` | 按 ID 查询的静态数据库 |
+| `Scripts/Spawning/IEnemyAbility.cs` | 能力接口 |
+| `Scripts/Spawning/Abilities/HealAura.cs` | 治疗光环 |
+| `Scripts/Spawning/Abilities/SpeedAura.cs` | 速度光环 |
+
+## 12. 需要修改的文件
+
+| 文件 | 变更 |
+|------|------|
+| `Scripts/Game/Enemy.cs` | Init 签名变更 + _ability 集成 + Heal() + SpeedMultiplier |
+| `Scripts/Spawning/WaveScheduler.cs` | SpawnOneEnemy 查 EnemyDatabase + 传 EnemyData |
+
+## 13. 不在本次范围内
+
+- 对象池的具体实现
+- Prefab 制作（5 种敌人的 Prefab）
+- 敌人动画/视觉
+- 更多能力类型扩展
