@@ -6,33 +6,52 @@ namespace Babel
     public partial class BuildPoint : ViewController
     {
         [SerializeField] private int buildAmount = 50;
-        private int currentBuildProgress = 0;
+        [HideInInspector] public Path OwnerPath;
         public bool isGateway = false;
-        public bool IsBuildCompleted = false;
-        public bool IsBilding = false;
 
-        [HideInInspector]
-        public Path OwnerPath;
+        public bool IsBuildCompleted { get; private set; }
+        public bool IsOccupied { get; private set; }
+
+        private int _currentProgress;
+        private SpriteRenderer _spriteRenderer;
+
+        private void Awake()
+        {
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        public void SetOccupied(bool occupied)
+        {
+            IsOccupied = occupied;
+        }
 
         public void AddBuildProgress(int value)
         {
             if (IsBuildCompleted) return;
 
-            IsBilding = true;
-            currentBuildProgress += value;
-            this.gameObject.SetActive(true);
+            _currentProgress += value;
 
-            if (currentBuildProgress >= buildAmount)
+            if (_currentProgress >= buildAmount)
             {
                 IsBuildCompleted = true;
-                IsBilding = false;
-                GetComponent<SpriteRenderer>().color = Color.red;
+                IsOccupied = false;
+                if (_spriteRenderer != null)
+                    _spriteRenderer.color = Color.red;
 
                 if (OwnerPath != null)
-                {
                     OwnerPath.OnBuildPointCompleted();
-                }
+
+                BuildEvents.RaiseBuildCompleted(this);
             }
+        }
+
+        public void Reset()
+        {
+            IsBuildCompleted = false;
+            IsOccupied = false;
+            _currentProgress = 0;
+            if (_spriteRenderer != null)
+                _spriteRenderer.color = Color.white;
         }
     }
 }
