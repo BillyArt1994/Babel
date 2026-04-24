@@ -65,6 +65,7 @@ namespace Babel
             // Auto-build linked list
             for (int i = 0; i < layers.Length; i++)
             {
+                layers[i].LayerIndex = i + 1;
                 layers[i].nextLayerPath = (i + 1 < layers.Length) ? layers[i + 1] : null;
 
                 // Auto-set BuildPoint.OwnerPath
