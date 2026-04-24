@@ -280,12 +280,10 @@ Path 的 OnDrawGizmos 重写，提供完整的编辑器预览：
 
 ### 6.1 层数 ID 标签
 
-Path 新增 `public int LayerIndex` 字段（由 TowerManager.Awake 自动设置）。OnDrawGizmos 中用 `Handles.Label` 在 Path 的中心位置绘制层编号文字。
+Path 新增 `public int LayerIndex` 字段（由 TowerManager.Awake 自动设置）。OnDrawGizmos 中用 `Handles.Label` 在 Path 自身 transform.position 上方绘制层编号文字。
 
 ```csharp
-// Path 中心 = 所有 BuildPoint 的平均位置
-Vector3 center = GetCenter();
-Handles.Label(center + Vector3.up * 1.0f, $"Layer {LayerIndex}", style);
+Handles.Label(transform.position + Vector3.up * 1.0f, $"Layer {LayerIndex}", style);
 ```
 
 ### 6.2 Gateway 标识
@@ -312,35 +310,25 @@ for (int i = 0; i < wayPointList.Length; i++)
 
 当前层内相邻 BuildPoint 用**灰色线**连接（已有逻辑，保留）。
 
-### 6.4 Gateway → 上层的连线
+### 6.4 Gateway → 上层入口的连线
 
-如果 `nextLayerPath != null`，从 Gateway BuildPoint 画一条**绿色虚线**连到下一层 Path 的中心位置，表示层间通道：
+如果 `nextLayerPath != null`，从 Gateway BuildPoint 画一条**绿色线**连到下一层的入口 BuildPoint（`nextLayerPath.wayPointList[0]`），表示"上楼梯"的通道路径：
 
 ```csharp
-if (nextLayerPath != null)
+if (nextLayerPath != null && nextLayerPath.wayPointList.Length > 0)
 {
     int gwIdx = GetGatewayIndex();
     Gizmos.color = Color.green;
     Gizmos.DrawLine(
         wayPointList[gwIdx].transform.position,
-        nextLayerPath.GetCenter()
+        nextLayerPath.wayPointList[0].transform.position
     );
 }
 ```
 
-### Path 新增辅助方法
+### 6.5 入口约定
 
-```csharp
-public Vector3 GetCenter()
-{
-    if (wayPointList == null || wayPointList.Length == 0)
-        return transform.position;
-    Vector3 sum = Vector3.zero;
-    for (int i = 0; i < wayPointList.Length; i++)
-        sum += wayPointList[i].transform.position;
-    return sum / wayPointList.Length;
-}
-```
+每层的 `wayPointList[0]` 即为该层入口 BuildPoint。敌人通过 Gateway 爬到上层后，到达的位置是 `nextLayerPath.wayPointList[0]` 的位置。
 
 ### TowerManager.Awake 中自动设置 LayerIndex
 
@@ -363,7 +351,7 @@ for (int i = 0; i < layers.Length; i++)
 | 文件 | 变更 |
 |------|------|
 | `Scripts/Game/BuildPoint.cs` | IsBilding→IsOccupied, 缓存 SpriteRenderer, 去 SetActive, 加 Reset/SetOccupied, 广播事件 |
-| `Scripts/Game/Path.cs` | 删 FindNearestEmptyBuildPoint, 加 ReserveBuildPoint/ReleaseBuildPoint, 层完成广播, 加 LayerIndex/GetCenter, 重写 OnDrawGizmos |
+| `Scripts/Game/Path.cs` | 删 FindNearestEmptyBuildPoint, 加 ReserveBuildPoint/ReleaseBuildPoint, 层完成广播, 加 LayerIndex, 重写 OnDrawGizmos |
 | `Scripts/Game/Enemy.cs` | 选目标用 Reserve, Building 改持续建造, 死亡释放占位 |
 | `Scripts/Game/TowerManager.cs` | Awake 中设置 LayerIndex |
 | `Scripts/Spawning/EnemyData.cs` | 新增 BuildTime 字段 |
