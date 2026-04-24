@@ -15,5 +15,6 @@ namespace Babel
         public float AbilityRadius;
         public float AbilityValue;
         public float AbilityCooldown;
+        public float BuildTime;
     }
 }

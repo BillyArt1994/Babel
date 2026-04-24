@@ -1,6 +1,6 @@
-enemyId,enemyName,hp,moveSpeed,buildContribution,buildCharges,expReward,prefab,abilityType,abilityRadius,abilityValue,abilityCooldown
-worker,工人,30,2.0,25,1,1,Enemies/Worker,,,,
-elite,精英,120,3.0,25,1,5,Enemies/Elite,,,,
-priest,祭司,60,1.5,25,1,3,Enemies/Priest,heal_aura,3.0,10,2.0
-engineer,工程师,60,2.0,50,2,3,Enemies/Engineer,,,,
-zealot,狂信者,20,4.5,25,1,2,Enemies/Zealot,speed_aura,4.0,1.5,0
+enemyId,enemyName,hp,moveSpeed,buildContribution,buildCharges,expReward,prefab,abilityType,abilityRadius,abilityValue,abilityCooldown,buildTime
+worker,工人,30,2.0,25,1,1,Enemies/Worker,,,,,2.0
+elite,精英,120,3.0,25,1,5,Enemies/Elite,,,,,1.5
+priest,祭司,60,1.5,25,1,3,Enemies/Priest,heal_aura,3.0,10,2.0,2.5
+engineer,工程师,60,2.0,50,2,3,Enemies/Engineer,,,,,1.0
+zealot,狂信者,20,4.5,25,1,2,Enemies/Zealot,speed_aura,4.0,1.5,0,2.0

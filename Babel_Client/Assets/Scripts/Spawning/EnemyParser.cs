@@ -60,6 +60,8 @@ namespace Babel
                         data.AbilityValue = ParseFloat(fields[avIdx]);
                     if (colMap.TryGetValue("abilitycooldown", out int acIdx) && acIdx < fields.Length && !string.IsNullOrWhiteSpace(fields[acIdx]))
                         data.AbilityCooldown = ParseFloat(fields[acIdx]);
+                    if (colMap.TryGetValue("buildtime", out int btIdx) && btIdx < fields.Length && !string.IsNullOrWhiteSpace(fields[btIdx]))
+                        data.BuildTime = ParseFloat(fields[btIdx]);
 
                     results.Add(data);
                 }
