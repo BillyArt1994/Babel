@@ -26,6 +26,7 @@ namespace Babel
         private EnemyMoveState _moveState = EnemyMoveState.MovingToBuildPoint;
         private int _targetBuildPointIndex = -1;
         private Transform _passageTarget;
+        private float _buildTimer;
 
         private IEnemyAbility _ability;
         private EnemyData _data;
@@ -68,9 +69,10 @@ namespace Babel
             waveEventId = eventId;
             _moveState = EnemyMoveState.MovingToBuildPoint;
             _targetBuildPointIndex = -1;
+            _buildTimer = 0;
             _speedBuffTimer = 0;
             _speedBuffMult = 1.0f;
-            FindNextTarget();
+            ReserveNextTarget();
 
             // Ability
             _ability?.OnRemoved();
@@ -85,8 +87,10 @@ namespace Babel
 
         private void Update()
         {
+            // Death check
             if (HP <= 0)
             {
+                ReleaseCurrentTarget();
                 EnemyEvents.RaiseEnemyDied(Position);
                 if (waveEventId >= 0)
                 {
@@ -115,7 +119,7 @@ namespace Babel
                     UpdateMovingToBuildPoint();
                     break;
                 case EnemyMoveState.Building:
-                    ExecuteBuilding();
+                    UpdateBuilding();
                     break;
                 case EnemyMoveState.MovingToPassage:
                     UpdateMovingToPassage();
@@ -146,21 +150,28 @@ namespace Babel
 
             if ((transform.position - targetPos).magnitude <= 0.1f)
             {
+                _buildTimer = _data != null ? _data.BuildTime : 0f;
                 _moveState = EnemyMoveState.Building;
+                BuildEvents.RaiseBuildStarted(currentPath.wayPointList[_targetBuildPointIndex]);
             }
         }
 
-        private void ExecuteBuilding()
+        private void UpdateBuilding()
         {
+            _buildTimer -= Time.deltaTime;
+            if (_buildTimer > 0) return;
+
+            // Building complete
             if (_targetBuildPointIndex >= 0 && _targetBuildPointIndex < currentPath.wayPointList.Length)
             {
                 var bp = currentPath.wayPointList[_targetBuildPointIndex];
                 if (!bp.IsBuildCompleted)
                 {
                     bp.AddBuildProgress(buildAbility);
-                    bp.IsBilding = false;
                 }
             }
+            currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
+            _targetBuildPointIndex = -1;
 
             buildCharges--;
 
@@ -170,7 +181,8 @@ namespace Babel
                 return;
             }
 
-            FindNextTarget();
+            // Find next target
+            ReserveNextTarget();
             if (_targetBuildPointIndex >= 0)
             {
                 _moveState = EnemyMoveState.MovingToBuildPoint;
@@ -214,12 +226,20 @@ namespace Babel
         private void ExecuteClimbing()
         {
             currentPath = currentPath.nextLayerPath;
-            FindNextTarget();
+
+            // Teleport to entrance of new layer
+            if (currentPath != null && currentPath.wayPointList.Length > 0)
+            {
+                transform.position = currentPath.wayPointList[0].transform.position;
+            }
+
+            ReserveNextTarget();
             _moveState = EnemyMoveState.MovingToBuildPoint;
         }
 
         private void ExecuteFinished()
         {
+            ReleaseCurrentTarget();
             if (waveEventId >= 0)
             {
                 OnChargesExhausted?.Invoke(waveEventId);
@@ -229,14 +249,23 @@ namespace Babel
             this.DestroyGameObjGracefully();
         }
 
-        private void FindNextTarget()
+        private void ReserveNextTarget()
         {
             if (currentPath == null)
             {
                 _targetBuildPointIndex = -1;
                 return;
             }
-            _targetBuildPointIndex = currentPath.FindNearestEmptyBuildPoint(transform.position);
+            _targetBuildPointIndex = currentPath.ReserveBuildPoint(transform.position);
+        }
+
+        private void ReleaseCurrentTarget()
+        {
+            if (_targetBuildPointIndex >= 0 && currentPath != null)
+            {
+                currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
+                _targetBuildPointIndex = -1;
+            }
         }
     }
 }
