@@ -274,7 +274,85 @@ if (_targetBuildPointIndex >= 0 && currentPath != null)
 }
 ```
 
-## 6. 需要新增的文件
+## 6. Path Scene 可视化（OnDrawGizmos 改进）
+
+Path 的 OnDrawGizmos 重写，提供完整的编辑器预览：
+
+### 6.1 层数 ID 标签
+
+Path 新增 `public int LayerIndex` 字段（由 TowerManager.Awake 自动设置）。OnDrawGizmos 中用 `Handles.Label` 在 Path 的中心位置绘制层编号文字。
+
+```csharp
+// Path 中心 = 所有 BuildPoint 的平均位置
+Vector3 center = GetCenter();
+Handles.Label(center + Vector3.up * 1.0f, $"Layer {LayerIndex}", style);
+```
+
+### 6.2 Gateway 标识
+
+Gateway BuildPoint 用**黄色大圆圈**标识，普通 BuildPoint 用**白色小圆圈**：
+
+```csharp
+for (int i = 0; i < wayPointList.Length; i++)
+{
+    if (wayPointList[i].isGateway)
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(wayPointList[i].transform.position, 0.4f);
+    }
+    else
+    {
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(wayPointList[i].transform.position, 0.2f);
+    }
+}
+```
+
+### 6.3 BuildPoint 之间的连线
+
+当前层内相邻 BuildPoint 用**灰色线**连接（已有逻辑，保留）。
+
+### 6.4 Gateway → 上层的连线
+
+如果 `nextLayerPath != null`，从 Gateway BuildPoint 画一条**绿色虚线**连到下一层 Path 的中心位置，表示层间通道：
+
+```csharp
+if (nextLayerPath != null)
+{
+    int gwIdx = GetGatewayIndex();
+    Gizmos.color = Color.green;
+    Gizmos.DrawLine(
+        wayPointList[gwIdx].transform.position,
+        nextLayerPath.GetCenter()
+    );
+}
+```
+
+### Path 新增辅助方法
+
+```csharp
+public Vector3 GetCenter()
+{
+    if (wayPointList == null || wayPointList.Length == 0)
+        return transform.position;
+    Vector3 sum = Vector3.zero;
+    for (int i = 0; i < wayPointList.Length; i++)
+        sum += wayPointList[i].transform.position;
+    return sum / wayPointList.Length;
+}
+```
+
+### TowerManager.Awake 中自动设置 LayerIndex
+
+```csharp
+for (int i = 0; i < layers.Length; i++)
+{
+    layers[i].LayerIndex = i + 1;  // 从 1 开始
+    // ... 原有的链表和 OwnerPath 设置
+}
+```
+
+## 7. 需要新增的文件
 
 | 文件 | 内容 |
 |------|------|
@@ -285,8 +363,9 @@ if (_targetBuildPointIndex >= 0 && currentPath != null)
 | 文件 | 变更 |
 |------|------|
 | `Scripts/Game/BuildPoint.cs` | IsBilding→IsOccupied, 缓存 SpriteRenderer, 去 SetActive, 加 Reset/SetOccupied, 广播事件 |
-| `Scripts/Game/Path.cs` | 删 FindNearestEmptyBuildPoint, 加 ReserveBuildPoint/ReleaseBuildPoint, 层完成广播 |
+| `Scripts/Game/Path.cs` | 删 FindNearestEmptyBuildPoint, 加 ReserveBuildPoint/ReleaseBuildPoint, 层完成广播, 加 LayerIndex/GetCenter, 重写 OnDrawGizmos |
 | `Scripts/Game/Enemy.cs` | 选目标用 Reserve, Building 改持续建造, 死亡释放占位 |
+| `Scripts/Game/TowerManager.cs` | Awake 中设置 LayerIndex |
 | `Scripts/Spawning/EnemyData.cs` | 新增 BuildTime 字段 |
 | `Scripts/Spawning/EnemyParser.cs` | 解析 buildTime 列 |
 | `Assets/Data/Enemies/enemies.csv` | 新增 buildTime 列 |
