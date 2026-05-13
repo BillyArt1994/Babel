@@ -145,11 +145,12 @@ namespace Babel
             }
 
             var target = currentPath.wayPointList[_targetBuildPointIndex];
-            var targetPos = new Vector3(target.transform.position.x, target.transform.position.y - 0.5f, transform.position.z);
+            var targetPos = GetBuildApproachPosition(target);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
 
-            if ((transform.position - targetPos).magnitude <= 0.1f)
+            if (IsAtHorizontalTarget(targetPos))
             {
+                transform.position = targetPos;
                 _buildTimer = _data != null ? _data.BuildTime : 0f;
                 _moveState = EnemyMoveState.Building;
                 BuildEvents.RaiseBuildStarted(currentPath.wayPointList[_targetBuildPointIndex]);
@@ -266,6 +267,16 @@ namespace Babel
                 currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
                 _targetBuildPointIndex = -1;
             }
+        }
+
+        private Vector3 GetBuildApproachPosition(BuildPoint target)
+        {
+            return new Vector3(target.transform.position.x, transform.position.y, transform.position.z);
+        }
+
+        private bool IsAtHorizontalTarget(Vector3 targetPos)
+        {
+            return Mathf.Abs(transform.position.x - targetPos.x) <= 0.1f;
         }
     }
 }

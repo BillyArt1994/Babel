@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using QFramework;
 
@@ -56,6 +57,8 @@ namespace Babel
 
         private void Awake()
         {
+            EnsureLayersAssigned();
+
             if (layers == null || layers.Length == 0)
             {
                 Debug.LogWarning("[BABEL][TowerManager] No layers assigned");
@@ -88,6 +91,28 @@ namespace Babel
         {
             if (layers == null || index < 0 || index >= layers.Length) return null;
             return layers[index];
+        }
+
+        private void EnsureLayersAssigned()
+        {
+            if (layers != null && layers.Length > 0)
+            {
+                return;
+            }
+
+            layers = FindObjectsOfType<Path>();
+            Array.Sort(layers, ComparePathOrder);
+        }
+
+        private static int ComparePathOrder(Path left, Path right)
+        {
+            int nameComparison = string.Compare(left.name, right.name, StringComparison.Ordinal);
+            if (nameComparison != 0)
+            {
+                return nameComparison;
+            }
+
+            return left.transform.position.y.CompareTo(right.transform.position.y);
         }
     }
 }
