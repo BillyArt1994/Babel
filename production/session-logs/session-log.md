@@ -2765,3 +2765,203 @@ production/session-logs/agent-audit.log
 production/session-logs/session-log.md
 ---
 
+## Session End: 20260521_164420
+### Uncommitted Changes
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+---
+
+## Session End: 20260521_164725
+### Uncommitted Changes
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260521_171416
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260521_173139
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260521_174049
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260521_174503
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260521_175252
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/BuildPoint.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/BuildPoint.cs
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Assets/Scripts/Game/GameUIController.cs
+Babel_Client/Assets/Scripts/Game/SkillSystem.cs
+Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs
+Babel_Client/Assets/Scripts/Spawning/TransientEnemyPool.cs
+Babel_Client/Assets/Scripts/UI/UIGamePanel.cs
+Babel_Client/Assets/Tests/EditMode/TransientEnemyPoolTests.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session Handoff: 20260521_2021 Copilot CLI
+
+### Purpose
+This entry summarizes the recent Copilot CLI collaboration so another AI agent on a different machine can continue with the same context after pulling the repository.
+
+### Current project state
+- Unity project root: `Babel_Client/`.
+- Active gameplay loop is a 2D side-scrolling survivor/action roguelite where the player clicks enemies and chooses upgrades every 5 EXP.
+- Runtime UI uses QFramework UIKit panels (`UIGamePanel`, `UIGamePassPanel`, `UIGameOverPanel`).
+- Skill data is CSV-driven from `Babel_Client/Assets/Data/Skills/skills.csv`.
+
+### Important recent commits
+- `76b78a7 Improve upgrade UI and hit feedback`
+  - Added upgrade three-choice flow (`UpgradeSystem`, `UpgradeEvents`) and tests.
+  - Adapted runtime UI for portrait play, including horizontal three-card upgrade layout.
+  - Added debug world bars for enemy HP and build progress.
+  - Added enemy hit flash and delayed fatal-hit cleanup so one-shot kills visibly show feedback.
+  - Wired main skill cooldown HUD and blocked charge ring/queued release during cooldown.
+- `3c1afd2 Add agent configs and concept art`
+  - Added `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md`, concept art images, and generation scripts.
+
+### Key decisions and fixes from this session
+- Unity MCP connection was available through `http://127.0.0.1:8080/mcp`; use Unity MCP for EditMode tests and PlayMode smoke checks.
+- Click damage was already working; perceived no-feedback was caused by `divine_finger` dealing 50 damage to low-HP enemies, causing immediate death cleanup.
+- Fatal enemy damage now enters a short dying feedback window before death event/EXP/destruction.
+- `DebugHealthBar` and `DebugBuildProgressBar` are runtime-created children, not prefab children.
+- Portrait UI should preserve a horizontal three-card upgrade row, not a vertical stack:
+  - `Card1Btn = (-230, 0)`, `Card2Btn = (0, 0)`, `Card3Btn = (230, 0)`, each `210x360`.
+  - `UpgradePanel` keeps its LayoutGroup disabled so runtime layout rebuilds do not override card positions.
+- Main skill cooldown:
+  - `SkillSystem.Instance.GetActiveClickCooldownProgress()` is the read-only HUD source.
+  - `UIGamePanel.MainSkill_ImageFill.fillAmount` follows the active click cooldown.
+  - During cooldown, pointer down/hold does not show the charge ring and cannot queue a release for after cooldown expires.
+
+### Verification evidence
+- Latest pre-commit Unity EditMode run: `28 passed / 0 failed`.
+- PlayMode smoke for cooldown charge behavior:
+  - `hpAfterFirst=100`
+  - `hpAfterQueuedRelease=100`
+  - `cdAfterFirst=1`
+  - `ringAfterCooldownDown=False`
+  - `ringAfterUp=False`
+  - Console errors: `0`
+
+### High-priority files to read first
+- `CLAUDE.md` - current project overview and conventions.
+- `Babel_Client/Assets/Scripts/Game/SkillSystem.cs` - skill ownership, active click cooldown API.
+- `Babel_Client/Assets/Scripts/Skill/Triggers/OnClickTrigger.cs` - click cooldown and charge gating.
+- `Babel_Client/Assets/Scripts/UI/UIGamePanel.cs` - HUD, upgrade UI, charge ring, cooldown fill.
+- `Babel_Client/Assets/Scripts/Game/UpgradeSystem.cs` and `Babel_Client/Assets/Scripts/Skill/UpgradeEvents.cs` - upgrade draw/selection flow.
+- `Babel_Client/Assets/Scripts/Game/Enemy.cs` - hit flash, debug health bar, fatal feedback delay.
+- `Babel_Client/Assets/Scripts/Debug/DebugWorldBar.cs`, `DebugHealthBar.cs`, `DebugBuildProgressBar.cs` - debug overlay bars.
+- `Babel_Client/Assets/Tests/EditMode/SkillCooldownHudTests.cs`, `UpgradeSystemTests.cs`, `DebugStatusBarTests.cs`, `PortraitUILayoutTests.cs` - regression coverage.
+
+### Remaining uncommitted items at handoff
+These were intentionally left uncommitted unless the user explicitly wants them:
+- `.claude/settings.local.json`
+- `Babel_Client/Packages/packages-lock.json`
+- `Babel_Client/ProjectSettings/PackageManagerSettings.asset`
+- `Babel_Client/ProjectSettings/ProjectVersion.txt`
+- `production/session-logs/agent-audit.log`
+- `Babel_Client/Assets/Screenshots/`
+
+### Suggested next steps for a new AI agent
+1. Pull latest `master` and read `CLAUDE.md` plus this handoff entry.
+2. Open Unity 2022.3.73f1 project at `Babel_Client/`.
+3. Run EditMode tests before changes; expected current baseline is 28 passing tests.
+4. For gameplay changes, follow TDD and Unity MCP PlayMode smoke checks.
+5. Avoid committing local settings/logs/screenshots unless the user explicitly asks.
+---
