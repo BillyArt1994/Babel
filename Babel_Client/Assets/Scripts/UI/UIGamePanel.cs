@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using QFramework;
 using System;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 
 namespace Babel
@@ -14,6 +15,8 @@ namespace Babel
 
         private Canvas _canvas;
         private RectTransform _panelRectTransform;
+        private readonly Button[] _upgradeButtons = new Button[3];
+        private IReadOnlyList<SkillConfig> _currentOptions = Array.Empty<SkillConfig>();
 
         protected override void OnInit(IUIData uiData = null)
         {
@@ -21,8 +24,12 @@ namespace Babel
 
             _canvas = GetComponentInParent<Canvas>();
             _panelRectTransform = transform as RectTransform;
+            _upgradeButtons[0] = Card1Btn;
+            _upgradeButtons[1] = Card2Btn;
+            _upgradeButtons[2] = Card3Btn;
             ChargeRing.gameObject.SetActive(false);
             ChargeRing_Fill.fillAmount = 0;
+            UpdateMainSkillCooldownFill();
 
             // please add init code here
             Global.Exp.RegisterWithInitValue(exp =>
@@ -31,21 +38,10 @@ namespace Babel
                 EXPScrollbar.size = num - MathF.Truncate(exp / 5.0f);
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
-           Global.Exp.RegisterWithInitValue(exp =>
-           {
-               if (exp >= 5) 
-               {
-                   Global.Level.Value++;
-                   Global.Exp.Value -= 5;
-               }
-           }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-            Global.Level.Register(Level =>
-            {
-                LevelText.text = "LV:" + (Level).ToString();
-                Time.timeScale = 0;
-                UpgradePanel.Show();
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+             Global.Level.Register(Level =>
+             {
+                 LevelText.text = "LV:" + (Level).ToString();
+             }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
             Global.CurrentTime.RegisterWithInitValue(time =>
             {
@@ -60,6 +56,7 @@ namespace Babel
             ActionKit.OnUpdate.Register(() =>
             {
                 Global.CurrentTime.Value -= Time.deltaTime;
+                UpdateMainSkillCooldownFill();
                 if (Global.CurrentTime.Value <= 0)
                 {
                     UIKit.OpenPanel<UIGamePassPanel>();
@@ -76,6 +73,10 @@ namespace Babel
             InputEvents.OnPointerHold += OnPointerHold;
             InputEvents.OnPointerUp += OnPointerUp;
             InputEvents.OnPointerCancel += OnPointerCancel;
+            UpgradeEvents.OnOptionsGenerated += OnUpgradeOptionsGenerated;
+            Card1Btn.onClick.AddListener(OnCard1Clicked);
+            Card2Btn.onClick.AddListener(OnCard2Clicked);
+            Card3Btn.onClick.AddListener(OnCard3Clicked);
         }
 
         protected override void OnShow()
@@ -90,13 +91,104 @@ namespace Babel
 
         protected override void OnClose()
         {
+            UnsubscribeEvents();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeEvents();
+        }
+
+        private void UnsubscribeEvents()
+        {
             InputEvents.OnPointerDown -= OnPointerDown;
             InputEvents.OnPointerHold -= OnPointerHold;
             InputEvents.OnPointerUp -= OnPointerUp;
             InputEvents.OnPointerCancel -= OnPointerCancel;
+            UpgradeEvents.OnOptionsGenerated -= OnUpgradeOptionsGenerated;
+            if (Card1Btn != null)
+            {
+                Card1Btn.onClick.RemoveListener(OnCard1Clicked);
+            }
+
+            if (Card2Btn != null)
+            {
+                Card2Btn.onClick.RemoveListener(OnCard2Clicked);
+            }
+
+            if (Card3Btn != null)
+            {
+                Card3Btn.onClick.RemoveListener(OnCard3Clicked);
+            }
         }
+
+        private void OnUpgradeOptionsGenerated(IReadOnlyList<SkillConfig> options)
+        {
+            _currentOptions = options ?? Array.Empty<SkillConfig>();
+            if (_currentOptions.Count == 0)
+            {
+                UpgradePanel.Hide();
+                SetUpgradeButtonsActive(false);
+                return;
+            }
+
+            for (int i = 0; i < _upgradeButtons.Length; i++)
+            {
+                SetUpgradeButton(i);
+            }
+
+            UpgradePanel.Show();
+        }
+
+        private void SetUpgradeButton(int index)
+        {
+            Button button = _upgradeButtons[index];
+            bool hasOption = index < _currentOptions.Count;
+            button.gameObject.SetActive(hasOption);
+            if (!hasOption)
+            {
+                return;
+            }
+
+            SkillConfig config = _currentOptions[index];
+            Text label = button.GetComponentInChildren<Text>(true);
+            if (label != null)
+            {
+                label.text = $"{config.SkillName}\n{config.Description}";
+            }
+        }
+
+        private void SetUpgradeButtonsActive(bool active)
+        {
+            for (int i = 0; i < _upgradeButtons.Length; i++)
+            {
+                _upgradeButtons[i].gameObject.SetActive(active);
+            }
+        }
+
+        private void OnCard1Clicked()
+        {
+            UpgradeEvents.RaiseOptionSelected(0);
+        }
+
+        private void OnCard2Clicked()
+        {
+            UpgradeEvents.RaiseOptionSelected(1);
+        }
+
+        private void OnCard3Clicked()
+        {
+            UpgradeEvents.RaiseOptionSelected(2);
+        }
+
         private void OnPointerDown(PointerInputContext context)
         {
+            if (IsMainSkillCoolingDown())
+            {
+                HideChargeRing();
+                return;
+            }
+
             ChargeRing.gameObject.SetActive(true);
             UpdateChargeRingPosition(context.ScreenPosition);
             ChargeRing_Fill.fillAmount = 0f;
@@ -104,17 +196,27 @@ namespace Babel
 
         private void OnPointerHold(PointerInputContext context)
         {
+            if (IsMainSkillCoolingDown())
+            {
+                HideChargeRing();
+                return;
+            }
+
             UpdateChargeRingPosition(context.ScreenPosition);
             ChargeRing_Fill.fillAmount = context.ChargeRatio;
         }
 
         private void OnPointerUp(PointerInputContext context)
         {
-            ChargeRing.gameObject.SetActive(false);
-            ChargeRing_Fill.fillAmount = 0f;
+            HideChargeRing();
         }
 
         private void OnPointerCancel(PointerInputContext context)
+        {
+            HideChargeRing();
+        }
+
+        private void HideChargeRing()
         {
             ChargeRing.gameObject.SetActive(false);
             ChargeRing_Fill.fillAmount = 0f;
@@ -134,6 +236,24 @@ namespace Babel
             {
                 ChargeRing.anchoredPosition = localPoint;
             }
+        }
+
+        private void UpdateMainSkillCooldownFill()
+        {
+            if (MainSkill_ImageFill == null)
+            {
+                return;
+            }
+
+            MainSkill_ImageFill.fillAmount = SkillSystem.Instance != null
+                ? SkillSystem.Instance.GetActiveClickCooldownProgress()
+                : 0f;
+        }
+
+        private bool IsMainSkillCoolingDown()
+        {
+            return SkillSystem.Instance != null &&
+                SkillSystem.Instance.GetActiveClickCooldownProgress() > 0f;
         }
 
 

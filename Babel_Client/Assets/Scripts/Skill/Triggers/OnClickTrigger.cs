@@ -28,6 +28,14 @@ namespace Babel
             }
         }
 
+        /// <summary>
+        /// 清空当前点击技能冷却。
+        /// </summary>
+        public void ResetCooldown()
+        {
+            _cooldownTimer = 0f;
+        }
+
         public override void Enable()
         {
             _enabled = true;
@@ -64,6 +72,13 @@ namespace Babel
         private void HandlePointerDown(PointerInputContext ctx)
         {
             if (!_enabled) return;
+            if (_cooldownTimer > 0f)
+            {
+                _isCharging = false;
+                _holdDuration = 0f;
+                return;
+            }
+
             _isCharging = true;
             _holdDuration = 0f;
             _lastWorldPos = ctx.WorldPosition;

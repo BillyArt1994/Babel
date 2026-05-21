@@ -8,7 +8,7 @@ namespace Babel
     /// </summary>
     public sealed class TransientEnemyPool : IEnemyPool
     {
-        private const float FALLBACK_RADIUS = 0.3f;
+        private const float FALLBACK_RADIUS = 0.5f;
         private const int FALLBACK_SORTING_ORDER = 10;
 
         private readonly List<GameObject> _activeEnemies = new();
@@ -115,8 +115,8 @@ namespace Babel
             if (collider == null)
             {
                 collider = enemyObject.AddComponent<CircleCollider2D>();
+                collider.radius = FALLBACK_RADIUS;
             }
-            collider.radius = FALLBACK_RADIUS;
 
             Rigidbody2D body = enemyObject.GetComponent<Rigidbody2D>();
             if (body == null)

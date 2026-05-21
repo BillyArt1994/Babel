@@ -32,8 +32,11 @@ namespace Babel.Tests
                 Assert.That(enemyObject.transform.position.x, Is.EqualTo(spawnPosition.x).Within(0.001f));
                 Assert.That(enemyObject.transform.position.y, Is.EqualTo(spawnPosition.y).Within(0.001f));
                 Assert.That(enemyObject.GetComponent(enemyType), Is.Not.Null);
-                Assert.That(enemyObject.GetComponent<CircleCollider2D>(), Is.Not.Null);
-                Assert.That(enemyObject.GetComponent<SpriteRenderer>(), Is.Not.Null);
+                CircleCollider2D collider = enemyObject.GetComponent<CircleCollider2D>();
+                SpriteRenderer renderer = enemyObject.GetComponent<SpriteRenderer>();
+                Assert.That(collider, Is.Not.Null);
+                Assert.That(renderer, Is.Not.Null);
+                Assert.That(collider.bounds.extents.x, Is.GreaterThanOrEqualTo(renderer.bounds.extents.x * 0.95f));
                 Assert.That(enemyObject.layer, Is.EqualTo(LayerMask.NameToLayer("Enemy")));
                 Assert.That((int)activeCountProperty.GetValue(pool), Is.EqualTo(1));
             }
