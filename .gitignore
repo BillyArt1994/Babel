@@ -51,6 +51,9 @@ desktop.ini
 # VS Code
 .vscode/
 
+# Git worktrees
+.worktrees/
+
 # 崩溃报告
 sysinfo.txt
 crashlytics-build.properties
