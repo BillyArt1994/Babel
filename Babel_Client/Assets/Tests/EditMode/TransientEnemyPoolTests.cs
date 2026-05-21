@@ -82,6 +82,20 @@ namespace Babel.Tests
             }
         }
 
+        [Test]
+        public void GetNextTimeScaleIndex_CyclesThroughThreeSpeeds()
+        {
+            Type panelType = RequireType("Babel.UIGamePanel");
+            MethodInfo method = panelType.GetMethod(
+                "GetNextTimeScaleIndex",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null, "UIGamePanel should expose a private testable speed-cycle helper.");
+
+            Assert.That((int)method.Invoke(null, new object[] { 0, 3 }), Is.EqualTo(1));
+            Assert.That((int)method.Invoke(null, new object[] { 1, 3 }), Is.EqualTo(2));
+            Assert.That((int)method.Invoke(null, new object[] { 2, 3 }), Is.EqualTo(0));
+        }
+
         private static Type RequireType(string fullName)
         {
             Type type = Type.GetType($"{fullName}, Assembly-CSharp");

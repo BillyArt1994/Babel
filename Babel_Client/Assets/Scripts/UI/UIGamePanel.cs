@@ -12,11 +12,13 @@ namespace Babel
     }
     public partial class UIGamePanel : UIPanel
     {
+        private static readonly float[] TIME_SCALES = { 1f, 2f, 4f };
 
         private Canvas _canvas;
         private RectTransform _panelRectTransform;
         private readonly Button[] _upgradeButtons = new Button[3];
         private IReadOnlyList<SkillConfig> _currentOptions = Array.Empty<SkillConfig>();
+        private int _timeScaleIndex;
 
         protected override void OnInit(IUIData uiData = null)
         {
@@ -30,6 +32,7 @@ namespace Babel
             ChargeRing.gameObject.SetActive(false);
             ChargeRing_Fill.fillAmount = 0;
             UpdateMainSkillCooldownFill();
+            ResetTimeScale();
 
             // please add init code here
             Global.Exp.RegisterWithInitValue(exp =>
@@ -77,6 +80,10 @@ namespace Babel
             Card1Btn.onClick.AddListener(OnCard1Clicked);
             Card2Btn.onClick.AddListener(OnCard2Clicked);
             Card3Btn.onClick.AddListener(OnCard3Clicked);
+            if (TimeScaleButton != null)
+            {
+                TimeScaleButton.onClick.AddListener(OnTimeScaleClicked);
+            }
         }
 
         protected override void OnShow()
@@ -92,11 +99,13 @@ namespace Babel
         protected override void OnClose()
         {
             UnsubscribeEvents();
+            ResetTimeScale();
         }
 
         private void OnDestroy()
         {
             UnsubscribeEvents();
+            ResetTimeScale();
         }
 
         private void UnsubscribeEvents()
@@ -119,6 +128,11 @@ namespace Babel
             if (Card3Btn != null)
             {
                 Card3Btn.onClick.RemoveListener(OnCard3Clicked);
+            }
+
+            if (TimeScaleButton != null)
+            {
+                TimeScaleButton.onClick.RemoveListener(OnTimeScaleClicked);
             }
         }
 
@@ -179,6 +193,41 @@ namespace Babel
         private void OnCard3Clicked()
         {
             UpgradeEvents.RaiseOptionSelected(2);
+        }
+
+        private void OnTimeScaleClicked()
+        {
+            _timeScaleIndex = GetNextTimeScaleIndex(_timeScaleIndex, TIME_SCALES.Length);
+            ApplyTimeScale();
+        }
+
+        private void ApplyTimeScale()
+        {
+            float scale = TIME_SCALES[_timeScaleIndex];
+            if (Time.timeScale > 0f)
+            {
+                Time.timeScale = scale;
+            }
+
+            if (TimeScaleText != null)
+            {
+                TimeScaleText.text = $"{scale:0}x";
+            }
+        }
+
+        private void ResetTimeScale()
+        {
+            _timeScaleIndex = 0;
+            Time.timeScale = TIME_SCALES[_timeScaleIndex];
+            if (TimeScaleText != null)
+            {
+                TimeScaleText.text = "1x";
+            }
+        }
+
+        private static int GetNextTimeScaleIndex(int currentIndex, int scaleCount)
+        {
+            return (currentIndex + 1) % scaleCount;
         }
 
         private void OnPointerDown(PointerInputContext context)
