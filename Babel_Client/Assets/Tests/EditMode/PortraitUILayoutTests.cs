@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using System;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,8 +42,12 @@ namespace Babel.Tests
 
             try
             {
-                AssertCornerControl(panel, "TimeScale", new Vector2(0f, 1f), new Vector2(72f, -72f));
+                ApplyRuntimePortraitLayout(panel);
+                AssertCornerControl(panel, "PauseButton", new Vector2(0f, 1f), new Vector2(24f, -72f), new Vector2(32f, 80f));
+                AssertCornerControl(panel, "TimeScale", new Vector2(0f, 1f), new Vector2(84f, -72f), new Vector2(80f, 80f));
+                AssertTopCenter(panel, "LevelTimer/TimerText", -56f, 180f, 56f);
                 AssertCornerControl(panel, "MainSkill_Image", new Vector2(1f, 1f), new Vector2(-72f, -72f));
+                AssertPassiveColumn(panel, "PassiveSkillList");
                 AssertBottomStretch(panel, "EXP_Info", 64f, -64f, 96f);
                 AssertBottomStretch(panel, "EXP_Info/EXPScrollbar", 24f, -32f, 20f);
             }
@@ -58,9 +64,10 @@ namespace Babel.Tests
 
             try
             {
-                AssertPortraitCard(panel, "UpgradePanel/Card1Btn", -230f);
+                ApplyRuntimePortraitLayout(panel);
+                AssertPortraitCard(panel, "UpgradePanel/Card1Btn", -215f);
                 AssertPortraitCard(panel, "UpgradePanel/Card2Btn", 0f);
-                AssertPortraitCard(panel, "UpgradePanel/Card3Btn", 230f);
+                AssertPortraitCard(panel, "UpgradePanel/Card3Btn", 215f);
             }
             finally
             {
@@ -75,6 +82,7 @@ namespace Babel.Tests
 
             try
             {
+                ApplyRuntimePortraitLayout(panel);
                 RectTransform upgradePanel = RequireRect(panel, "UpgradePanel");
                 LayoutGroup[] layoutGroups = upgradePanel.GetComponents<LayoutGroup>();
 
@@ -97,6 +105,7 @@ namespace Babel.Tests
 
             try
             {
+                ApplyRuntimePortraitLayout(panel);
                 AssertPortraitCardText(panel, "UpgradePanel/Card1Btn");
                 AssertPortraitCardText(panel, "UpgradePanel/Card2Btn");
                 AssertPortraitCardText(panel, "UpgradePanel/Card3Btn");
@@ -129,14 +138,41 @@ namespace Babel.Tests
             GameObject panel,
             string path,
             Vector2 expectedAnchor,
-            Vector2 expectedPosition)
+            Vector2 expectedPosition,
+            Vector2 expectedSize = default)
         {
             RectTransform rect = RequireRect(panel, path);
 
             Assert.That(rect.anchorMin, Is.EqualTo(expectedAnchor));
             Assert.That(rect.anchorMax, Is.EqualTo(expectedAnchor));
             Assert.That(rect.anchoredPosition, Is.EqualTo(expectedPosition));
-            Assert.That(rect.sizeDelta, Is.EqualTo(new Vector2(80f, 80f)));
+            Vector2 size = expectedSize == default ? new Vector2(80f, 80f) : expectedSize;
+            Assert.That(rect.sizeDelta, Is.EqualTo(size));
+        }
+
+        private static void AssertTopCenter(
+            GameObject panel,
+            string path,
+            float expectedY,
+            float expectedWidth,
+            float expectedHeight)
+        {
+            RectTransform rect = RequireRect(panel, path);
+
+            Assert.That(rect.anchorMin, Is.EqualTo(new Vector2(0.5f, 1f)));
+            Assert.That(rect.anchorMax, Is.EqualTo(new Vector2(0.5f, 1f)));
+            Assert.That(rect.anchoredPosition, Is.EqualTo(new Vector2(0f, expectedY)));
+            Assert.That(rect.sizeDelta, Is.EqualTo(new Vector2(expectedWidth, expectedHeight)));
+        }
+
+        private static void AssertPassiveColumn(GameObject panel, string path)
+        {
+            RectTransform rect = RequireRect(panel, path);
+
+            Assert.That(rect.anchorMin, Is.EqualTo(new Vector2(1f, 1f)));
+            Assert.That(rect.anchorMax, Is.EqualTo(new Vector2(1f, 1f)));
+            Assert.That(rect.anchoredPosition, Is.EqualTo(new Vector2(-24f, -118f)));
+            Assert.That(rect.sizeDelta, Is.EqualTo(new Vector2(40f, 360f)));
         }
 
         private static void AssertBottomStretch(
@@ -162,23 +198,41 @@ namespace Babel.Tests
             Assert.That(rect.anchorMin, Is.EqualTo(new Vector2(0.5f, 0.5f)));
             Assert.That(rect.anchorMax, Is.EqualTo(new Vector2(0.5f, 0.5f)));
             Assert.That(rect.anchoredPosition, Is.EqualTo(new Vector2(expectedX, 0f)));
-            Assert.That(rect.sizeDelta, Is.EqualTo(new Vector2(210f, 360f)));
+            Assert.That(rect.sizeDelta, Is.EqualTo(new Vector2(190f, 280f)));
         }
 
         private static void AssertPortraitCardText(GameObject panel, string cardPath)
         {
             RectTransform card = RequireRect(panel, cardPath);
-            Text text = card.GetComponentInChildren<Text>(true);
 
-            Assert.That(text, Is.Not.Null, $"{cardPath} should have a text label.");
-            Assert.That(text.rectTransform.anchorMin, Is.EqualTo(Vector2.zero));
-            Assert.That(text.rectTransform.anchorMax, Is.EqualTo(Vector2.one));
-            Assert.That(text.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
-            Assert.That(text.rectTransform.sizeDelta, Is.EqualTo(new Vector2(-48f, -40f)));
-            Assert.That(text.fontSize, Is.EqualTo(30));
+            AssertCardChild(card, "SkillIcon", new Vector2(0f, 126f), new Vector2(56f, 56f));
+            AssertCardText(card, "TypeLabel", new Vector2(0f, 78f), new Vector2(88f, 26f), 20);
+            AssertCardText(card, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
+            AssertCardText(card, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
+        }
+
+        private static void AssertCardText(RectTransform card, string childName, Vector2 position, Vector2 sizeDelta, int fontSize)
+        {
+            RectTransform rect = AssertCardChild(card, childName, position, sizeDelta);
+            Text text = rect.GetComponent<Text>();
+
+            Assert.That(text, Is.Not.Null, $"{childName} should have a text label.");
+            Assert.That(text.fontSize, Is.EqualTo(fontSize));
             Assert.That(text.resizeTextForBestFit, Is.True);
             Assert.That(text.resizeTextMinSize, Is.EqualTo(12));
-            Assert.That(text.resizeTextMaxSize, Is.EqualTo(32));
+            Assert.That(text.resizeTextMaxSize, Is.EqualTo(fontSize));
+        }
+
+        private static RectTransform AssertCardChild(RectTransform card, string childName, Vector2 position, Vector2 sizeDelta)
+        {
+            Transform child = card.Find(childName);
+            Assert.That(child, Is.Not.Null, $"{card.name}/{childName} should exist.");
+            RectTransform rect = (RectTransform)child;
+            Assert.That(rect.anchorMin, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(rect.anchorMax, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(rect.anchoredPosition, Is.EqualTo(position));
+            Assert.That(rect.sizeDelta, Is.EqualTo(sizeDelta));
+            return rect;
         }
 
         private static void AssertFullScreenRoot(RectTransform rect)
@@ -209,6 +263,17 @@ namespace Babel.Tests
             Transform target = panel.transform.Find(path);
             Assert.That(target, Is.Not.Null, $"{path} should exist in UIGamePanel prefab.");
             return (RectTransform)target;
+        }
+
+        private static void ApplyRuntimePortraitLayout(GameObject panel)
+        {
+            Type panelType = Type.GetType("Babel.UIGamePanel, Assembly-CSharp");
+            Assert.That(panelType, Is.Not.Null);
+            Component gamePanel = panel.GetComponent(panelType);
+            Assert.That(gamePanel, Is.Not.Null);
+            MethodInfo method = panelType.GetMethod("ApplyRuntimePortraitLayout", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null);
+            method.Invoke(gamePanel, Array.Empty<object>());
         }
     }
 }

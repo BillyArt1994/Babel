@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using QFramework;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
 namespace Babel
 {
@@ -16,9 +15,22 @@ namespace Babel
 
         private Canvas _canvas;
         private RectTransform _panelRectTransform;
+        private RectTransform _passiveSkillList;
+        private Text _passiveOverflowText;
+        private Button _pauseButton;
+        private Text _pauseButtonText;
         private readonly Button[] _upgradeButtons = new Button[3];
         private IReadOnlyList<SkillConfig> _currentOptions = Array.Empty<SkillConfig>();
         private int _timeScaleIndex;
+        private bool _pausedByButton;
+        private float _timeScaleBeforePause = 1f;
+        private const int MAX_PASSIVE_ICON_COUNT = 8;
+        private static readonly Color UPGRADE_CARD_BACKGROUND_COLOR = new Color(0.10f, 0.08f, 0.14f, 0.94f);
+        private static readonly Color UPGRADE_CARD_HIGHLIGHT_COLOR = new Color(0.18f, 0.14f, 0.24f, 0.98f);
+        private static readonly Color UPGRADE_CARD_PRESSED_COLOR = new Color(0.26f, 0.20f, 0.32f, 1f);
+        private static readonly Color UPGRADE_CARD_TITLE_COLOR = new Color(1f, 0.92f, 0.66f, 1f);
+        private static readonly Color UPGRADE_CARD_BODY_COLOR = new Color(0.94f, 0.90f, 0.84f, 1f);
+        private static readonly Color UPGRADE_CARD_TYPE_COLOR = new Color(1f, 0.72f, 0.28f, 1f);
 
         protected override void OnInit(IUIData uiData = null)
         {
@@ -29,9 +41,11 @@ namespace Babel
             _upgradeButtons[0] = Card1Btn;
             _upgradeButtons[1] = Card2Btn;
             _upgradeButtons[2] = Card3Btn;
+            ApplyRuntimePortraitLayout();
             ChargeRing.gameObject.SetActive(false);
             ChargeRing_Fill.fillAmount = 0;
             UpdateMainSkillCooldownFill();
+            RefreshSkillHudFromSystem();
             ResetTimeScale();
 
             // please add init code here
@@ -58,12 +72,8 @@ namespace Babel
 
             ActionKit.OnUpdate.Register(() =>
             {
-                Global.CurrentTime.Value -= Time.deltaTime;
+                GameSession.TickCountdown(Time.deltaTime);
                 UpdateMainSkillCooldownFill();
-                if (Global.CurrentTime.Value <= 0)
-                {
-                    UIKit.OpenPanel<UIGamePassPanel>();
-                }
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
 
@@ -77,12 +87,19 @@ namespace Babel
             InputEvents.OnPointerUp += OnPointerUp;
             InputEvents.OnPointerCancel += OnPointerCancel;
             UpgradeEvents.OnOptionsGenerated += OnUpgradeOptionsGenerated;
+            SkillEvents.OnEquippedSkillsChanged += RefreshSkillHud;
+            GameSession.OnGameEnded += OnGameEnded;
             Card1Btn.onClick.AddListener(OnCard1Clicked);
             Card2Btn.onClick.AddListener(OnCard2Clicked);
             Card3Btn.onClick.AddListener(OnCard3Clicked);
             if (TimeScaleButton != null)
             {
                 TimeScaleButton.onClick.AddListener(OnTimeScaleClicked);
+            }
+
+            if (_pauseButton != null)
+            {
+                _pauseButton.onClick.AddListener(OnPauseClicked);
             }
         }
 
@@ -115,6 +132,8 @@ namespace Babel
             InputEvents.OnPointerUp -= OnPointerUp;
             InputEvents.OnPointerCancel -= OnPointerCancel;
             UpgradeEvents.OnOptionsGenerated -= OnUpgradeOptionsGenerated;
+            SkillEvents.OnEquippedSkillsChanged -= RefreshSkillHud;
+            GameSession.OnGameEnded -= OnGameEnded;
             if (Card1Btn != null)
             {
                 Card1Btn.onClick.RemoveListener(OnCard1Clicked);
@@ -133,6 +152,11 @@ namespace Babel
             if (TimeScaleButton != null)
             {
                 TimeScaleButton.onClick.RemoveListener(OnTimeScaleClicked);
+            }
+
+            if (_pauseButton != null)
+            {
+                _pauseButton.onClick.RemoveListener(OnPauseClicked);
             }
         }
 
@@ -165,11 +189,7 @@ namespace Babel
             }
 
             SkillConfig config = _currentOptions[index];
-            Text label = button.GetComponentInChildren<Text>(true);
-            if (label != null)
-            {
-                label.text = $"{config.SkillName}\n{config.Description}";
-            }
+            ConfigureUpgradeCard(button, config);
         }
 
         private void SetUpgradeButtonsActive(bool active)
@@ -178,6 +198,97 @@ namespace Babel
             {
                 _upgradeButtons[i].gameObject.SetActive(active);
             }
+        }
+
+        private void ConfigureUpgradeCard(Button button, SkillConfig config)
+        {
+            if (button == null || config == null)
+            {
+                return;
+            }
+
+            ApplyUpgradeCardStyle(button);
+
+            Image icon = EnsureCardIcon(button.transform);
+            icon.sprite = SkillIconLoader.LoadIcon(config);
+
+            Text typeLabel = FindOrCreateCardText(button.transform, "TypeLabel", new Vector2(0f, 78f), new Vector2(88f, 26f), 20);
+            typeLabel.text = IsPassiveSkill(config) ? "被动" : "主动";
+            typeLabel.color = UPGRADE_CARD_TYPE_COLOR;
+
+            Text nameText = FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
+            nameText.text = config.SkillName;
+            nameText.color = UPGRADE_CARD_TITLE_COLOR;
+
+            Text descriptionText = FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
+            descriptionText.text = config.Description;
+            descriptionText.color = UPGRADE_CARD_BODY_COLOR;
+        }
+
+        private Image EnsureCardIcon(Transform card)
+        {
+            Transform existing = card.Find("SkillIcon");
+            Image icon = existing != null ? existing.GetComponent<Image>() : null;
+            if (icon != null)
+            {
+                ApplyCardRect(icon.rectTransform, new Vector2(0f, 126f), new Vector2(56f, 56f));
+                return icon;
+            }
+
+            var iconObject = new GameObject("SkillIcon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(card, false);
+            RectTransform rect = (RectTransform)iconObject.transform;
+            ApplyCardRect(rect, new Vector2(0f, 126f), new Vector2(56f, 56f));
+            return iconObject.GetComponent<Image>();
+        }
+
+        private Text FindOrCreateCardText(Transform card, string name, Vector2 position, Vector2 sizeDelta, int fontSize)
+        {
+            Transform existing = card.Find(name);
+            Text text = existing != null ? existing.GetComponent<Text>() : null;
+            if (text == null)
+            {
+                text = EnsureCardText(card, name);
+            }
+
+            ApplyCardTextLayout(text, position, sizeDelta, fontSize);
+            return text;
+        }
+
+        private Text EnsureCardText(Transform card, string name)
+        {
+            var textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
+            textObject.transform.SetParent(card, false);
+            Text text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.color = UPGRADE_CARD_BODY_COLOR;
+            return text;
+        }
+
+        private void ApplyCardTextLayout(Text text, Vector2 position, Vector2 sizeDelta, int fontSize)
+        {
+            RectTransform rect = text.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = sizeDelta;
+
+            text.alignment = TextAnchor.MiddleCenter;
+            text.fontSize = fontSize;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 12;
+            text.resizeTextMaxSize = fontSize;
+            text.color = UPGRADE_CARD_BODY_COLOR;
+        }
+
+        private void ApplyCardRect(RectTransform rect, Vector2 position, Vector2 sizeDelta)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = sizeDelta;
         }
 
         private void OnCard1Clicked()
@@ -197,8 +308,35 @@ namespace Babel
 
         private void OnTimeScaleClicked()
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             _timeScaleIndex = GetNextTimeScaleIndex(_timeScaleIndex, TIME_SCALES.Length);
             ApplyTimeScale();
+        }
+
+        private void OnPauseClicked()
+        {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
+            EnsureRuntimeHudControls();
+            if (!_pausedByButton)
+            {
+                _timeScaleBeforePause = Time.timeScale > 0f ? Time.timeScale : TIME_SCALES[_timeScaleIndex];
+                Time.timeScale = 0f;
+                _pausedByButton = true;
+                UpdatePauseButtonText();
+                return;
+            }
+
+            Time.timeScale = _timeScaleBeforePause;
+            _pausedByButton = false;
+            UpdatePauseButtonText();
         }
 
         private void ApplyTimeScale()
@@ -217,12 +355,21 @@ namespace Babel
 
         private void ResetTimeScale()
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             _timeScaleIndex = 0;
+            _pausedByButton = false;
+            _timeScaleBeforePause = TIME_SCALES[_timeScaleIndex];
             Time.timeScale = TIME_SCALES[_timeScaleIndex];
             if (TimeScaleText != null)
             {
                 TimeScaleText.text = "1x";
             }
+
+            UpdatePauseButtonText();
         }
 
         private static int GetNextTimeScaleIndex(int currentIndex, int scaleCount)
@@ -230,8 +377,139 @@ namespace Babel
             return (currentIndex + 1) % scaleCount;
         }
 
+        private void EnsureRuntimeHudControls()
+        {
+            Transform existing = transform.Find("PauseButton");
+            if (existing != null)
+            {
+                _pauseButton = existing.GetComponent<Button>();
+                _pauseButtonText = existing.GetComponentInChildren<Text>(true);
+            }
+            else
+            {
+                var pauseObject = new GameObject("PauseButton", typeof(RectTransform), typeof(Image), typeof(Button));
+                pauseObject.transform.SetParent(transform, false);
+                Image background = pauseObject.GetComponent<Image>();
+                background.color = new Color(1f, 1f, 1f, 0.65f);
+                _pauseButton = pauseObject.GetComponent<Button>();
+                CreatePauseText(pauseObject.transform);
+            }
+
+            ApplyAnchoredRect((RectTransform)_pauseButton.transform, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(24f, -72f), new Vector2(32f, 80f));
+            UpdatePauseButtonText();
+        }
+
+        private void CreatePauseText(Transform parent)
+        {
+            var labelObject = new GameObject("PauseText", typeof(RectTransform), typeof(Text));
+            labelObject.transform.SetParent(parent, false);
+            RectTransform labelRect = (RectTransform)labelObject.transform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.sizeDelta = Vector2.zero;
+            labelRect.anchoredPosition = Vector2.zero;
+
+            _pauseButtonText = labelObject.GetComponent<Text>();
+            _pauseButtonText.alignment = TextAnchor.MiddleCenter;
+            _pauseButtonText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _pauseButtonText.fontSize = 24;
+            _pauseButtonText.color = Color.black;
+        }
+
+        private void ApplyRuntimePortraitLayout()
+        {
+            EnsureRuntimeHudControls();
+            ApplyHudRect(transform.Find("TimeScale") as RectTransform, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(84f, -72f), new Vector2(80f, 80f));
+            ApplyHudRect(TimerText != null ? TimerText.rectTransform : null, new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -56f), new Vector2(180f, 56f));
+            ApplyHudRect(MainSkill_Image != null ? MainSkill_Image.rectTransform : null, new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-72f, -72f), new Vector2(80f, 80f));
+            EnsurePassiveSkillList();
+            LayoutUpgradeCards();
+        }
+
+        private void ApplyHudRect(RectTransform rect, Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            ApplyAnchoredRect(rect, anchor, pivot, position, size);
+        }
+
+        private void ApplyAnchoredRect(RectTransform rect, Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size)
+        {
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = pivot;
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+        }
+
+        private void LayoutUpgradeCards()
+        {
+            if (UpgradePanel == null)
+            {
+                return;
+            }
+
+            LayoutGroup[] layoutGroups = UpgradePanel.GetComponents<LayoutGroup>();
+            for (int i = 0; i < layoutGroups.Length; i++)
+            {
+                layoutGroups[i].enabled = false;
+            }
+
+            LayoutUpgradeCard(Card1Btn, -215f);
+            LayoutUpgradeCard(Card2Btn, 0f);
+            LayoutUpgradeCard(Card3Btn, 215f);
+        }
+
+        private void LayoutUpgradeCard(Button button, float x)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            ApplyCardRect(button.transform as RectTransform, new Vector2(x, 0f), new Vector2(190f, 280f));
+            ApplyUpgradeCardStyle(button);
+            EnsureCardIcon(button.transform);
+            FindOrCreateCardText(button.transform, "TypeLabel", new Vector2(0f, 78f), new Vector2(88f, 26f), 20);
+            FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
+            FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
+        }
+
+        private void ApplyUpgradeCardStyle(Button button)
+        {
+            Image image = button.GetComponent<Image>();
+            if (image != null)
+            {
+                image.color = UPGRADE_CARD_BACKGROUND_COLOR;
+            }
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = UPGRADE_CARD_BACKGROUND_COLOR;
+            colors.highlightedColor = UPGRADE_CARD_HIGHLIGHT_COLOR;
+            colors.pressedColor = UPGRADE_CARD_PRESSED_COLOR;
+            colors.selectedColor = UPGRADE_CARD_HIGHLIGHT_COLOR;
+            colors.disabledColor = new Color(0.18f, 0.16f, 0.20f, 0.55f);
+            button.colors = colors;
+        }
+
+        private void UpdatePauseButtonText()
+        {
+            if (_pauseButtonText != null)
+            {
+                _pauseButtonText.text = _pausedByButton ? "▶" : "Ⅱ";
+            }
+        }
+
         private void OnPointerDown(PointerInputContext context)
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             if (IsMainSkillCoolingDown())
             {
                 HideChargeRing();
@@ -245,6 +523,11 @@ namespace Babel
 
         private void OnPointerHold(PointerInputContext context)
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             if (IsMainSkillCoolingDown())
             {
                 HideChargeRing();
@@ -257,11 +540,21 @@ namespace Babel
 
         private void OnPointerUp(PointerInputContext context)
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             HideChargeRing();
         }
 
         private void OnPointerCancel(PointerInputContext context)
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             HideChargeRing();
         }
 
@@ -305,6 +598,175 @@ namespace Babel
                 SkillSystem.Instance.GetActiveClickCooldownProgress() > 0f;
         }
 
+        private void RefreshSkillHudFromSystem()
+        {
+            RefreshSkillHud(SkillSystem.Instance != null
+                ? SkillSystem.Instance.GetEquippedSkillsAsConfigs()
+                : Array.Empty<SkillConfig>());
+        }
+
+        private void RefreshSkillHud(IReadOnlyList<SkillConfig> skills)
+        {
+            EnsurePassiveSkillList();
+            SkillConfig activeSkill = null;
+            var passiveSkills = new List<SkillConfig>();
+
+            for (int i = 0; i < skills.Count; i++)
+            {
+                SkillConfig config = skills[i];
+                if (IsPassiveSkill(config))
+                {
+                    passiveSkills.Add(config);
+                }
+                else if (activeSkill == null)
+                {
+                    activeSkill = config;
+                }
+            }
+
+            if (MainSkill_Image != null)
+            {
+                MainSkill_Image.sprite = SkillIconLoader.LoadIcon(activeSkill);
+            }
+
+            RefreshPassiveIcons(passiveSkills);
+        }
+
+        private void EnsurePassiveSkillList()
+        {
+            if (_passiveSkillList != null)
+            {
+                LayoutPassiveSkillList();
+                return;
+            }
+
+            Transform existing = transform.Find("PassiveSkillList");
+            if (existing != null)
+            {
+                _passiveSkillList = (RectTransform)existing;
+            }
+            else
+            {
+                var listObject = new GameObject("PassiveSkillList", typeof(RectTransform), typeof(VerticalLayoutGroup));
+                listObject.transform.SetParent(transform, false);
+                _passiveSkillList = (RectTransform)listObject.transform;
+            }
+
+            LayoutPassiveSkillList();
+            VerticalLayoutGroup layout = _passiveSkillList.GetComponent<VerticalLayoutGroup>();
+            if (layout == null)
+            {
+                layout = _passiveSkillList.gameObject.AddComponent<VerticalLayoutGroup>();
+            }
+
+            if (layout != null)
+            {
+                layout.childAlignment = TextAnchor.UpperCenter;
+                layout.spacing = 6f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = false;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+            }
+
+        }
+
+        private void LayoutPassiveSkillList()
+        {
+            ApplyAnchoredRect(_passiveSkillList, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -118f), new Vector2(40f, 360f));
+        }
+
+        private void EnsurePassiveOverflowText()
+        {
+            Transform existing = _passiveSkillList.Find("OverflowText");
+            if (existing != null)
+            {
+                _passiveOverflowText = existing.GetComponent<Text>();
+                return;
+            }
+
+            var overflowObject = new GameObject("OverflowText", typeof(RectTransform), typeof(Text));
+            overflowObject.transform.SetParent(_passiveSkillList, false);
+            RectTransform overflowRect = (RectTransform)overflowObject.transform;
+            overflowRect.sizeDelta = new Vector2(36f, 22f);
+            _passiveOverflowText = overflowObject.GetComponent<Text>();
+            _passiveOverflowText.alignment = TextAnchor.MiddleCenter;
+            _passiveOverflowText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _passiveOverflowText.fontSize = 14;
+            _passiveOverflowText.color = Color.white;
+            _passiveOverflowText.gameObject.SetActive(false);
+        }
+
+        private void RefreshPassiveIcons(IReadOnlyList<SkillConfig> passiveSkills)
+        {
+            ClearPassiveIconChildren();
+            int visibleCount = Mathf.Min(passiveSkills.Count, MAX_PASSIVE_ICON_COUNT);
+            for (int i = 0; i < visibleCount; i++)
+            {
+                var iconObject = new GameObject($"PassiveSkillIcon_{i}", typeof(RectTransform), typeof(PassiveSkillIconView));
+                iconObject.transform.SetParent(_passiveSkillList, false);
+                iconObject.GetComponent<PassiveSkillIconView>().Configure(passiveSkills[i], 1);
+            }
+
+            int overflowCount = passiveSkills.Count - visibleCount;
+            if (overflowCount > 0)
+            {
+                EnsurePassiveOverflowText();
+                _passiveOverflowText.transform.SetAsLastSibling();
+                _passiveOverflowText.gameObject.SetActive(true);
+                _passiveOverflowText.text = $"+{overflowCount}";
+            }
+            else if (_passiveOverflowText != null)
+            {
+                DestroyPassiveChild(_passiveOverflowText.gameObject);
+                _passiveOverflowText = null;
+            }
+        }
+
+        private void ClearPassiveIconChildren()
+        {
+            for (int i = _passiveSkillList.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _passiveSkillList.GetChild(i);
+                if (_passiveOverflowText != null && child == _passiveOverflowText.transform)
+                {
+                    continue;
+                }
+
+                DestroyPassiveChild(child.gameObject);
+            }
+        }
+
+        private void DestroyPassiveChild(GameObject child)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(child);
+            }
+            else
+            {
+                DestroyImmediate(child);
+            }
+        }
+
+        private static bool IsPassiveSkill(SkillConfig config)
+        {
+            return config != null && config.TriggerType != "OnClick";
+        }
+
+        private void OnGameEnded(GameSessionResult result)
+        {
+            if (result.Reason == GameEndReason.Victory)
+            {
+                UIKit.OpenPanel<UIGamePassPanel>();
+            }
+            else if (result.Reason == GameEndReason.Defeat)
+            {
+                UIKit.OpenPanel<UIGameOverPanel>();
+            }
+
+            gameObject.SetActive(false);
+        }
 
     }
 }

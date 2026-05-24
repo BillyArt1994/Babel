@@ -17,6 +17,32 @@ namespace Babel
 		
 		protected override void OnOpen(IUIData uiData = null)
 		{
+			SettlementPanelRuntime.Configure(
+				transform,
+				GameSession.Result,
+				RestartFromSettlement,
+				ReturnToMenuFromSettlement);
+		}
+
+		private void RestartFromSettlement()
+		{
+			CloseBeforeSceneTransition();
+			GameSession.RestartGame();
+		}
+
+		private void ReturnToMenuFromSettlement()
+		{
+			CloseBeforeSceneTransition();
+			GameSession.ReturnToMainMenu();
+		}
+
+		private void CloseBeforeSceneTransition()
+		{
+			gameObject.SetActive(false);
+			if (Application.isPlaying)
+			{
+				CloseSelf();
+			}
 		}
 		
 		protected override void OnShow()

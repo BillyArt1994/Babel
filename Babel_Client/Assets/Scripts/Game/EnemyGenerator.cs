@@ -48,10 +48,15 @@ namespace Babel
 
         private void Update()
         {
-            if (_scheduler == null) return;
+            if (!ShouldUpdateScheduler()) return;
 
             float elapsedTime = 900f - Global.CurrentTime.Value;
             _scheduler.Update(elapsedTime, Time.deltaTime);
+        }
+
+        private bool ShouldUpdateScheduler()
+        {
+            return _scheduler != null && GameSession.IsPlaying;
         }
 
         private void OnDestroy()

@@ -67,6 +67,79 @@ namespace Babel.Tests
         }
 
         [Test]
+        public void BuildPoint_WhenBuilt_TransitionsHiddenToBuildingToCompleted()
+        {
+            Type buildPointType = RequireType("Babel.BuildPoint");
+            Type buildPointStateType = RequireType("Babel.BuildPointState");
+            Type debugBarType = RequireType("Babel.DebugBuildProgressBar");
+            var buildPointObject = new GameObject("BuildPointStateAndColorTest");
+
+            try
+            {
+                SpriteRenderer renderer = buildPointObject.AddComponent<SpriteRenderer>();
+                renderer.color = Color.black;
+                Component buildPoint = buildPointObject.AddComponent(buildPointType);
+                buildPointType.GetField("buildAmount", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(buildPoint, 50);
+
+                InvokeAwake(buildPointType, buildPoint);
+                Component debugBar = (Component)buildPointObject.GetComponentInChildren(debugBarType, true);
+                Assert.That(debugBar, Is.Not.Null);
+                InvokeAwake(debugBarType, debugBar);
+
+                PropertyInfo stateProperty = RequireProperty(buildPointType, "State");
+                object hiddenState = Enum.Parse(buildPointStateType, "Hidden");
+                object buildingState = Enum.Parse(buildPointStateType, "Building");
+                object completedState = Enum.Parse(buildPointStateType, "Completed");
+
+                Assert.That(stateProperty.GetValue(buildPoint), Is.EqualTo(hiddenState));
+                Assert.That(renderer.enabled, Is.False);
+                AssertRenderersEnabled(debugBar.GetComponentsInChildren<SpriteRenderer>(true), false);
+                buildPointObject.SetActive(false);
+                Assert.That(buildPointObject.activeSelf, Is.False);
+
+                buildPointType.GetMethod("BeginBuild").Invoke(buildPoint, null);
+                InvokePrivate(debugBarType, debugBar, "LateUpdate");
+
+                Assert.That(buildPointObject.activeSelf, Is.True);
+                Assert.That(stateProperty.GetValue(buildPoint), Is.EqualTo(buildingState));
+                Assert.That(renderer.enabled, Is.True);
+                Assert.That(renderer.color, Is.EqualTo(Color.white));
+                AssertRenderersEnabled(debugBar.GetComponentsInChildren<SpriteRenderer>(true), true);
+
+                buildPointType.GetMethod("AddBuildProgress").Invoke(buildPoint, new object[] { 50 });
+
+                Assert.That(stateProperty.GetValue(buildPoint), Is.EqualTo(completedState));
+                Assert.That(RequireProperty(buildPointType, "IsBuildCompleted").GetValue(buildPoint), Is.EqualTo(true));
+                Assert.That(buildPointObject.activeSelf, Is.True);
+                Assert.That(renderer.enabled, Is.True);
+                Assert.That(renderer.color, Is.EqualTo(Color.red));
+
+                buildPointType.GetMethod("Reset").Invoke(buildPoint, null);
+                InvokePrivate(debugBarType, debugBar, "LateUpdate");
+
+                Assert.That(stateProperty.GetValue(buildPoint), Is.EqualTo(hiddenState));
+                Assert.That(RequireProperty(buildPointType, "IsBuildCompleted").GetValue(buildPoint), Is.EqualTo(false));
+                Assert.That(buildPointObject.activeSelf, Is.False);
+                Assert.That(renderer.enabled, Is.False);
+                AssertRenderersEnabled(debugBar.GetComponentsInChildren<SpriteRenderer>(true), false);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(buildPointObject);
+            }
+        }
+
+        [Test]
+        public void BuildEvents_ExposesBuildStateChangedEvent()
+        {
+            Type buildEventsType = RequireType("Babel.BuildEvents");
+            EventInfo stateChangedEvent = buildEventsType.GetEvent("OnBuildStateChanged", BindingFlags.Public | BindingFlags.Static);
+
+            Assert.That(stateChangedEvent, Is.Not.Null);
+        }
+
+        [Test]
         public void Enemy_WhenCreated_AddsDebugHealthBar()
         {
             Type enemyType = RequireType("Babel.Enemy");
@@ -289,6 +362,15 @@ namespace Babel.Tests
             MethodInfo method = type.GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(method, Is.Not.Null, $"{type.FullName}.{methodName} should exist.");
             method.Invoke(component, null);
+        }
+
+        private static void AssertRenderersEnabled(SpriteRenderer[] renderers, bool expectedEnabled)
+        {
+            Assert.That(renderers.Length, Is.GreaterThan(0));
+            foreach (SpriteRenderer renderer in renderers)
+            {
+                Assert.That(renderer.enabled, Is.EqualTo(expectedEnabled));
+            }
         }
     }
 }

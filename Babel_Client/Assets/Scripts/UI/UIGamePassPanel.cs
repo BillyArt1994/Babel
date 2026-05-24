@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using QFramework;
-using UnityEngine.SceneManagement;
 
 namespace Babel
 {
@@ -14,19 +13,36 @@ namespace Babel
 		{
 			mData = uiData as UIGamePassPanelData ?? new UIGamePassPanelData();
 			// please add init code here
-			Time.timeScale = 0.0f;
-			ActionKit.OnUpdate.Register(() =>
-			{
-				if(Input.GetKeyDown(KeyCode.Space))
-				{
-					this.CloseSelf();
-					SceneManager.LoadScene("GameScene");
-				}
-			}).UnRegisterWhenGameObjectDestroyed(gameObject);
 		}
 		
 		protected override void OnOpen(IUIData uiData = null)
 		{
+			SettlementPanelRuntime.Configure(
+				transform,
+				GameSession.Result,
+				RestartFromSettlement,
+				ReturnToMenuFromSettlement);
+		}
+
+		private void RestartFromSettlement()
+		{
+			CloseBeforeSceneTransition();
+			GameSession.RestartGame();
+		}
+
+		private void ReturnToMenuFromSettlement()
+		{
+			CloseBeforeSceneTransition();
+			GameSession.ReturnToMainMenu();
+		}
+
+		private void CloseBeforeSceneTransition()
+		{
+			gameObject.SetActive(false);
+			if (Application.isPlaying)
+			{
+				CloseSelf();
+			}
 		}
 		
 		protected override void OnShow()
@@ -39,7 +55,6 @@ namespace Babel
 		
 		protected override void OnClose()
 		{
-			Time.timeScale = 0.0f;
 		}
 	}
 }

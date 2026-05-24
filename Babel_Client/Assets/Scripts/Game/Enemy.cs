@@ -175,6 +175,11 @@ namespace Babel
 
         private void Update()
         {
+            if (GameSession.IsGameEnded)
+            {
+                return;
+            }
+
             TickHitFlash(Time.deltaTime);
 
             // Death check
@@ -234,7 +239,8 @@ namespace Babel
                 transform.position = targetPos;
                 _buildTimer = _data != null ? _data.BuildTime : 0f;
                 _moveState = EnemyMoveState.Building;
-                BuildEvents.RaiseBuildStarted(currentPath.wayPointList[_targetBuildPointIndex]);
+                target.BeginBuild();
+                BuildEvents.RaiseBuildStarted(target);
             }
         }
 
@@ -283,7 +289,7 @@ namespace Babel
         {
             if (currentPath.nextLayerPath == null)
             {
-                UIKit.OpenPanel<UIGameOverPanel>();
+                GameSession.EndGame(GameEndReason.Defeat);
                 return;
             }
 
@@ -399,6 +405,7 @@ namespace Babel
             }
 
             _deathCompleted = true;
+            StatsTracker.RecordKill();
             EnemyEvents.RaiseEnemyDied(Position);
             if (waveEventId >= 0)
             {

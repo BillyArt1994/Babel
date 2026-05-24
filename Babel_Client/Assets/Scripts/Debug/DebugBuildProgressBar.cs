@@ -30,6 +30,18 @@ namespace Babel
             }
 
             base.Awake();
+            SetVisible(ShouldShow());
+        }
+
+        protected override void LateUpdate()
+        {
+            SetVisible(ShouldShow());
+            base.LateUpdate();
+        }
+
+        private bool ShouldShow()
+        {
+            return _buildPoint != null && _buildPoint.State != BuildPointState.Hidden;
         }
     }
 }

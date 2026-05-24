@@ -14,6 +14,8 @@ namespace Babel
         private static Sprite _sharedSprite;
 
         private Transform _fillTransform;
+        private SpriteRenderer _backgroundRenderer;
+        private SpriteRenderer _fillRenderer;
 
         protected virtual Vector3 LocalOffset => Vector3.up * 1.0f;
         protected abstract Color FillColor { get; }
@@ -35,9 +37,27 @@ namespace Babel
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
 
-            CreateSegment("Background", Color.black, BAR_WIDTH, BAR_HEIGHT, 0f);
-            _fillTransform = CreateSegment("Fill", FillColor, BAR_WIDTH, BAR_HEIGHT, -0.01f);
+            _backgroundRenderer = CreateSegment("Background", Color.black, BAR_WIDTH, BAR_HEIGHT, 0f);
+            _fillRenderer = CreateSegment("Fill", FillColor, BAR_WIDTH, BAR_HEIGHT, -0.01f);
+            _fillTransform = _fillRenderer.transform;
             UpdateFill(FillPercent);
+        }
+
+        /// <summary>
+        /// 设置调试条所有渲染段的可见性。
+        /// </summary>
+        /// <param name="isVisible">是否显示调试条。</param>
+        protected void SetVisible(bool isVisible)
+        {
+            if (_backgroundRenderer != null)
+            {
+                _backgroundRenderer.enabled = isVisible;
+            }
+
+            if (_fillRenderer != null)
+            {
+                _fillRenderer.enabled = isVisible;
+            }
         }
 
         private static Sprite GetSharedSprite()
@@ -56,7 +76,7 @@ namespace Babel
             return _sharedSprite;
         }
 
-        private Transform CreateSegment(string segmentName, Color color, float width, float height, float zOffset)
+        private SpriteRenderer CreateSegment(string segmentName, Color color, float width, float height, float zOffset)
         {
             var segment = new GameObject(segmentName);
             segment.transform.SetParent(transform, false);
@@ -67,7 +87,7 @@ namespace Babel
             renderer.sprite = GetSharedSprite();
             renderer.color = color;
             renderer.sortingOrder = SORTING_ORDER;
-            return segment.transform;
+            return renderer;
         }
 
         private void UpdateFill(float percent)

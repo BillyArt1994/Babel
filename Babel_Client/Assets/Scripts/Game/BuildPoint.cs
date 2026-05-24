@@ -3,13 +3,27 @@ using QFramework;
 
 namespace Babel
 {
+    /// <summary>
+    /// 建造点的显示与建造状态。
+    /// </summary>
+    public enum BuildPointState
+    {
+        Hidden = 0,
+        Building = 1,
+        Completed = 2
+    }
+
     public partial class BuildPoint : ViewController
     {
         [SerializeField] private int buildAmount = 50;
         [HideInInspector] public Path OwnerPath;
         public bool isGateway = false;
 
-        public bool IsBuildCompleted { get; private set; }
+        /// <summary>
+        /// 当前建造点状态。
+        /// </summary>
+        public BuildPointState State { get; private set; } = BuildPointState.Hidden;
+        public bool IsBuildCompleted => State == BuildPointState.Completed;
         public bool IsOccupied { get; private set; }
 
         private int _currentProgress;
@@ -34,8 +48,9 @@ namespace Babel
 
         private void Awake()
         {
-            _spriteRenderer = GetComponent<SpriteRenderer>();
+            CacheVisualRenderer();
             EnsureDebugBuildProgressBar();
+            ApplyVisualState(State);
         }
 
         public void SetOccupied(bool occupied)
@@ -43,18 +58,29 @@ namespace Babel
             IsOccupied = occupied;
         }
 
+        /// <summary>
+        /// 开始建造该建造点，并显示建造中视觉。
+        /// </summary>
+        public void BeginBuild()
+        {
+            if (State == BuildPointState.Hidden)
+            {
+                SetState(BuildPointState.Building);
+            }
+        }
+
         public void AddBuildProgress(int value)
         {
             if (IsBuildCompleted) return;
 
+            BeginBuild();
             _currentProgress += value;
 
             if (_currentProgress >= buildAmount)
             {
-                IsBuildCompleted = true;
+                _currentProgress = buildAmount;
                 IsOccupied = false;
-                if (_spriteRenderer != null)
-                    _spriteRenderer.color = Color.red;
+                SetState(BuildPointState.Completed);
 
                 if (OwnerPath != null)
                     OwnerPath.OnBuildPointCompleted();
@@ -65,11 +91,49 @@ namespace Babel
 
         public void Reset()
         {
-            IsBuildCompleted = false;
             IsOccupied = false;
             _currentProgress = 0;
-            if (_spriteRenderer != null)
-                _spriteRenderer.color = Color.white;
+            SetState(BuildPointState.Hidden);
+            ApplyVisualState(State);
+        }
+
+        private void SetState(BuildPointState newState)
+        {
+            if (State == newState)
+            {
+                return;
+            }
+
+            State = newState;
+            ApplyVisualState(State);
+            BuildEvents.RaiseBuildStateChanged(this, State);
+        }
+
+        private void ApplyVisualState(BuildPointState state)
+        {
+            CacheVisualRenderer();
+            bool isVisible = state != BuildPointState.Hidden;
+
+            if (gameObject.activeSelf != isVisible)
+            {
+                gameObject.SetActive(isVisible);
+            }
+
+            if (_spriteRenderer == null)
+            {
+                return;
+            }
+
+            _spriteRenderer.enabled = isVisible;
+            _spriteRenderer.color = state == BuildPointState.Completed ? Color.red : Color.white;
+        }
+
+        private void CacheVisualRenderer()
+        {
+            if (_spriteRenderer == null)
+            {
+                _spriteRenderer = GetComponent<SpriteRenderer>();
+            }
         }
 
         private void EnsureDebugBuildProgressBar()

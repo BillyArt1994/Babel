@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -13,6 +14,9 @@ namespace Babel
         [HideInInspector] public int LayerIndex;
 
         private int _completedCount;
+        private readonly List<BuildPointCandidate> _reserveCandidates = new List<BuildPointCandidate>(16);
+        private static readonly BuildPointCandidateDistanceComparer CandidateDistanceComparer =
+            new BuildPointCandidateDistanceComparer();
 
         public bool IsCompleted => _completedCount >= wayPointList.Length;
 
@@ -37,25 +41,34 @@ namespace Babel
 
         public int ReserveBuildPoint(Vector3 fromPos)
         {
-            int bestIndex = -1;
-            float bestDist = float.MaxValue;
-            for (int i = 0; i < wayPointList.Length; i++)
+            _reserveCandidates.Clear();
+            if (wayPointList == null)
             {
-                if (wayPointList[i].IsBuildCompleted) continue;
-                if (wayPointList[i].IsOccupied) continue;
-                float dist = Vector3.Distance(wayPointList[i].transform.position, fromPos);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    bestIndex = i;
-                }
+                return -1;
             }
 
-            if (bestIndex >= 0)
+            for (int i = 0; i < wayPointList.Length; i++)
             {
-                wayPointList[bestIndex].SetOccupied(true);
+                BuildPoint point = wayPointList[i];
+                if (point == null) continue;
+                if (point.IsBuildCompleted) continue;
+                if (point.IsOccupied) continue;
+
+                float distance = Vector3.Distance(point.transform.position, fromPos);
+                _reserveCandidates.Add(new BuildPointCandidate(i, distance));
             }
-            return bestIndex;
+
+            if (_reserveCandidates.Count <= 0)
+            {
+                return -1;
+            }
+
+            _reserveCandidates.Sort(CandidateDistanceComparer);
+            int selectableCount = GetFarthestSelectionCount(_reserveCandidates.Count);
+            int selectedCandidateIndex = UnityEngine.Random.Range(0, selectableCount);
+            int selectedBuildPointIndex = _reserveCandidates[selectedCandidateIndex].Index;
+            wayPointList[selectedBuildPointIndex].SetOccupied(true);
+            return selectedBuildPointIndex;
         }
 
         public void ReleaseBuildPoint(int index)
@@ -63,6 +76,36 @@ namespace Babel
             if (index >= 0 && index < wayPointList.Length)
             {
                 wayPointList[index].SetOccupied(false);
+            }
+        }
+
+        private static int GetFarthestSelectionCount(int candidateCount)
+        {
+            if (candidateCount <= 0)
+            {
+                return 0;
+            }
+
+            return Mathf.Max(1, candidateCount / 2);
+        }
+
+        private readonly struct BuildPointCandidate
+        {
+            public BuildPointCandidate(int index, float distance)
+            {
+                Index = index;
+                Distance = distance;
+            }
+
+            public readonly int Index;
+            public readonly float Distance;
+        }
+
+        private sealed class BuildPointCandidateDistanceComparer : IComparer<BuildPointCandidate>
+        {
+            public int Compare(BuildPointCandidate left, BuildPointCandidate right)
+            {
+                return right.Distance.CompareTo(left.Distance);
             }
         }
 

@@ -62,6 +62,8 @@ namespace Babel
             {
                 skill.Trigger.Enable();
             }
+
+            RaiseEquippedSkillsChanged();
         }
 
         public void RemoveSkill(string skillId)
@@ -72,12 +74,63 @@ namespace Babel
                 {
                     _skills[i].Trigger.Disable();
                     _skills.RemoveAt(i);
+                    RaiseEquippedSkillsChanged();
                     return;
                 }
             }
         }
 
         public IReadOnlyList<Skill> GetEquippedSkills() => _skills;
+
+        /// <summary>
+        /// 获取当前装备技能的配置列表。
+        /// </summary>
+        /// <returns>当前装备技能配置列表。</returns>
+        public IReadOnlyList<SkillConfig> GetEquippedSkillsAsConfigs()
+        {
+            var configs = new List<SkillConfig>(_skills.Count);
+            for (int i = 0; i < _skills.Count; i++)
+            {
+                configs.Add(_skills[i].Config);
+            }
+
+            return configs;
+        }
+
+        /// <summary>
+        /// 获取当前装备的点击触发技能配置。
+        /// </summary>
+        /// <returns>当前点击技能；未装备时返回 null。</returns>
+        public SkillConfig GetActiveClickSkill()
+        {
+            for (int i = 0; i < _skills.Count; i++)
+            {
+                if (_skills[i].Config.TriggerType == "OnClick")
+                {
+                    return _skills[i].Config;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 获取当前装备的被动技能配置列表。
+        /// </summary>
+        /// <returns>所有非点击触发技能。</returns>
+        public IReadOnlyList<SkillConfig> GetPassiveSkills()
+        {
+            var passiveSkills = new List<SkillConfig>();
+            for (int i = 0; i < _skills.Count; i++)
+            {
+                if (_skills[i].Config.TriggerType != "OnClick")
+                {
+                    passiveSkills.Add(_skills[i].Config);
+                }
+            }
+
+            return passiveSkills;
+        }
 
         /// <summary>
         /// 查询当前是否已经装备指定技能。
@@ -187,6 +240,7 @@ namespace Babel
             DisableAll();
             _skills.Clear();
             _effectManager.ClearAll();
+            RaiseEquippedSkillsChanged();
         }
 
         private Vector2 GetBasePosition()
@@ -262,6 +316,11 @@ namespace Babel
                     _skills.RemoveAt(i);
                 }
             }
+        }
+
+        private void RaiseEquippedSkillsChanged()
+        {
+            SkillEvents.RaiseEquippedSkillsChanged(GetEquippedSkillsAsConfigs());
         }
     }
 }
