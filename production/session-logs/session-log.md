@@ -3110,3 +3110,27 @@ bd60287 art: slice main menu background and logo from concept art
 production/session-logs/session-log.md
 ---
 
+## Session End: 20260525_135401
+### Commits
+40eca87 art: main menu v2 — full concept art as background with transparent hotspot buttons
+608ec59 art: main menu UI art pass v1 complete — background, buttons, prefab layout
+1f157b6 feat: main menu art pass v1 — Metal Slug character concept implemented
+ede4961 feat: UIMainMenuPanel uses sprite assets instead of solid-color placeholders
+d64bad2 art: configure main menu sprite import settings in Unity
+11b9050 art: generate main menu button sprites with gpt-image-2
+bd60287 art: slice main menu background and logo from concept art
+---
+
+## Session End: 20260525_135559
+### Commits
+40eca87 art: main menu v2 — full concept art as background with transparent hotspot buttons
+608ec59 art: main menu UI art pass v1 complete — background, buttons, prefab layout
+1f157b6 feat: main menu art pass v1 — Metal Slug character concept implemented
+ede4961 feat: UIMainMenuPanel uses sprite assets instead of solid-color placeholders
+d64bad2 art: configure main menu sprite import settings in Unity
+11b9050 art: generate main menu button sprites with gpt-image-2
+bd60287 art: slice main menu background and logo from concept art
+### Uncommitted Changes
+production/session-logs/session-log.md
+---
+
