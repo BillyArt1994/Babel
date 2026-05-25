@@ -3173,3 +3173,33 @@ d64bad2 art: configure main menu sprite import settings in Unity
 bd60287 art: slice main menu background and logo from concept art
 ---
 
+## Session End: 20260525_144717
+### Commits
+dc7468c art: align main menu layout to reference concept art positions
+cbe7ea6 art: proper sprite assets — bg/logo/btn_green/btn_grey with correct alpha channels
+01e2dc8 art: main menu proper sprite slicing — bg/btn_start/btn_exit as independent assets
+40eca87 art: main menu v2 — full concept art as background with transparent hotspot buttons
+608ec59 art: main menu UI art pass v1 complete — background, buttons, prefab layout
+1f157b6 feat: main menu art pass v1 — Metal Slug character concept implemented
+ede4961 feat: UIMainMenuPanel uses sprite assets instead of solid-color placeholders
+d64bad2 art: configure main menu sprite import settings in Unity
+11b9050 art: generate main menu button sprites with gpt-image-2
+bd60287 art: slice main menu background and logo from concept art
+---
+
+## Session End: 20260525_145023
+### Commits
+dc7468c art: align main menu layout to reference concept art positions
+cbe7ea6 art: proper sprite assets — bg/logo/btn_green/btn_grey with correct alpha channels
+01e2dc8 art: main menu proper sprite slicing — bg/btn_start/btn_exit as independent assets
+40eca87 art: main menu v2 — full concept art as background with transparent hotspot buttons
+608ec59 art: main menu UI art pass v1 complete — background, buttons, prefab layout
+1f157b6 feat: main menu art pass v1 — Metal Slug character concept implemented
+ede4961 feat: UIMainMenuPanel uses sprite assets instead of solid-color placeholders
+d64bad2 art: configure main menu sprite import settings in Unity
+11b9050 art: generate main menu button sprites with gpt-image-2
+bd60287 art: slice main menu background and logo from concept art
+### Uncommitted Changes
+production/session-logs/session-log.md
+---
+
