@@ -2965,3 +2965,82 @@ These were intentionally left uncommitted unless the user explicitly wants them:
 4. For gameplay changes, follow TDD and Unity MCP PlayMode smoke checks.
 5. Avoid committing local settings/logs/screenshots unless the user explicitly asks.
 ---
+## Session End: 20260525_105240
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+---
+
+## Session End: 20260525_105556
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_110802
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_111018
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_112130
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_112847
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_113740
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260525_114154
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
