@@ -1,0 +1,330 @@
+{
+  "tiers": 6,
+  "total_pieces": 36,
+  "pieces": [
+    {
+      "tier": 6,
+      "piece": 1,
+      "x": 55,
+      "y": 1118,
+      "w": 113,
+      "h": 362,
+      "file": "tower_t6_p01.png"
+    },
+    {
+      "tier": 6,
+      "piece": 2,
+      "x": 168,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p02.png"
+    },
+    {
+      "tier": 6,
+      "piece": 3,
+      "x": 282,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p03.png"
+    },
+    {
+      "tier": 6,
+      "piece": 4,
+      "x": 396,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p04.png"
+    },
+    {
+      "tier": 6,
+      "piece": 5,
+      "x": 510,
+      "y": 1118,
+      "w": 113,
+      "h": 362,
+      "file": "tower_t6_p05.png"
+    },
+    {
+      "tier": 6,
+      "piece": 6,
+      "x": 623,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p06.png"
+    },
+    {
+      "tier": 6,
+      "piece": 7,
+      "x": 737,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p07.png"
+    },
+    {
+      "tier": 6,
+      "piece": 8,
+      "x": 851,
+      "y": 1118,
+      "w": 114,
+      "h": 362,
+      "file": "tower_t6_p08.png"
+    },
+    {
+      "tier": 5,
+      "piece": 1,
+      "x": 120,
+      "y": 828,
+      "w": 111,
+      "h": 290,
+      "file": "tower_t5_p01.png"
+    },
+    {
+      "tier": 5,
+      "piece": 2,
+      "x": 231,
+      "y": 828,
+      "w": 111,
+      "h": 290,
+      "file": "tower_t5_p02.png"
+    },
+    {
+      "tier": 5,
+      "piece": 3,
+      "x": 342,
+      "y": 828,
+      "w": 112,
+      "h": 290,
+      "file": "tower_t5_p03.png"
+    },
+    {
+      "tier": 5,
+      "piece": 4,
+      "x": 454,
+      "y": 828,
+      "w": 111,
+      "h": 290,
+      "file": "tower_t5_p04.png"
+    },
+    {
+      "tier": 5,
+      "piece": 5,
+      "x": 565,
+      "y": 828,
+      "w": 112,
+      "h": 290,
+      "file": "tower_t5_p05.png"
+    },
+    {
+      "tier": 5,
+      "piece": 6,
+      "x": 677,
+      "y": 828,
+      "w": 111,
+      "h": 290,
+      "file": "tower_t5_p06.png"
+    },
+    {
+      "tier": 5,
+      "piece": 7,
+      "x": 788,
+      "y": 828,
+      "w": 112,
+      "h": 290,
+      "file": "tower_t5_p07.png"
+    },
+    {
+      "tier": 4,
+      "piece": 1,
+      "x": 180,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p01.png"
+    },
+    {
+      "tier": 4,
+      "piece": 2,
+      "x": 290,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p02.png"
+    },
+    {
+      "tier": 4,
+      "piece": 3,
+      "x": 400,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p03.png"
+    },
+    {
+      "tier": 4,
+      "piece": 4,
+      "x": 510,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p04.png"
+    },
+    {
+      "tier": 4,
+      "piece": 5,
+      "x": 620,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p05.png"
+    },
+    {
+      "tier": 4,
+      "piece": 6,
+      "x": 730,
+      "y": 567,
+      "w": 110,
+      "h": 261,
+      "file": "tower_t4_p06.png"
+    },
+    {
+      "tier": 3,
+      "piece": 1,
+      "x": 240,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p01.png"
+    },
+    {
+      "tier": 3,
+      "piece": 2,
+      "x": 330,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p02.png"
+    },
+    {
+      "tier": 3,
+      "piece": 3,
+      "x": 420,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p03.png"
+    },
+    {
+      "tier": 3,
+      "piece": 4,
+      "x": 510,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p04.png"
+    },
+    {
+      "tier": 3,
+      "piece": 5,
+      "x": 600,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p05.png"
+    },
+    {
+      "tier": 3,
+      "piece": 6,
+      "x": 690,
+      "y": 350,
+      "w": 90,
+      "h": 217,
+      "file": "tower_t3_p06.png"
+    },
+    {
+      "tier": 2,
+      "piece": 1,
+      "x": 300,
+      "y": 162,
+      "w": 84,
+      "h": 188,
+      "file": "tower_t2_p01.png"
+    },
+    {
+      "tier": 2,
+      "piece": 2,
+      "x": 384,
+      "y": 162,
+      "w": 84,
+      "h": 188,
+      "file": "tower_t2_p02.png"
+    },
+    {
+      "tier": 2,
+      "piece": 3,
+      "x": 468,
+      "y": 162,
+      "w": 84,
+      "h": 188,
+      "file": "tower_t2_p03.png"
+    },
+    {
+      "tier": 2,
+      "piece": 4,
+      "x": 552,
+      "y": 162,
+      "w": 84,
+      "h": 188,
+      "file": "tower_t2_p04.png"
+    },
+    {
+      "tier": 2,
+      "piece": 5,
+      "x": 636,
+      "y": 162,
+      "w": 84,
+      "h": 188,
+      "file": "tower_t2_p05.png"
+    },
+    {
+      "tier": 1,
+      "piece": 1,
+      "x": 355,
+      "y": 32,
+      "w": 77,
+      "h": 130,
+      "file": "tower_t1_p01.png"
+    },
+    {
+      "tier": 1,
+      "piece": 2,
+      "x": 432,
+      "y": 32,
+      "w": 78,
+      "h": 130,
+      "file": "tower_t1_p02.png"
+    },
+    {
+      "tier": 1,
+      "piece": 3,
+      "x": 510,
+      "y": 32,
+      "w": 77,
+      "h": 130,
+      "file": "tower_t1_p03.png"
+    },
+    {
+      "tier": 1,
+      "piece": 4,
+      "x": 587,
+      "y": 32,
+      "w": 78,
+      "h": 130,
+      "file": "tower_t1_p04.png"
+    }
+  ]
+}
