@@ -1,99 +1,30 @@
 ---
 name: prototype
-description: "Rapid prototyping workflow. Skips normal standards to quickly validate a game concept or mechanic. Produces throwaway code and a structured prototype report."
-argument-hint: "[concept-description]"
-user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+description: Build a throwaway prototype to flesh out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says "prototype this", "let me play with it", "try a few designs".
 ---
 
-When this skill is invoked:
+# Prototype
 
-1. **Read the concept description** from the argument. Identify the core
-   question this prototype must answer. If the concept is vague, state the
-   question explicitly before proceeding.
+A prototype is **throwaway code that answers a question**. The question decides the shape.
 
-2. **Read AGENTS.md** for project context and the current tech stack. Understand
-   what engine, language, and frameworks are in use so the prototype is built
-   with compatible tooling.
+## Pick a branch
 
-3. **Create a prototype plan**: Define in 3-5 bullet points what the minimum
-   viable prototype looks like. What is the core question? What is the absolute
-   minimum code needed to answer it? What can be skipped?
+Identify which question is being answered — from the user's prompt, the surrounding code, or by asking if the user is around:
 
-4. **Create the prototype directory**: `prototypes/[concept-name]/` where
-   `[concept-name]` is a short, kebab-case identifier derived from the concept.
+- **"Does this logic / state model feel right?"** → [LOGIC.md](LOGIC.md). Build a tiny interactive terminal app that pushes the state machine through cases that are hard to reason about on paper.
+- **"What should this look like?"** → [UI.md](UI.md). Generate several radically different UI variations on a single route, switchable via a URL search param and a floating bottom bar.
 
-5. **Implement the prototype** in the isolated directory. Every file must begin
-   with:
-   ```
-   // PROTOTYPE - NOT FOR PRODUCTION
-   // Question: [Core question being tested]
-   // Date: [Current date]
-   ```
-   Standards are intentionally relaxed:
-   - Hardcode values freely
-   - Use placeholder assets
-   - Skip error handling
-   - Use the simplest approach that works
-   - Copy code rather than importing from production
+The two branches produce very different artifacts — getting this wrong wastes the whole prototype. If the question is genuinely ambiguous and the user isn't reachable, default to whichever branch better matches the surrounding code (a backend module → logic; a page or component → UI) and state the assumption at the top of the prototype.
 
-6. **Test the concept**: Run the prototype. Observe behavior. Collect any
-   measurable data (frame times, interaction counts, feel assessments).
+## Rules that apply to both
 
-7. **Generate the Prototype Report** and save it to
-   `prototypes/[concept-name]/REPORT.md`:
+1. **Throwaway from day one, and clearly marked as such.** Locate the prototype code close to where it will actually be used (next to the module or page it's prototyping for) so context is obvious — but name it so a casual reader can see it's a prototype, not production. For throwaway UI routes, obey whatever routing convention the project already uses; don't invent a new top-level structure.
+2. **One command to run.** Whatever the project's existing task runner supports — `pnpm <name>`, `python <path>`, `bun <path>`, etc. The user must be able to start it without thinking.
+3. **No persistence by default.** State lives in memory. Persistence is the thing the prototype is _checking_, not something it should depend on. If the question explicitly involves a database, hit a scratch DB or a local file with a clear "PROTOTYPE — wipe me" name.
+4. **Skip the polish.** No tests, no error handling beyond what makes the prototype _runnable_, no abstractions. The point is to learn something fast and then delete it.
+5. **Surface the state.** After every action (logic) or on every variant switch (UI), print or render the full relevant state so the user can see what changed.
+6. **Delete or absorb when done.** When the prototype has answered its question, either delete it or fold the validated decision into the real code — don't leave it rotting in the repo.
 
-```markdown
-## Prototype Report: [Concept Name]
+## When done
 
-### Hypothesis
-[What we expected to be true -- the question we set out to answer]
-
-### Approach
-[What we built, how long it took, what shortcuts we took]
-
-### Result
-[What actually happened -- specific observations, not opinions]
-
-### Metrics
-[Any measurable data collected during testing]
-- Frame time: [if relevant]
-- Feel assessment: [subjective but specific -- "response felt sluggish at
-  200ms delay" not "felt bad"]
-- Player action counts: [if relevant]
-- Iteration count: [how many attempts to get it working]
-
-### Recommendation: [PROCEED / PIVOT / KILL]
-
-[One paragraph explaining the recommendation with evidence]
-
-### If Proceeding
-[What needs to change for a production-quality implementation]
-- Architecture requirements
-- Performance targets
-- Scope adjustments from the original design
-- Estimated production effort
-
-### If Pivoting
-[What alternative direction the results suggest]
-
-### If Killing
-[Why this concept does not work and what we should do instead]
-
-### Lessons Learned
-[Discoveries that affect other systems or future work]
-```
-
-8. **Output a summary** to the user with: the core question, the result, and
-   the recommendation. Link to the full report at
-   `prototypes/[concept-name]/REPORT.md`.
-
-### Important Constraints
-
-- Prototype code must NEVER import from production source files
-- Production code must NEVER import from prototype directories
-- If the recommendation is PROCEED, the production implementation must be
-  written from scratch -- prototype code is not refactored into production
-- Total prototype effort should be timeboxed to 1-3 days equivalent of work
-- If the prototype scope starts growing, stop and reassess whether the
-  question can be simplified
+The _answer_ is the only thing worth keeping from a prototype. Capture it somewhere durable (commit message, ADR, issue, or a `NOTES.md` next to the prototype) along with the question it was answering. If the user is around, that capture is a quick conversation; if not, leave the placeholder so they (or you, on the next pass) can fill in the verdict before deleting the prototype.
