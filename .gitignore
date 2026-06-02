@@ -57,3 +57,7 @@ desktop.ini
 # 崩溃报告
 sysinfo.txt
 crashlytics-build.properties
+
+# Claude Code 本地配置与自动生成的审计日志（停止跟踪，保留本地文件）
+.claude/settings.local.json
+production/session-logs/session-log.md
