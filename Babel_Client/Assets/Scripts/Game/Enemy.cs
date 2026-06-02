@@ -232,6 +232,7 @@ namespace Babel
 
             var target = currentPath.wayPointList[_targetBuildPointIndex];
             var targetPos = GetBuildApproachPosition(target);
+            UpdateFacing(targetPos.x);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
 
             if (IsAtHorizontalTarget(targetPos))
@@ -303,6 +304,7 @@ namespace Babel
             if (_passageTarget == null) return;
 
             var targetPos = new Vector3(_passageTarget.position.x, transform.position.y, transform.position.z);
+            UpdateFacing(targetPos.x);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
 
             if ((transform.position - targetPos).magnitude <= 0.1f)
@@ -359,6 +361,18 @@ namespace Babel
         private Vector3 GetBuildApproachPosition(BuildPoint target)
         {
             return new Vector3(target.transform.position.x, transform.position.y, transform.position.z);
+        }
+
+        /// <summary>
+        /// 根据水平移动方向翻转 sprite。原图朝右：往左走翻转 flipX。
+        /// </summary>
+        /// <param name="targetX">目标点的世界 x 坐标。</param>
+        private void UpdateFacing(float targetX)
+        {
+            if (Circle == null) return;
+            float dx = targetX - transform.position.x;
+            if (Mathf.Abs(dx) < 0.01f) return; // 死区：太近不翻，避免到点抖动
+            Circle.flipX = dx < 0f;
         }
 
         private bool IsAtHorizontalTarget(Vector3 targetPos)

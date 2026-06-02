@@ -1,9 +1,9 @@
-ï»¿skillId,skillName,description,iconPath,triggerType,cooldown,chargeTime,interval,chance,effectType,damage,damageRatio,radius,dps,duration,statName,statValue,effect2Type,e2Damage,e2DamageRatio,e2Radius,e2Dps,e2Duration,e2StatName,e2StatValue,effect3Type,e3Damage,e3DamageRatio,e3Radius,e3Dps,e3Duration,e3StatName,e3StatValue,level,weight,isStarterSkill,upgradesFrom
-divine_finger,ç¥ç½šä¹‹æŒ‡,å¤©ç¥ä¹‹æ€’é™ä¸´æŒ‡å°–,Icons/divine_finger,OnClick,1.0,0.5,,,hit_single,50,,,,,,,,,,,,,,,,,,,,,,,1,1.0,true,
-meteor,å¤©é™é™¨çŸ³,é™¨çŸ³ä»å¤©è€Œé™,Icons/meteor,OnClick,2.5,1.0,,,hit_aoe,150,,3.0,,,,,,,,,,,,,,,,,,,,,1,1.0,true,
-thunder_auto,å¤©é›·,è‡ªåŠ¨é™ä¸‹é›·å‡»,Icons/thunder,OnTimer,,,3.0,,hit_single,80,,,,,,,,,,,,,,,,,,,,,,,1,0.8,false,
-aftershock,ä½™éœ‡,æ”»å‡»å¼•å‘äºŒæ¬¡çˆ†ç‚¸,Icons/aftershock,OnHit,,,,0.3,hit_aoe,,0.3,1.5,,,,,,,,,,,,,,,,,,,,,1,0.7,false,
-plague,ç˜Ÿç–«,å‡»æ€ä¼ æ’­æ­»äº¡,Icons/plague,OnKill,,,,1.0,hit_aoe,20,,2.0,,,,,,,,,,,,,,,,,,,,,1,0.6,false,
-rage,ç‹‚æ€’,å‡»æ€åŠ é€ŸæŠ€èƒ½å†·å´,Icons/rage,OnKill,,,,1.0,stat_buff,,,,,5.0,cooldownMult,-0.5,,,,,,,,,,,,,,,,,1,0.6,false,
-meteor_evolved,å¤©é™é™¨çŸ³Â·ç‚,é™¨çŸ³æ’å‡»åç•™ä¸‹ç¼çƒ§åœ°é¢,Icons/meteor_fire,OnClick,3.0,1.2,,,hit_aoe,200,,3.5,,,,,dot_aoe,,,3.5,30,3.0,,,,,,,,,,,2,0.8,false,meteor
-berserker_pact,ç‹‚æˆ˜å¥‘çº¦,ä»¥é˜²å¾¡æ¢å–åŠ›é‡,Icons/berserker,OnKill,,,,1.0,stat_buff,,,,,8.0,damageMult,0.4,stat_buff,,,,,8.0,defenseReduction,0.2,,,,,,,,,1,0.5,false,
+skillId,skillName,description,iconPath,triggerType,cooldown,chargeTime,interval,chance,effectType,damage,damageRatio,radius,dps,duration,statName,statValue,effect2Type,e2Damage,e2DamageRatio,e2Radius,e2Dps,e2Duration,e2StatName,e2StatValue,effect3Type,e3Damage,e3DamageRatio,e3Radius,e3Dps,e3Duration,e3StatName,e3StatValue,level,weight,isStarterSkill,upgradesFrom
+divine_finger,Éñ·£Ö®Ö¸,ÌìÉñÖ®Å­½µÁÙÖ¸¼â,Icons/divine_finger,OnClick,0.25,0.5,,,hit_single,50,,,,,,,,,,,,,,,,,,,,,,,1,1,TRUE,
+meteor,Ìì½µÔÉÊ¯,ÔÉÊ¯´ÓÌì¶ø½µ,Icons/meteor,OnClick,2.5,1,,,hit_aoe,150,,3,,,,,,,,,,,,,,,,,,,,,1,1,TRUE,
+thunder_auto,ÌìÀ×,×Ô¶¯½µÏÂÀ×»÷,Icons/thunder,OnTimer,,,3,,hit_single,80,,,,,,,,,,,,,,,,,,,,,,,1,0.8,FALSE,
+aftershock,ÓàÕğ,¹¥»÷Òı·¢¶ş´Î±¬Õ¨,Icons/aftershock,OnHit,,,,0.3,hit_aoe,,0.3,1.5,,,,,,,,,,,,,,,,,,,,,1,0.7,FALSE,
+plague,ÎÁÒß,»÷É±´«²¥ËÀÍö,Icons/plague,OnKill,,,,1,hit_aoe,20,,2,,,,,,,,,,,,,,,,,,,,,1,0.6,FALSE,
+rage,¿ñÅ­,»÷É±¼ÓËÙ¼¼ÄÜÀäÈ´,Icons/rage,OnKill,,,,1,stat_buff,,,,,5,cooldownMult,-0.5,,,,,,,,,,,,,,,,,1,0.6,FALSE,
+meteor_evolved,Ìì½µÔÉÊ¯¡¤Ñ×,ÔÉÊ¯×²»÷ºóÁôÏÂ×ÆÉÕµØÃæ,Icons/meteor_fire,OnClick,3,1.2,,,hit_aoe,200,,3.5,,,,,dot_aoe,,,3.5,30,3,,,,,,,,,,,2,0.8,FALSE,meteor
+berserker_pact,¿ñÕ½ÆõÔ¼,ÒÔ·ÀÓù»»È¡Á¦Á¿,Icons/berserker,OnKill,,,,1,stat_buff,,,,,8,damageMult,0.4,stat_buff,,,,,8,defenseReduction,0.2,,,,,,,,,1,0.5,FALSE,

@@ -3270,3 +3270,131 @@ bd60287 art: slice main menu background and logo from concept art
 production/session-logs/session-log.md
 ---
 
+## Session End: 20260528_221321
+### Commits
+fee34e7 tooling: install mattpocock/skills (29 skills)
+4444746 art: tower babel sprite sheet, buildpoints setup, worker enemy concept
+---
+
+## Session End: 20260528_223109
+### Commits
+fee34e7 tooling: install mattpocock/skills (29 skills)
+4444746 art: tower babel sprite sheet, buildpoints setup, worker enemy concept
+### Uncommitted Changes
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260528_230720
+### Commits
+fee34e7 tooling: install mattpocock/skills (29 skills)
+4444746 art: tower babel sprite sheet, buildpoints setup, worker enemy concept
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260528_230940
+### Commits
+fee34e7 tooling: install mattpocock/skills (29 skills)
+4444746 art: tower babel sprite sheet, buildpoints setup, worker enemy concept
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_221159
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_221257
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_222333
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/Enemy.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+concept_art/worker_v2_raw.png
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_222439
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Art/Perfabs/Enemy.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+concept_art/worker_v2_raw.png
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_223639
+### Uncommitted Changes
+.claude/settings.local.json
+Babel_Client/Assets/Resources/Enemies/Worker.png
+Babel_Client/Assets/Resources/Enemies/Worker.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+concept_art/worker_v2_raw.png
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_223730
+### Uncommitted Changes
+.claude/settings.local.json
+.mcp.json
+Babel_Client/Assets/Resources/Enemies/Worker.png
+Babel_Client/Assets/Resources/Enemies/Worker.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+concept_art/worker_v2_raw.png
+production/session-logs/session-log.md
+---
+
+## Session End: 20260602_230400
+### Uncommitted Changes
+.claude/settings.local.json
+.mcp.json
+Babel_Client/Assets/Data/Enemies/enemies.csv
+Babel_Client/Assets/Data/Skills/skills.csv
+Babel_Client/Assets/Data/Waves/waves.csv
+Babel_Client/Assets/Resources/Enemies/Worker.png
+Babel_Client/Assets/Resources/Enemies/Worker.prefab
+Babel_Client/Assets/Scenes/GameScene.unity
+Babel_Client/Assets/Scripts/Game/Enemy.cs
+Babel_Client/Packages/packages-lock.json
+Babel_Client/ProjectSettings/PackageManagerSettings.asset
+Babel_Client/ProjectSettings/ProjectVersion.txt
+concept_art/worker_v2_raw.png
+production/session-logs/session-log.md
+---
+
