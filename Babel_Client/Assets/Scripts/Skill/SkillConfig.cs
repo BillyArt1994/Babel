@@ -44,6 +44,9 @@ namespace Babel
         /// <summary>技能等级</summary>
         public int Level = 1;
 
+        /// <summary>该技能最大等级（默认 1 = 不可升级）</summary>
+        public int MaxLevel = 1;
+
         /// <summary>升级权重（越高越频繁出现）</summary>
         public float Weight = 1.0f;
 
