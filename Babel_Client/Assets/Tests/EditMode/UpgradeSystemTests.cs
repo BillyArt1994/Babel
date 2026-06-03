@@ -160,7 +160,9 @@ namespace Babel.Tests
 
                 // 包装成 UpgradeOption
                 object upgradeOpt = Activator.CreateInstance(upgradeOptionType);
-                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, 0); // 0 = NewSkill
+                Type optionTypeEnum = upgradeOptionType.GetNestedType("OptionType");
+                object newSkillValue = Enum.Parse(optionTypeEnum, "NewSkill");
+                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, newSkillValue);
                 upgradeOptionType.GetField("Config").SetValue(upgradeOpt, aftershockConfig);
                 var pendingOptions = new List<object> { upgradeOpt };
 
@@ -223,7 +225,9 @@ namespace Babel.Tests
 
                 // 包装成 UpgradeOption
                 object upgradeOpt = Activator.CreateInstance(upgradeOptionType);
-                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, 0); // 0 = NewSkill
+                Type optionTypeEnum2 = upgradeOptionType.GetNestedType("OptionType");
+                object newSkillValue2 = Enum.Parse(optionTypeEnum2, "NewSkill");
+                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, newSkillValue2);
                 upgradeOptionType.GetField("Config").SetValue(upgradeOpt, aftershockConfig);
 
                 // 创建泛型 List<UpgradeOption>

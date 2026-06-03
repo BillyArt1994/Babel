@@ -225,14 +225,20 @@ namespace Babel
             float totalWeight = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                totalWeight += Mathf.Max(0f, pool[i].Config.Weight);
+                float w = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
+                    ? Mathf.Max(1f, pool[i].Config.Weight)
+                    : Mathf.Max(0f, pool[i].Config.Weight);
+                totalWeight += w;
             }
 
             float roll = UnityEngine.Random.Range(0f, totalWeight);
             float cumulative = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                cumulative += Mathf.Max(0f, pool[i].Config.Weight);
+                float w = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
+                    ? Mathf.Max(1f, pool[i].Config.Weight)
+                    : Mathf.Max(0f, pool[i].Config.Weight);
+                cumulative += w;
                 if (roll <= cumulative)
                 {
                     return i;
