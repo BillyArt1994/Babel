@@ -330,5 +330,29 @@ namespace Babel.Tests
             Assert.That(type, Is.Not.Null, $"{fullName} should exist in Assembly-CSharp.");
             return type;
         }
+
+        [Test]
+        public void GetNextLevel_WhenNextLevelExists_ReturnsCorrectConfig()
+        {
+            Type dbType = RequireType("Babel.SkillDatabase");
+            dbType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                  .Invoke(null, new object[] { SkillsCsvText });
+
+            var getNextLevel = dbType.GetMethod("GetNextLevel", BindingFlags.Public | BindingFlags.Static);
+            Assert.That(getNextLevel, Is.Not.Null, "GetNextLevel method should exist");
+        }
+
+        [Test]
+        public void GetNextLevel_WhenAtMaxLevel_ReturnsNull()
+        {
+            Type dbType = RequireType("Babel.SkillDatabase");
+            dbType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                  .Invoke(null, new object[] { SkillsCsvText });
+
+            var getNextLevel = dbType.GetMethod("GetNextLevel", BindingFlags.Public | BindingFlags.Static);
+            // divine_finger 只有一级，传 level=1 → 应返回 null
+            object result = getNextLevel.Invoke(null, new object[] { "divine_finger", 1 });
+            Assert.That(result, Is.Null, "divine_finger has no level 2, should return null");
+        }
     }
 }

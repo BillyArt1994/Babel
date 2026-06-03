@@ -164,5 +164,21 @@ namespace Babel
                 }
             }
         }
+
+        /// <summary>
+        /// 返回同 skillId 的下一等级配置（level = currentLevel + 1）。
+        /// 找不到时返回 null（已满级或未配置多级）。
+        /// </summary>
+        public static SkillConfig GetNextLevel(string skillId, int currentLevel)
+        {
+            if (!_initialized) return null;
+            int targetLevel = currentLevel + 1;
+            for (int i = 0; i < _allSkills.Count; i++)
+            {
+                if (_allSkills[i].SkillId == skillId && _allSkills[i].Level == targetLevel)
+                    return _allSkills[i];
+            }
+            return null;
+        }
     }
 }
