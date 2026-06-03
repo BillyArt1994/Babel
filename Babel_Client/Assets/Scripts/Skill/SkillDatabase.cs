@@ -186,13 +186,8 @@ namespace Babel
         public static SkillConfig GetNextLevel(string skillId, int currentLevel)
         {
             if (!_initialized) return null;
-            int targetLevel = currentLevel + 1;
-            for (int i = 0; i < _allSkills.Count; i++)
-            {
-                if (_allSkills[i].SkillId == skillId && _allSkills[i].Level == targetLevel)
-                    return _allSkills[i];
-            }
-            return null;
+            _allLevels.TryGetValue((skillId, currentLevel + 1), out var next);
+            return next;
         }
     }
 }

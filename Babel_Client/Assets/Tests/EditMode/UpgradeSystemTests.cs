@@ -370,6 +370,15 @@ namespace Babel.Tests
 
             var getNextLevel = dbType.GetMethod("GetNextLevel", BindingFlags.Public | BindingFlags.Static);
             Assert.That(getNextLevel, Is.Not.Null, "GetNextLevel method should exist");
+
+            // meteor level1 → 应返回 level2 配置
+            object result = getNextLevel.Invoke(null, new object[] { "meteor", 1 });
+            Assert.That(result, Is.Not.Null, "meteor level2 should exist in CSV");
+
+            // 验证返回的 level 值为 2
+            var levelField = result.GetType().GetField("Level");
+            int level = (int)levelField.GetValue(result);
+            Assert.That(level, Is.EqualTo(2), "GetNextLevel should return level 2 config for meteor");
         }
 
         [Test]
