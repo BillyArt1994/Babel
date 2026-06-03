@@ -27,6 +27,10 @@ namespace Babel
         [Tooltip("负责实际装备技能的技能系统。")]
         private SkillSystem skillSystem;
 
+        [SerializeField]
+        [Tooltip("经验值与等级成长系统。")]
+        private XpSystem xpSystem;
+
         private readonly List<UpgradeOption> _pendingOptions = new();
         private bool _isHandlingExpChange;
 
@@ -38,17 +42,51 @@ namespace Babel
         private void OnEnable()
         {
             UpgradeEvents.OnOptionSelected += SelectOption;
+            if (xpSystem != null) xpSystem.OnLevelsGained += HandleLevelsGained;
         }
 
         private void OnDisable()
         {
             UpgradeEvents.OnOptionSelected -= SelectOption;
+            if (xpSystem != null) xpSystem.OnLevelsGained -= HandleLevelsGained;
         }
 
         private void Start()
         {
             Global.Exp.RegisterWithInitValue(OnExpChanged)
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
+        }
+
+        /// <summary>
+        /// XpSystem 升级时触发，循环处理每次升级（生成选项、暂停时间、触发事件）。
+        /// </summary>
+        /// <param name="count">本次获得的升级次数。</param>
+        private void HandleLevelsGained(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (_pendingOptions.Count > 0) break; // 上一次选项还未选择则不再叠加
+
+                _pendingOptions.Clear();
+                IReadOnlyList<UpgradeOption> options = GenerateOptions(OPTIONS_COUNT);
+                for (int j = 0; j < options.Count; j++)
+                {
+                    _pendingOptions.Add(options[j]);
+                }
+
+                if (_pendingOptions.Count == 0)
+                {
+                    Time.timeScale = 1f;
+                    UpgradeEvents.RaiseOptionsGenerated(Array.Empty<SkillConfig>());
+                    continue;
+                }
+
+                Time.timeScale = 0f;
+                var configList = new List<SkillConfig>(_pendingOptions.Count);
+                for (int j = 0; j < _pendingOptions.Count; j++)
+                    configList.Add(_pendingOptions[j].Config);
+                UpgradeEvents.RaiseOptionsGenerated(configList);
+            }
         }
 
         /// <summary>
@@ -138,6 +176,7 @@ namespace Babel
 
         private void OnExpChanged(int exp)
         {
+            // TODO: 待 XpSystem 完全接入后移除
             if (_isHandlingExpChange || exp < EXP_THRESHOLD || _pendingOptions.Count > 0)
             {
                 return;

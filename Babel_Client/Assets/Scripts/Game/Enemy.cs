@@ -460,7 +460,11 @@ namespace Babel
                 OnChargesExhausted?.Invoke(waveEventId);
             }
 
-            Global.Exp.Value += _data != null ? _data.ExpReward : 1;
+            float expAmount = _data != null ? _data.ExpReward : 1f;
+            if (XpSystem.Instance != null)
+                XpSystem.Instance.GainXp(expAmount);
+            else
+                Global.Exp.Value += (int)expAmount; // fallback：XpSystem 未初始化时兼容
             DestroyAfterDeath();
         }
 

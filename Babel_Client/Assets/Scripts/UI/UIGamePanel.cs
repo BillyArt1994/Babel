@@ -49,11 +49,7 @@ namespace Babel
             ResetTimeScale();
 
             // please add init code here
-            Global.Exp.RegisterWithInitValue(exp =>
-            {
-                var num = exp / 5.0f;
-                EXPScrollbar.size = num - MathF.Truncate(exp / 5.0f);
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+            // EXP 进度条由 XpSystem.XpProgress 驱动（见 ActionKit.OnUpdate），Global.Exp 订阅已移除
 
              Global.Level.Register(Level =>
              {
@@ -74,6 +70,9 @@ namespace Babel
             {
                 GameSession.TickCountdown(Time.deltaTime);
                 UpdateMainSkillCooldownFill();
+                // XP 进度条：由 XpSystem 驱动
+                if (XpSystem.Instance != null && EXPScrollbar != null)
+                    EXPScrollbar.size = XpSystem.Instance.XpProgress;
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
 
 
