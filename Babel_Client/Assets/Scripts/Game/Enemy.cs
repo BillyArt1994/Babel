@@ -44,6 +44,11 @@ namespace Babel
         private bool _isDying;
         private bool _deathCompleted;
 
+        // Animator 驱动走路动画
+        private Animator _animator;
+        private static readonly int AnimIsMoving = Animator.StringToHash("IsMoving");
+        private bool _lastIsMoving;
+
         public static event Action<int> OnChargesExhausted;
 
         // IDamageable
@@ -69,6 +74,8 @@ namespace Babel
         private void Awake()
         {
             _maxHealth = Mathf.Max(HP, 1f);
+            // 缓存 Animator（挂在根节点，找不到也不崩溃）
+            _animator = GetComponent<Animator>();
             ResolveHitFlashRenderer();
             EnsureDebugHealthBar();
         }
@@ -171,6 +178,13 @@ namespace Babel
                 _ => null
             };
             _ability?.Init(this, data);
+
+            // 重置 Animator 走路状态
+            _lastIsMoving = false;
+            if (_animator != null)
+            {
+                _animator.SetBool(AnimIsMoving, false);
+            }
         }
 
         private void Update()
@@ -198,6 +212,9 @@ namespace Babel
                 _speedBuffTimer -= Time.deltaTime;
                 if (_speedBuffTimer <= 0) _speedBuffMult = 1.0f;
             }
+
+            // 驱动 Animator IsMoving 参数
+            UpdateAnimatorState();
 
             switch (_moveState)
             {
@@ -361,6 +378,23 @@ namespace Babel
         private Vector3 GetBuildApproachPosition(BuildPoint target)
         {
             return new Vector3(target.transform.position.x, transform.position.y, transform.position.z);
+        }
+
+        /// <summary>
+        /// 根据移动状态驱动 Animator 的 IsMoving 参数。
+        /// 只在值发生变化时调用 SetBool，避免每帧写参数的开销。
+        /// </summary>
+        private void UpdateAnimatorState()
+        {
+            // 仅 MovingToBuildPoint / MovingToPassage 两种状态算"走路"
+            bool moving = _moveState == EnemyMoveState.MovingToBuildPoint
+                       || _moveState == EnemyMoveState.MovingToPassage;
+
+            if (_animator != null && moving != _lastIsMoving)
+            {
+                _animator.SetBool(AnimIsMoving, moving);
+                _lastIsMoving = moving;
+            }
         }
 
         /// <summary>
