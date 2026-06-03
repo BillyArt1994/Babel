@@ -1,15 +1,12 @@
 {
-    "name": "Babel.EditModeTests",
+    "name": "Babel",
     "references": [
-        "Babel",
-        "QFramework.CoreKit"
+        "QFramework",
+        "QFramework.CoreKit",
+        "UIKit"
     ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
