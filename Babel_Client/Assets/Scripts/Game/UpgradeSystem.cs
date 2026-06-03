@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace Babel
 {
+    /// <summary>升级三选一的单个选项：新技能或升级已有技能。</summary>
+    public class UpgradeOption
+    {
+        public enum OptionType { NewSkill, LevelUpgrade }
+        public OptionType Type;
+        public SkillConfig Config;
+    }
+
     /// <summary>
     /// 管理升级三选一的选项生成、选择应用与暂停恢复流程。
     /// </summary>
@@ -19,7 +27,7 @@ namespace Babel
         [Tooltip("负责实际装备技能的技能系统。")]
         private SkillSystem skillSystem;
 
-        private readonly List<SkillConfig> _pendingOptions = new();
+        private readonly List<UpgradeOption> _pendingOptions = new();
         private bool _isHandlingExpChange;
 
         /// <summary>
@@ -61,8 +69,16 @@ namespace Babel
                 return;
             }
 
-            SkillConfig selected = _pendingOptions[index];
-            skillSystem.AddOrReplaceSkill(selected);
+            UpgradeOption selected = _pendingOptions[index];
+            if (selected.Type == UpgradeOption.OptionType.LevelUpgrade)
+            {
+                skillSystem.UpgradeSkill(selected.Config);
+            }
+            else
+            {
+                skillSystem.AddOrReplaceSkill(selected.Config);
+            }
+
             skillSystem.ResetClickCooldowns();
             _pendingOptions.Clear();
             Time.timeScale = 1f;
@@ -83,7 +99,7 @@ namespace Babel
         /// </summary>
         /// <param name="count">目标选项数量。</param>
         /// <returns>生成的技能选项。</returns>
-        public IReadOnlyList<SkillConfig> GenerateOptionsForTests(int count)
+        public IReadOnlyList<UpgradeOption> GenerateOptionsForTests(int count)
         {
             return GenerateOptions(count);
         }
@@ -92,7 +108,7 @@ namespace Babel
         /// 为测试直接设置待选项。
         /// </summary>
         /// <param name="options">待选择技能。</param>
-        public void SetPendingOptionsForTests(IReadOnlyList<SkillConfig> options)
+        public void SetPendingOptionsForTests(IReadOnlyList<UpgradeOption> options)
         {
             _pendingOptions.Clear();
             if (options == null)
@@ -106,10 +122,10 @@ namespace Babel
             }
         }
 
-        private IReadOnlyList<SkillConfig> GenerateOptions(int count)
+        private IReadOnlyList<UpgradeOption> GenerateOptions(int count)
         {
             var pool = BuildEligiblePool();
-            var selected = new List<SkillConfig>(Mathf.Min(count, pool.Count));
+            var selected = new List<UpgradeOption>(Mathf.Min(count, pool.Count));
             while (selected.Count < count && pool.Count > 0)
             {
                 int index = RollWeightedIndex(pool);
@@ -131,7 +147,7 @@ namespace Babel
             Global.Exp.Value -= EXP_THRESHOLD;
             Global.Level.Value++;
             _pendingOptions.Clear();
-            IReadOnlyList<SkillConfig> options = GenerateOptions(OPTIONS_COUNT);
+            IReadOnlyList<UpgradeOption> options = GenerateOptions(OPTIONS_COUNT);
             for (int i = 0; i < options.Count; i++)
             {
                 _pendingOptions.Add(options[i]);
@@ -146,27 +162,44 @@ namespace Babel
             }
 
             Time.timeScale = 0f;
-            UpgradeEvents.RaiseOptionsGenerated(_pendingOptions);
+            // 提取 Config 列表传给 UI
+            var configList = new List<SkillConfig>(_pendingOptions.Count);
+            for (int i = 0; i < _pendingOptions.Count; i++)
+                configList.Add(_pendingOptions[i].Config);
+            UpgradeEvents.RaiseOptionsGenerated(configList);
             _isHandlingExpChange = false;
         }
 
-        private List<SkillConfig> BuildEligiblePool()
+        private List<UpgradeOption> BuildEligiblePool()
         {
-            var pool = new List<SkillConfig>();
+            var pool = new List<UpgradeOption>();
+
+            // 新技能
             IReadOnlyList<SkillConfig> allSkills = SkillDatabase.GetAll();
             for (int i = 0; i < allSkills.Count; i++)
             {
-                SkillConfig config = allSkills[i];
-                if (IsEligible(config))
+                if (IsEligibleNewSkill(allSkills[i]))
+                    pool.Add(new UpgradeOption { Type = UpgradeOption.OptionType.NewSkill, Config = allSkills[i] });
+            }
+
+            // 升级已有技能
+            if (skillSystem != null)
+            {
+                IReadOnlyList<Skill> equipped = skillSystem.GetEquippedSkills();
+                for (int i = 0; i < equipped.Count; i++)
                 {
-                    pool.Add(config);
+                    SkillConfig current = equipped[i].Config;
+                    if (!skillSystem.CanUpgradeSkill(current.SkillId)) continue;
+                    SkillConfig next = SkillDatabase.GetNextLevel(current.SkillId, current.Level);
+                    if (next != null)
+                        pool.Add(new UpgradeOption { Type = UpgradeOption.OptionType.LevelUpgrade, Config = next });
                 }
             }
 
             return pool;
         }
 
-        private bool IsEligible(SkillConfig config)
+        private bool IsEligibleNewSkill(SkillConfig config)
         {
             if (config == null || config.Weight <= 0f)
             {
@@ -187,19 +220,19 @@ namespace Babel
             return true;
         }
 
-        private static int RollWeightedIndex(IReadOnlyList<SkillConfig> pool)
+        private static int RollWeightedIndex(IReadOnlyList<UpgradeOption> pool)
         {
             float totalWeight = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                totalWeight += Mathf.Max(0f, pool[i].Weight);
+                totalWeight += Mathf.Max(0f, pool[i].Config.Weight);
             }
 
             float roll = UnityEngine.Random.Range(0f, totalWeight);
             float cumulative = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                cumulative += Mathf.Max(0f, pool[i].Weight);
+                cumulative += Mathf.Max(0f, pool[i].Config.Weight);
                 if (roll <= cumulative)
                 {
                     return i;

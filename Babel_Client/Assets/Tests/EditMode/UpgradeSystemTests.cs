@@ -135,6 +135,7 @@ namespace Babel.Tests
             Type skillDatabaseType = RequireType("Babel.SkillDatabase");
             Type skillSystemType = RequireType("Babel.SkillSystem");
             Type upgradeSystemType = RequireType("Babel.UpgradeSystem");
+            Type upgradeOptionType = RequireType("Babel.UpgradeOption");
             skillDatabaseType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new object[] { SkillsCsvText });
             var skillObj = new GameObject("SkillSystemForSelect");
@@ -156,10 +157,21 @@ namespace Babel.Tests
                 upgradeSystemType.GetMethod("SetSkillSystemForTests", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(upgradeSystem, new object[] { skillSystem });
                 object aftershockConfig = getByIdMethod.Invoke(null, new object[] { "aftershock" });
-                Array pendingOptions = Array.CreateInstance(aftershockConfig.GetType(), 1);
-                pendingOptions.SetValue(aftershockConfig, 0);
+
+                // 包装成 UpgradeOption
+                object upgradeOpt = Activator.CreateInstance(upgradeOptionType);
+                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, 0); // 0 = NewSkill
+                upgradeOptionType.GetField("Config").SetValue(upgradeOpt, aftershockConfig);
+                var pendingOptions = new List<object> { upgradeOpt };
+
+                // 通过反射传入 IReadOnlyList<UpgradeOption>
+                // 创建泛型 List<UpgradeOption>
+                Type listType = typeof(List<>).MakeGenericType(upgradeOptionType);
+                object typedList = Activator.CreateInstance(listType);
+                listType.GetMethod("Add").Invoke(typedList, new object[] { upgradeOpt });
+
                 upgradeSystemType.GetMethod("SetPendingOptionsForTests", BindingFlags.Public | BindingFlags.Instance)
-                    .Invoke(upgradeSystem, new object[] { pendingOptions });
+                    .Invoke(upgradeSystem, new object[] { typedList });
                 Time.timeScale = 0f;
 
                 upgradeSystemType.GetMethod("SelectOption", BindingFlags.Public | BindingFlags.Instance)
@@ -185,6 +197,7 @@ namespace Babel.Tests
             Type skillDatabaseType = RequireType("Babel.SkillDatabase");
             Type skillSystemType = RequireType("Babel.SkillSystem");
             Type upgradeSystemType = RequireType("Babel.UpgradeSystem");
+            Type upgradeOptionType = RequireType("Babel.UpgradeOption");
             Type inputContextType = RequireType("Babel.PointerInputContext");
             Type inputEventsType = RequireType("Babel.InputEvents");
             skillDatabaseType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
@@ -207,10 +220,19 @@ namespace Babel.Tests
                 upgradeSystemType.GetMethod("SetSkillSystemForTests", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(upgradeSystem, new object[] { skillSystem });
                 object aftershockConfig = getByIdMethod.Invoke(null, new object[] { "aftershock" });
-                Array pendingOptions = Array.CreateInstance(aftershockConfig.GetType(), 1);
-                pendingOptions.SetValue(aftershockConfig, 0);
+
+                // 包装成 UpgradeOption
+                object upgradeOpt = Activator.CreateInstance(upgradeOptionType);
+                upgradeOptionType.GetField("Type").SetValue(upgradeOpt, 0); // 0 = NewSkill
+                upgradeOptionType.GetField("Config").SetValue(upgradeOpt, aftershockConfig);
+
+                // 创建泛型 List<UpgradeOption>
+                Type listType = typeof(List<>).MakeGenericType(upgradeOptionType);
+                object typedList = Activator.CreateInstance(listType);
+                listType.GetMethod("Add").Invoke(typedList, new object[] { upgradeOpt });
+
                 upgradeSystemType.GetMethod("SetPendingOptionsForTests", BindingFlags.Public | BindingFlags.Instance)
-                    .Invoke(upgradeSystem, new object[] { pendingOptions });
+                    .Invoke(upgradeSystem, new object[] { typedList });
 
                 object clickContext = CreatePointerInputContext(inputContextType, Vector2.zero);
                 inputEventsType.GetMethod("RaisePointerDown", BindingFlags.Public | BindingFlags.Static)
@@ -294,12 +316,16 @@ namespace Babel.Tests
             startMethod.Invoke(component, Array.Empty<object>());
         }
 
-        private static List<string> CollectSkillIds(IEnumerable skills)
+        /// <summary>
+        /// 从 IEnumerable&lt;UpgradeOption&gt; 中提取每个选项的 Config.SkillId。
+        /// </summary>
+        private static List<string> CollectSkillIds(IEnumerable options)
         {
             var skillIds = new List<string>();
-            foreach (object skill in skills)
+            foreach (object option in options)
             {
-                skillIds.Add((string)skill.GetType().GetField("SkillId").GetValue(skill));
+                object config = option.GetType().GetField("Config").GetValue(option);
+                skillIds.Add((string)config.GetType().GetField("SkillId").GetValue(config));
             }
 
             return skillIds;
