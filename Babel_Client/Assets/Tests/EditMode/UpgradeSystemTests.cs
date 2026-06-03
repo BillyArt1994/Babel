@@ -266,35 +266,48 @@ namespace Babel.Tests
         }
 
         [Test]
-        public void ExpThreshold_GeneratesPendingOptionsIncrementsLevelAndPausesTime()
+        public void LevelUp_GeneratesPendingOptionsIncrementsLevelAndPausesTime()
         {
             Type skillDatabaseType = RequireType("Babel.SkillDatabase");
             Type skillSystemType = RequireType("Babel.SkillSystem");
             Type upgradeSystemType = RequireType("Babel.UpgradeSystem");
+            Type xpSystemType = RequireType("Babel.XpSystem");
             Type globalType = RequireType("Babel.Global");
             skillDatabaseType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new object[] { SkillsCsvText });
             var skillObj = new GameObject("SkillSystemForExp");
             var upgradeObj = new GameObject("UpgradeSystemForExp");
+            var xpObj = new GameObject("XpForExp");
             float previousTimeScale = Time.timeScale;
-            int previousExp = GetGlobalInt(globalType, "Exp");
             int previousLevel = GetGlobalInt(globalType, "Level");
 
             try
             {
-                SetGlobalInt(globalType, "Exp", 0);
                 SetGlobalInt(globalType, "Level", 1);
                 Time.timeScale = 1f;
+
+                // 创建 XpSystem，注入曲线（升到 2 级需 5 XP）
+                Component xpSystem = xpObj.AddComponent(xpSystemType);
+                xpSystemType.GetMethod("InitForTests", BindingFlags.Public | BindingFlags.Instance)
+                    .Invoke(xpSystem, new object[] { new float[] { 5f } });
+
                 Component skillSystem = skillObj.AddComponent(skillSystemType);
                 InvokePrivateStart(skillSystem);
+
                 Component upgradeSystem = upgradeObj.AddComponent(upgradeSystemType);
                 upgradeSystemType.GetMethod("SetSkillSystemForTests", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(upgradeSystem, new object[] { skillSystem });
-                InvokePrivateStart(upgradeSystem);
 
-                SetGlobalInt(globalType, "Exp", 5);
+                // 注入 xpSystem 字段后重调 OnEnable，使 UpgradeSystem 订阅 OnLevelsGained
+                upgradeSystemType.GetField("xpSystem", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(upgradeSystem, xpSystem);
+                upgradeSystemType.GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(upgradeSystem, null);
 
-                Assert.That(GetGlobalInt(globalType, "Exp"), Is.EqualTo(0));
+                // 触发升级
+                xpSystemType.GetMethod("GainXp", BindingFlags.Public | BindingFlags.Instance)
+                    .Invoke(xpSystem, new object[] { 5f });
+
                 Assert.That(GetGlobalInt(globalType, "Level"), Is.EqualTo(2));
                 Assert.That(Time.timeScale, Is.EqualTo(0f));
                 Assert.That(
@@ -304,10 +317,10 @@ namespace Babel.Tests
             finally
             {
                 Time.timeScale = previousTimeScale;
-                SetGlobalInt(globalType, "Exp", previousExp);
                 SetGlobalInt(globalType, "Level", previousLevel);
                 UnityEngine.Object.DestroyImmediate(skillObj);
                 UnityEngine.Object.DestroyImmediate(upgradeObj);
+                UnityEngine.Object.DestroyImmediate(xpObj);
             }
         }
 
@@ -356,8 +369,18 @@ namespace Babel.Tests
 
         private static Type RequireType(string fullName)
         {
-            Type type = Type.GetType($"{fullName}, Assembly-CSharp");
-            Assert.That(type, Is.Not.Null, $"{fullName} should exist in Assembly-CSharp.");
+            Type type = Type.GetType($"{fullName}, Babel")
+                      ?? Type.GetType($"{fullName}, Assembly-CSharp")
+                      ?? Type.GetType(fullName);
+            if (type == null)
+            {
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    type = asm.GetType(fullName);
+                    if (type != null) break;
+                }
+            }
+            Assert.That(type, Is.Not.Null, $"{fullName} should exist in a loaded assembly.");
             return type;
         }
 

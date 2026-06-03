@@ -218,8 +218,18 @@ namespace Babel.Tests
 
         private static Type RequireType(string fullName)
         {
-            Type type = Type.GetType($"{fullName}, Assembly-CSharp");
-            Assert.That(type, Is.Not.Null, $"{fullName} should exist in Assembly-CSharp.");
+            Type type = Type.GetType($"{fullName}, Babel")
+                      ?? Type.GetType($"{fullName}, Assembly-CSharp")
+                      ?? Type.GetType(fullName);
+            if (type == null)
+            {
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    type = asm.GetType(fullName);
+                    if (type != null) break;
+                }
+            }
+            Assert.That(type, Is.Not.Null, $"{fullName} should exist in a loaded assembly.");
             return type;
         }
     }

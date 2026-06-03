@@ -293,19 +293,14 @@ namespace Babel.Tests
         {
             Type enemyType = RequireType("Babel.Enemy");
             Type enemyEventsType = RequireType("Babel.EnemyEvents");
-            Type globalType = RequireType("Babel.Global");
             var enemyObject = new GameObject("EnemyFatalHitFeedbackTest");
             var circleObject = new GameObject("Circle");
             int deathEventCount = 0;
-            object expProperty = globalType.GetField("Exp").GetValue(null);
-            PropertyInfo expValueProperty = expProperty.GetType().GetProperty("Value");
-            int previousExp = (int)expValueProperty.GetValue(expProperty);
 
             Action<Vector2> onEnemyDied = _ => deathEventCount++;
 
             try
             {
-                expValueProperty.SetValue(expProperty, 0);
                 enemyEventsType.GetEvent("OnEnemyDied").AddEventHandler(null, onEnemyDied);
                 circleObject.transform.SetParent(enemyObject.transform, false);
                 SpriteRenderer renderer = circleObject.AddComponent<SpriteRenderer>();
@@ -317,29 +312,38 @@ namespace Babel.Tests
                 enemyType.GetMethod("TakeDamage").Invoke(enemy, new object[] { 50f, false });
                 InvokePrivate(enemyType, enemy, "Update");
 
+                // 致死后：死亡事件尚未触发，renderer 已变红（hit feedback 进行中）
                 Assert.That(deathEventCount, Is.EqualTo(0));
-                Assert.That(expValueProperty.GetValue(expProperty), Is.EqualTo(0));
                 Assert.That(renderer.color.r, Is.EqualTo(Color.red.r).Within(0.001f));
 
                 MethodInfo tickDeathMethod = enemyType.GetMethod("TickDeathFeedback", BindingFlags.Public | BindingFlags.Instance);
                 Assert.That(tickDeathMethod, Is.Not.Null, "Fatal damage should keep the enemy visible until feedback time finishes.");
                 tickDeathMethod.Invoke(enemy, new object[] { 1f });
 
+                // feedback 结束后死亡事件触发一次
                 Assert.That(deathEventCount, Is.EqualTo(1));
-                Assert.That(expValueProperty.GetValue(expProperty), Is.EqualTo(1));
             }
             finally
             {
                 enemyEventsType.GetEvent("OnEnemyDied").RemoveEventHandler(null, onEnemyDied);
-                expValueProperty.SetValue(expProperty, previousExp);
                 UnityEngine.Object.DestroyImmediate(enemyObject);
             }
         }
 
         private static Type RequireType(string fullName)
         {
-            Type type = Type.GetType($"{fullName}, Assembly-CSharp");
-            Assert.That(type, Is.Not.Null, $"{fullName} should exist in Assembly-CSharp.");
+            Type type = Type.GetType($"{fullName}, Babel")
+                      ?? Type.GetType($"{fullName}, Assembly-CSharp")
+                      ?? Type.GetType(fullName);
+            if (type == null)
+            {
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    type = asm.GetType(fullName);
+                    if (type != null) break;
+                }
+            }
+            Assert.That(type, Is.Not.Null, $"{fullName} should exist in a loaded assembly.");
             return type;
         }
 

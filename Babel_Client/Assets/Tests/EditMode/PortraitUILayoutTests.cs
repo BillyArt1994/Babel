@@ -267,7 +267,8 @@ namespace Babel.Tests
 
         private static void ApplyRuntimePortraitLayout(GameObject panel)
         {
-            Type panelType = Type.GetType("Babel.UIGamePanel, Assembly-CSharp");
+            Type panelType = Type.GetType("Babel.UIGamePanel, Babel")
+                          ?? Type.GetType("Babel.UIGamePanel, Assembly-CSharp");
             Assert.That(panelType, Is.Not.Null);
             Component gamePanel = panel.GetComponent(panelType);
             Assert.That(gamePanel, Is.Not.Null);
