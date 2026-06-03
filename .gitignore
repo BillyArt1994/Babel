@@ -61,3 +61,12 @@ crashlytics-build.properties
 # Claude Code 本地配置与自动生成的审计日志（停止跟踪，保留本地文件）
 .claude/settings.local.json
 production/session-logs/session-log.md
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 工具脚本临时输出目录（视频/预览图等过程产物写入此处，不进版本库）
+# 真正需要保留的产物归档到 production/artifacts/
+video_out/
