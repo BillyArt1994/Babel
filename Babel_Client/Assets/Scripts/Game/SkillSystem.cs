@@ -150,6 +150,48 @@ namespace Babel
         }
 
         /// <summary>
+        /// 当前是否可以升级指定技能（已装备且未满级）。
+        /// </summary>
+        public bool CanUpgradeSkill(string skillId)
+        {
+            for (int i = 0; i < _skills.Count; i++)
+            {
+                if (_skills[i].Config.SkillId == skillId)
+                {
+                    SkillConfig cfg = _skills[i].Config;
+                    int maxLevel = cfg.MaxLevel <= 0 ? 1 : cfg.MaxLevel;
+                    return cfg.Level < maxLevel;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 就地升级已装备的指定技能：用下一级 SkillConfig 替换 Config 引用，
+        /// 不销毁 Trigger，保留冷却状态。
+        /// </summary>
+        /// <param name="nextConfig">下一级技能配置（由调用方通过 SkillDatabase.GetNextLevel 获取）。</param>
+        public void UpgradeSkill(SkillConfig nextConfig)
+        {
+            if (nextConfig == null)
+            {
+                Debug.LogWarning("[BABEL][SkillSystem] UpgradeSkill: nextConfig is null");
+                return;
+            }
+            for (int i = 0; i < _skills.Count; i++)
+            {
+                if (_skills[i].Config.SkillId == nextConfig.SkillId)
+                {
+                    _skills[i].UpdateConfig(nextConfig);
+                    RaiseEquippedSkillsChanged();
+                    Debug.LogWarning($"[BABEL][SkillSystem] Upgraded {nextConfig.SkillId} to level {nextConfig.Level}");
+                    return;
+                }
+            }
+            Debug.LogWarning($"[BABEL][SkillSystem] UpgradeSkill: skill '{nextConfig.SkillId}' not found");
+        }
+
+        /// <summary>
         /// 添加技能；若新技能是点击触发形态，则替换当前点击形态。
         /// </summary>
         /// <param name="config">要添加或替换的技能配置。</param>

@@ -354,5 +354,28 @@ namespace Babel.Tests
             object result = getNextLevel.Invoke(null, new object[] { "divine_finger", 1 });
             Assert.That(result, Is.Null, "divine_finger has no level 2, should return null");
         }
+
+        [Test]
+        public void CanUpgradeSkill_WhenSkillAtMaxLevel_ReturnsFalse()
+        {
+            Type skillSystemType = RequireType("Babel.SkillSystem");
+            Type dbType = RequireType("Babel.SkillDatabase");
+            dbType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                  .Invoke(null, new object[] { SkillsCsvText });
+
+            var obj = new GameObject("SkillSystemCanUpgradeTest");
+            try
+            {
+                Component system = obj.AddComponent(skillSystemType);
+                InvokePrivateStart(system);
+                // divine_finger maxLevel=1（默认），装备后应不可升级
+                var canUpgrade = skillSystemType.GetMethod("CanUpgradeSkill",
+                    BindingFlags.Public | BindingFlags.Instance);
+                Assert.That(canUpgrade, Is.Not.Null);
+                bool result = (bool)canUpgrade.Invoke(system, new object[] { "divine_finger" });
+                Assert.That(result, Is.False, "divine_finger has maxLevel=1, cannot upgrade");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(obj); }
+        }
     }
 }
