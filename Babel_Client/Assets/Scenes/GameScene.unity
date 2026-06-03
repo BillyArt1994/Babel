@@ -417,6 +417,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 22d4d7ba06de0644bb712103c098cf5c, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t4_p01
@@ -1983,6 +1987,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 06c24594b90c0a74fb67d8452f74539b, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t2_p01
@@ -2797,6 +2805,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 9a352b1d7b8edea47ac1c627615ff4e9, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t6_p01
@@ -2955,6 +2967,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 869d7d4a31fa8ac44995d5350c27f3e5, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t3_p01
@@ -3655,6 +3671,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: bda3b4a2a5331964f905f43f752c154c, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t5_p01

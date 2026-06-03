@@ -54,7 +54,12 @@ Static class with reactive bindable properties:
 Enemy state machine: `MovingToBuildPoint → Building → MovingToPassage → ClimbingPassage → Finished`
 
 **Path / BuildPoint system**
-`Path` holds an array of `BuildPoint` waypoints and a `nextLayerPath` reference. Enemies call `Path.ReserveBuildPoint()` (nearest available) and `ReleaseBuildPoint()` on completion. A `BuildPoint` with `isGateway = true` is the ladder to the next layer. When all non-gateway BuildPoints are completed, `BuildEvents.RaiseLayerCompleted` fires.
+`Path` holds an array of `BuildPoint` waypoints and a `nextLayerPath` reference. Enemies call `Path.ReserveBuildPoint(fromPos, selector)` to reserve a point and `ReleaseBuildPoint()` to free it. The point is chosen by an `ITargetSelector` strategy (see below). When **all** BuildPoints (the gateway included) are completed, `Path.IsCompleted` becomes true and `BuildEvents.RaiseLayerCompleted` fires.
+
+A `BuildPoint` with `isGateway = true` is the ladder to the next layer; it is a normal buildable point that also counts toward completion. Once built, it acts as a **public ladder**: an enemy with no reservable point left on its current layer will climb if `Path.IsGatewayBuilt()` is true and a `nextLayerPath` exists (climbing costs no build charge). `Path.GetGatewayIndex()` returns the gateway's index, falling back to 0 if no point is flagged.
+
+**Target selection (`ITargetSelector`)**
+`Path.ReserveBuildPoint` filters candidates (skip built/occupied) then delegates the pick to an `ITargetSelector`. `DefaultBuildSelector` picks uniformly at random from all candidates (workers). `GatewayFirstSelector` forces the gateway when it is among the candidates, else falls back to default (the "scout" enemy, `targetMode = scout` in `enemies.csv`). `Enemy.Init` builds the selector from `EnemyData.TargetMode`.
 
 **Skill system**
 `SkillSystem` owns a list of `Skill` objects. Each skill has a trigger (`OnClick`, `OnHit`, `OnTimer`, `OnKill`) and one or more effects (`Damage`, `Buff`, `DoT`, `Composite`). Skills are loaded from `skills.csv` via `SkillDatabase.Init()`. `SkillFactory.Create()` builds the runtime object.
@@ -62,7 +67,7 @@ Enemy state machine: `MovingToBuildPoint → Building → MovingToPassage → Cl
 `AddOrReplaceSkill()`: adding an `OnClick` skill replaces all existing `OnClick` skills.
 
 **Upgrade system**
-`UpgradeSystem` subscribes to `Global.Exp` changes. When Exp ≥ 5: deducts 5 EXP, increments Level, generates 3 weighted-random skill options, pauses time (`Time.timeScale = 0`), raises `UpgradeEvents.RaiseOptionsGenerated`. On selection: `UpgradeEvents.OnOptionSelected` → `SkillSystem.AddOrReplaceSkill()` → resume time.
+`XpSystem` owns the experience curve (loaded from `Data/experience.csv`); enemies call `XpSystem.Instance.GainXp(amount)` on death. When enough XP accrues, `XpSystem` raises `OnLevelsGained(count)`. `UpgradeSystem.HandleLevelsGained` responds: syncs `Global.Level`, generates 3 weighted-random options (a mix of new skills and level-ups of equipped skills), pauses time (`Time.timeScale = 0`), raises `UpgradeEvents.RaiseOptionsGenerated`. On selection: `UpgradeEvents.OnOptionSelected` → `SkillSystem.AddOrReplaceSkill()` or `UpgradeSkill()` → resume time.
 
 **Enemy pool**
 `IEnemyPool` interface → currently `TransientEnemyPool` (Instantiate/Destroy placeholder). Prefabs loaded from `Resources/` by path stored in `EnemyData.Prefab`; falls back to a colored procedural sprite if missing.
