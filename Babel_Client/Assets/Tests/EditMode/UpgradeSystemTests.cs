@@ -407,5 +407,120 @@ namespace Babel.Tests
             }
             finally { UnityEngine.Object.DestroyImmediate(obj); }
         }
+
+        [Test]
+        public void UpgradeSkill_WhenMeteorLevel1Equipped_UpgradesToLevel2WithoutResettingTrigger()
+        {
+            Type dbType = RequireType("Babel.SkillDatabase");
+            Type skillSystemType = RequireType("Babel.SkillSystem");
+            dbType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                  .Invoke(null, new object[] { SkillsCsvText });
+
+            var obj = new GameObject("UpgradeIntegrationTest");
+            try
+            {
+                Component system = obj.AddComponent(skillSystemType);
+                InvokePrivateStart(system);
+
+                // 1. 获取 meteor level1 配置（GetById 返回最后一条，需用 GetAll 过滤 level=1）
+                var getAll = dbType.GetMethod("GetAll", BindingFlags.Public | BindingFlags.Static);
+                var allSkills = (System.Collections.IList)getAll.Invoke(null, null);
+                object meteorLevel1 = null;
+                foreach (var cfg in allSkills)
+                {
+                    string id = (string)cfg.GetType().GetField("SkillId").GetValue(cfg);
+                    int lv = (int)cfg.GetType().GetField("Level").GetValue(cfg);
+                    if (id == "meteor" && lv == 1) { meteorLevel1 = cfg; break; }
+                }
+                Assert.That(meteorLevel1, Is.Not.Null, "meteor level1 must exist in CSV");
+
+                // 2. 装备 meteor level1
+                var addOrReplace = skillSystemType.GetMethod("AddOrReplaceSkill", BindingFlags.Public | BindingFlags.Instance);
+                addOrReplace.Invoke(system, new[] { meteorLevel1 });
+
+                // 3. 获取 level2 配置
+                var getNextLevel = dbType.GetMethod("GetNextLevel", BindingFlags.Public | BindingFlags.Static);
+                object level2Config = getNextLevel.Invoke(null, new object[] { "meteor", 1 });
+                Assert.That(level2Config, Is.Not.Null, "meteor level2 must exist in CSV");
+
+                // 4. 调用 UpgradeSkill
+                var upgradeSkill = skillSystemType.GetMethod("UpgradeSkill", BindingFlags.Public | BindingFlags.Instance);
+                upgradeSkill.Invoke(system, new[] { level2Config });
+
+                // 5. 验证：HasSkill("meteor") 仍为 true
+                //    meteor 是 OnClick 技能，替换了 divine_finger，所以装备数量为 1（仅 meteor）
+                var hasSkill = skillSystemType.GetMethod("HasSkill", BindingFlags.Public | BindingFlags.Instance);
+                Assert.That((bool)hasSkill.Invoke(system, new object[] { "meteor" }), Is.True);
+
+                var getEquipped = skillSystemType.GetMethod("GetEquippedSkills", BindingFlags.Public | BindingFlags.Instance);
+                var equipped = (System.Collections.IList)getEquipped.Invoke(system, null);
+                Assert.That(equipped.Count, Is.EqualTo(1), "meteor is OnClick and replaces divine_finger; only 1 skill equipped");
+
+                // 6. 验证：装备的 meteor 已升至 level2
+                object equippedMeteor = equipped[0];
+                object config = equippedMeteor.GetType().GetProperty("Config").GetValue(equippedMeteor);
+                int equippedLevel = (int)config.GetType().GetField("Level").GetValue(config);
+                Assert.That(equippedLevel, Is.EqualTo(2), "meteor should have been upgraded to level 2");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(obj); }
+        }
+
+        [Test]
+        public void BuildEligiblePool_WhenMeteorLevel1Equipped_ContainsLevelUpgradeOption()
+        {
+            Type dbType = RequireType("Babel.SkillDatabase");
+            Type upgradeSystemType = RequireType("Babel.UpgradeSystem");
+            Type skillSystemType = RequireType("Babel.SkillSystem");
+            Type upgradeOptionType = RequireType("Babel.UpgradeOption");
+            dbType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                  .Invoke(null, new object[] { SkillsCsvText });
+
+            var upgradeObj = new GameObject("UpgradeSystemPoolTest");
+            var skillObj = new GameObject("SkillSystemPoolTest");
+            try
+            {
+                Component skillSys = skillObj.AddComponent(skillSystemType);
+                InvokePrivateStart(skillSys);
+
+                // 获取 meteor level1 配置（GetById 返回最后一条 level2，需从 GetAll 中筛选）
+                var getAll = dbType.GetMethod("GetAll", BindingFlags.Public | BindingFlags.Static);
+                var allSkills = (System.Collections.IList)getAll.Invoke(null, null);
+                object meteorLevel1 = null;
+                foreach (var cfg in allSkills)
+                {
+                    string id = (string)cfg.GetType().GetField("SkillId").GetValue(cfg);
+                    int lv = (int)cfg.GetType().GetField("Level").GetValue(cfg);
+                    if (id == "meteor" && lv == 1) { meteorLevel1 = cfg; break; }
+                }
+                Assert.That(meteorLevel1, Is.Not.Null, "meteor level1 must exist in CSV");
+
+                // 装备 meteor level1
+                var addOrReplace = skillSystemType.GetMethod("AddOrReplaceSkill", BindingFlags.Public | BindingFlags.Instance);
+                addOrReplace.Invoke(skillSys, new[] { meteorLevel1 });
+
+                Component upgradeSys = upgradeObj.AddComponent(upgradeSystemType);
+                var setSkillSystem = upgradeSystemType.GetMethod("SetSkillSystemForTests", BindingFlags.Public | BindingFlags.Instance);
+                setSkillSystem.Invoke(upgradeSys, new[] { skillSys });
+
+                var generateOptions = upgradeSystemType.GetMethod("GenerateOptionsForTests", BindingFlags.Public | BindingFlags.Instance);
+                var options = (System.Collections.IList)generateOptions.Invoke(upgradeSys, new object[] { 10 });
+
+                Type optionTypeEnum = upgradeOptionType.GetNestedType("OptionType");
+                object levelUpgradeValue = Enum.Parse(optionTypeEnum, "LevelUpgrade");
+
+                bool hasLevelUpgrade = false;
+                foreach (var opt in options)
+                {
+                    object typeValue = upgradeOptionType.GetField("Type").GetValue(opt);
+                    if (typeValue.Equals(levelUpgradeValue)) { hasLevelUpgrade = true; break; }
+                }
+                Assert.That(hasLevelUpgrade, Is.True, "Pool should contain LevelUpgrade option for meteor when level1 is equipped");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(upgradeObj);
+                UnityEngine.Object.DestroyImmediate(skillObj);
+            }
+        }
     }
 }

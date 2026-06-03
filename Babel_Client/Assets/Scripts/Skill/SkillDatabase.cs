@@ -10,7 +10,10 @@ namespace Babel
     public static class SkillDatabase
     {
         private const string LOG_PREFIX = "[BABEL][SkillDB]";
+        // _byId: skillId → 最低级（level1）配置，供 GetById 返回
         private static readonly Dictionary<string, SkillConfig> _byId = new();
+        // _allLevels: (skillId, level) → 配置，保存所有等级，供 GetNextLevel 查询
+        private static readonly Dictionary<(string, int), SkillConfig> _allLevels = new();
         private static readonly List<SkillConfig> _allSkills = new();
         private static bool _initialized;
 
@@ -22,6 +25,7 @@ namespace Babel
         {
             _initialized = false;
             _byId.Clear();
+            _allLevels.Clear();
             _allSkills.Clear();
 
             var parsedSkills = SkillParser.Parse(csvText);
@@ -119,14 +123,24 @@ namespace Babel
 
         private static void AddOrReplace(SkillConfig config)
         {
-            if (_byId.TryGetValue(config.SkillId, out var existing))
+            // 同 skillId 不同 level 的行都保留（多级升级支持）
+            // _allLevels 以 (skillId, level) 为键；若 (id, level) 重复则覆盖并警告
+            var key = (config.SkillId, config.Level);
+            if (_allLevels.TryGetValue(key, out var existingLevel))
             {
-                _allSkills.Remove(existing);
-                Debug.LogWarning($"{LOG_PREFIX} Duplicate skillId '{config.SkillId}' found. Overwriting previous config.");
+                _allSkills.Remove(existingLevel);
+                Debug.LogWarning($"{LOG_PREFIX} Duplicate (skillId='{config.SkillId}', level={config.Level}) found. Overwriting previous config.");
             }
 
-            _byId[config.SkillId] = config;
+            _allLevels[key] = config;
             _allSkills.Add(config);
+
+            // _byId 保存最低级（level=1）配置供 GetById 使用
+            // 若当前记录 level 更低，或该 skillId 尚未注册，则更新 _byId
+            if (!_byId.TryGetValue(config.SkillId, out var current) || config.Level < current.Level)
+            {
+                _byId[config.SkillId] = config;
+            }
         }
 
         private static void ValidateUpgradeReferences()
