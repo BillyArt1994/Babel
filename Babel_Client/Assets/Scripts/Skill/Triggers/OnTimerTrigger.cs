@@ -5,14 +5,14 @@ namespace Babel
     public class OnTimerTrigger : TriggerBase
     {
         private readonly float _interval;
+        private readonly System.Func<Vector2> _getBasePosition;
         private float _timer;
         private bool _enabled;
 
-        public System.Func<Vector2> GetBasePosition;
-
-        public OnTimerTrigger(float interval)
+        public OnTimerTrigger(float interval, System.Func<Vector2> getBasePosition)
         {
             _interval = interval;
+            _getBasePosition = getBasePosition;
         }
 
         public override void Enable()
@@ -36,8 +36,8 @@ namespace Babel
             {
                 _timer = _interval;
 
-                Vector2 basePos = GetBasePosition != null
-                    ? GetBasePosition()
+                Vector2 basePos = _getBasePosition != null
+                    ? _getBasePosition()
                     : Vector2.zero;
 
                 Fire(new TriggerContext

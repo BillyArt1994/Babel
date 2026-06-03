@@ -7,17 +7,17 @@ namespace Babel
     {
         public static Skill Create(SkillConfig config, EffectManager effectManager, Func<UnityEngine.Vector2> getBasePosition)
         {
-            var trigger = CreateTrigger(config, getBasePosition);
+            var trigger = CreateTrigger(config, effectManager, getBasePosition);
             var effect = CreateEffect(config, effectManager);
             trigger.Bind(effect.Execute);
             return new Skill(config, trigger, effect);
         }
 
-        private static TriggerBase CreateTrigger(SkillConfig config, Func<UnityEngine.Vector2> getBasePosition)
+        private static TriggerBase CreateTrigger(SkillConfig config, EffectManager effectManager, Func<UnityEngine.Vector2> getBasePosition)
         {
             return config.TriggerType switch
             {
-                "OnClick" => new OnClickTrigger(config.Cooldown, config.ChargeTime),
+                "OnClick" => new OnClickTrigger(config.Cooldown, config.ChargeTime, () => effectManager.GetStatValue("cooldownMult")),
                 "OnHit" => new OnHitTrigger(config.Chance),
                 "OnTimer" => CreateTimerTrigger(config, getBasePosition),
                 "OnKill" => new OnKillTrigger(config.Chance),
@@ -27,9 +27,7 @@ namespace Babel
 
         private static OnTimerTrigger CreateTimerTrigger(SkillConfig config, Func<UnityEngine.Vector2> getBasePosition)
         {
-            var trigger = new OnTimerTrigger(config.Interval);
-            trigger.GetBasePosition = getBasePosition;
-            return trigger;
+            return new OnTimerTrigger(config.Interval, getBasePosition);
         }
 
         private static IEffect CreateEffect(SkillConfig config, EffectManager effectManager)

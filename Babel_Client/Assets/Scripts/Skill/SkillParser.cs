@@ -14,7 +14,7 @@ namespace Babel
         private const string LOG_PREFIX = "[BABEL][SkillParser]";
         private static readonly string[] REQUIRED_COLUMNS = { "skillId", "skillName", "triggerType", "effectType" };
         private static readonly HashSet<string> KNOWN_TRIGGER_TYPES = new HashSet<string> { "OnClick", "OnHit", "OnTimer", "OnKill" };
-        private static readonly HashSet<string> KNOWN_EFFECT_TYPES = new HashSet<string> { "hit_single", "hit_aoe", "hit_chain", "dot_aoe", "stat_buff", "spawn_projectile", "apply_status", "execute" };
+        private static readonly HashSet<string> KNOWN_EFFECT_TYPES = new HashSet<string> { "hit_single", "hit_aoe", "dot_aoe", "stat_buff" };
 
         /// <summary>
         /// 将 CSV 文本解析为技能配置列表。

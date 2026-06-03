@@ -7,7 +7,7 @@ namespace Babel
     /// </summary>
     public class EffectConfig
     {
-        /// <summary>效果类型名（hit_single / hit_aoe / hit_chain / dot_aoe / stat_buff / spawn_projectile / apply_status / execute）</summary>
+        /// <summary>效果类型名，当前已实现：hit_single / hit_aoe / dot_aoe / stat_buff。（hit_chain / spawn_projectile / apply_status / execute 为后续迭代规划，尚未实现）</summary>
         public string EffectType = "";
 
         /// <summary>基础伤害值</summary>

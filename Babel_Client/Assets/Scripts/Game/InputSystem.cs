@@ -147,7 +147,6 @@ namespace Babel
 			if (Input.GetMouseButtonDown(0))
 			{
 				HandlePointerDown();
-				Debug.Log("MouseButtonDown!!");
 			}
 
 			if (!_isPointerHeld)

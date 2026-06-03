@@ -9,7 +9,7 @@ namespace Babel
     /// 管理升级三选一的选项生成、选择应用与暂停恢复流程。
     /// </summary>
     [DisallowMultipleComponent]
-    public class UpgradeSystem : MonoBehaviour
+    public class UpgradeSystem : ViewController
     {
         private const int OPTIONS_COUNT = 3;
         private const int EXP_THRESHOLD = 5;

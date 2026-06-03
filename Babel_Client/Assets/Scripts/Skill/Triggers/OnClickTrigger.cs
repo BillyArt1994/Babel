@@ -6,6 +6,7 @@ namespace Babel
     {
         private readonly float _cooldown;
         private readonly float _chargeTime;
+        private readonly System.Func<float> _cooldownMultProvider;
 
         private float _cooldownTimer;
         private float _holdDuration;
@@ -13,18 +14,29 @@ namespace Babel
         private bool _enabled;
         private Vector2 _lastWorldPos;
 
-        public OnClickTrigger(float cooldown, float chargeTime)
+        public OnClickTrigger(float cooldown, float chargeTime, System.Func<float> cooldownMultProvider = null)
         {
             _cooldown = cooldown;
             _chargeTime = chargeTime;
+            _cooldownMultProvider = cooldownMultProvider;
+        }
+
+        private float EffectiveCooldown
+        {
+            get
+            {
+                float mult = _cooldownMultProvider != null ? _cooldownMultProvider() : 1.0f;
+                return Mathf.Max(0f, _cooldown * mult);
+            }
         }
 
         public float CooldownProgress
         {
             get
             {
-                if (_cooldown <= 0) return 0f;
-                return Mathf.Clamp01(_cooldownTimer / _cooldown);
+                float effective = EffectiveCooldown;
+                if (effective <= 0f) return 0f;
+                return Mathf.Clamp01(_cooldownTimer / effective);
             }
         }
 
@@ -112,7 +124,7 @@ namespace Babel
                 IsPassive = false
             });
 
-            _cooldownTimer = _cooldown;
+            _cooldownTimer = EffectiveCooldown;
         }
 
         private void HandlePointerCancel(PointerInputContext ctx)

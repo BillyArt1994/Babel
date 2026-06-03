@@ -37,7 +37,6 @@ namespace Babel
 
         private void Start()
         {
-            Instance = this;
             _enabled = true;
             InitializeDefaultSkills();
         }

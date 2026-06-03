@@ -164,7 +164,7 @@ namespace Babel
         public static void ResetSession()
         {
             _result = GameSessionResult.None;
-            Global.RestData();
+            Global.ResetData();
             StatsTracker.Reset();
             Time.timeScale = 1f;
         }
