@@ -60,7 +60,7 @@ namespace Babel
 
             _stackBadge = badgeObject.GetComponent<Text>();
             _stackBadge.alignment = TextAnchor.MiddleCenter;
-            _stackBadge.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _stackBadge.font = BabelFont.Default;
             _stackBadge.fontSize = 12;
             _stackBadge.color = Color.white;
         }

@@ -216,11 +216,11 @@ namespace Babel
             typeLabel.text = IsPassiveSkill(config) ? "被动" : "主动";
             typeLabel.color = UPGRADE_CARD_TYPE_COLOR;
 
-            Text nameText = FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
+            Text nameText = FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(162f, 44f), 24);
             nameText.text = config.SkillName;
             nameText.color = UPGRADE_CARD_TITLE_COLOR;
 
-            Text descriptionText = FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
+            Text descriptionText = FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(162f, 118f), 18);
             descriptionText.text = config.Description;
             descriptionText.color = UPGRADE_CARD_BODY_COLOR;
         }
@@ -251,7 +251,9 @@ namespace Babel
                 text = EnsureCardText(card, name);
             }
 
-            ApplyCardTextLayout(text, position, sizeDelta, fontSize);
+            // 描述文字使用固定字号 + 自动换行（多行展示），其余使用 bestFit 自适应。
+            bool isDescription = name == "SkillDecsText";
+            ApplyCardTextLayout(text, position, sizeDelta, fontSize, isDescription);
             return text;
         }
 
@@ -260,12 +262,12 @@ namespace Babel
             var textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
             textObject.transform.SetParent(card, false);
             Text text = textObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = BabelFont.Default;
             text.color = UPGRADE_CARD_BODY_COLOR;
             return text;
         }
 
-        private void ApplyCardTextLayout(Text text, Vector2 position, Vector2 sizeDelta, int fontSize)
+        private void ApplyCardTextLayout(Text text, Vector2 position, Vector2 sizeDelta, int fontSize, bool wrapMultiline)
         {
             RectTransform rect = text.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -274,12 +276,24 @@ namespace Babel
             rect.anchoredPosition = position;
             rect.sizeDelta = sizeDelta;
 
+            text.font = BabelFont.Default;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontSize = fontSize;
-            text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 12;
-            text.resizeTextMaxSize = fontSize;
             text.color = UPGRADE_CARD_BODY_COLOR;
+            text.resizeTextForBestFit = false;
+            text.fontSize = fontSize;
+
+            if (wrapMultiline)
+            {
+                // 描述：自动换行，超出区域则截断。
+                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.verticalOverflow = VerticalWrapMode.Truncate;
+            }
+            else
+            {
+                // 名称/标签：单行不换行，固定字号保证清晰。
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                text.verticalOverflow = VerticalWrapMode.Overflow;
+            }
         }
 
         private void ApplyCardRect(RectTransform rect, Vector2 position, Vector2 sizeDelta)
@@ -411,7 +425,7 @@ namespace Babel
 
             _pauseButtonText = labelObject.GetComponent<Text>();
             _pauseButtonText.alignment = TextAnchor.MiddleCenter;
-            _pauseButtonText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _pauseButtonText.font = BabelFont.Default;
             _pauseButtonText.fontSize = 24;
             _pauseButtonText.color = Color.black;
         }
@@ -474,8 +488,8 @@ namespace Babel
             ApplyUpgradeCardStyle(button);
             EnsureCardIcon(button.transform);
             FindOrCreateCardText(button.transform, "TypeLabel", new Vector2(0f, 78f), new Vector2(88f, 26f), 20);
-            FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
-            FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
+            FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(162f, 44f), 24);
+            FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(162f, 118f), 18);
         }
 
         private void ApplyUpgradeCardStyle(Button button)
@@ -691,7 +705,7 @@ namespace Babel
             overflowRect.sizeDelta = new Vector2(36f, 22f);
             _passiveOverflowText = overflowObject.GetComponent<Text>();
             _passiveOverflowText.alignment = TextAnchor.MiddleCenter;
-            _passiveOverflowText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _passiveOverflowText.font = BabelFont.Default;
             _passiveOverflowText.fontSize = 14;
             _passiveOverflowText.color = Color.white;
             _passiveOverflowText.gameObject.SetActive(false);

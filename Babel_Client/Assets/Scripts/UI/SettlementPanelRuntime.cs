@@ -115,7 +115,7 @@ namespace Babel
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             text.text = value;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = BabelFont.Default;
             text.alignment = TextAnchor.MiddleCenter;
             text.fontSize = fontSize;
             text.resizeTextForBestFit = true;
