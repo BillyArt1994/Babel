@@ -37,48 +37,7 @@ namespace Babel.Tests
         }
 
         [Test]
-        public void GetFarthestSelectionCount_UsesFloorHalfWithMinimumOne()
-        {
-            _pathType = RequireType("Babel.Path");
-
-            Assert.That(GetFarthestSelectionCount(0), Is.EqualTo(0));
-            Assert.That(GetFarthestSelectionCount(1), Is.EqualTo(1));
-            Assert.That(GetFarthestSelectionCount(2), Is.EqualTo(1));
-            Assert.That(GetFarthestSelectionCount(3), Is.EqualTo(1));
-            Assert.That(GetFarthestSelectionCount(4), Is.EqualTo(2));
-            Assert.That(GetFarthestSelectionCount(5), Is.EqualTo(2));
-            Assert.That(GetFarthestSelectionCount(6), Is.EqualTo(3));
-        }
-
-        [Test]
-        public void ReserveBuildPoint_WithThreeCandidates_ReservesFarthestPoint()
-        {
-            CreatePathWithPointXs(1f, 2f, 3f);
-
-            int reservedIndex = ReserveFrom(Vector3.zero);
-
-            Assert.That(reservedIndex, Is.EqualTo(2));
-            Assert.That(IsOccupied(2), Is.True);
-            Assert.That(IsOccupied(0), Is.False);
-            Assert.That(IsOccupied(1), Is.False);
-        }
-
-        [Test]
-        public void ReserveBuildPoint_WithFourCandidates_ReservesOnlyFromFarthestHalf()
-        {
-            UnityEngine.Random.InitState(12345);
-            CreatePathWithPointXs(1f, 2f, 3f, 4f);
-
-            int reservedIndex = ReserveFrom(Vector3.zero);
-
-            Assert.That(reservedIndex == 2 || reservedIndex == 3, Is.True);
-            Assert.That(IsOccupied(reservedIndex), Is.True);
-            Assert.That(IsOccupied(0), Is.False);
-            Assert.That(IsOccupied(1), Is.False);
-        }
-
-        [Test]
-        public void ReserveBuildPoint_ExcludesCompletedAndOccupiedBeforeChoosingFarthestHalf()
+        public void ReserveBuildPoint_ExcludesCompletedAndOccupied()
         {
             CreatePathWithPointXs(1f, 10f, 20f, 30f);
             CompleteBuildPoint(2);
@@ -86,9 +45,33 @@ namespace Babel.Tests
 
             int reservedIndex = ReserveFrom(Vector3.zero);
 
-            Assert.That(reservedIndex, Is.EqualTo(1));
-            Assert.That(IsOccupied(1), Is.True);
-            Assert.That(IsOccupied(0), Is.False);
+            Assert.That(reservedIndex == 0 || reservedIndex == 1, Is.True);
+            Assert.That(IsOccupied(reservedIndex), Is.True);
+        }
+
+        [Test]
+        public void ReserveBuildPoint_WithAllAvailable_ReservesSomeValidPoint()
+        {
+            UnityEngine.Random.InitState(7);
+            CreatePathWithPointXs(1f, 2f, 3f);
+
+            int reservedIndex = ReserveFrom(Vector3.zero);
+
+            Assert.That(reservedIndex, Is.InRange(0, 2));
+            Assert.That(IsOccupied(reservedIndex), Is.True);
+        }
+
+        [Test]
+        public void IsGatewayBuilt_TrueOnlyAfterGatewayPointCompleted()
+        {
+            CreatePathWithPointXs(1f, 2f);
+            SetGateway(1, true);
+
+            Assert.That(IsGatewayBuilt(), Is.False);
+
+            CompleteBuildPoint(1);
+
+            Assert.That(IsGatewayBuilt(), Is.True);
         }
 
         private void CreatePathWithPointXs(params float[] xPositions)
@@ -117,18 +100,9 @@ namespace Babel.Tests
 
         private int ReserveFrom(Vector3 fromPosition)
         {
-            MethodInfo method = _pathType.GetMethod("ReserveBuildPoint", BindingFlags.Instance | BindingFlags.Public);
-            Assert.That(method, Is.Not.Null, "Path.ReserveBuildPoint should remain public.");
+            MethodInfo method = _pathType.GetMethod("ReserveBuildPoint", new Type[] { typeof(Vector3) });
+            Assert.That(method, Is.Not.Null, "Path.ReserveBuildPoint(Vector3) should remain public.");
             return (int)method.Invoke(_path, new object[] { fromPosition });
-        }
-
-        private int GetFarthestSelectionCount(int candidateCount)
-        {
-            MethodInfo method = _pathType.GetMethod(
-                "GetFarthestSelectionCount",
-                BindingFlags.Static | BindingFlags.NonPublic);
-            Assert.That(method, Is.Not.Null, "Path should expose a private testable farthest-half count helper.");
-            return (int)method.Invoke(null, new object[] { candidateCount });
         }
 
         private bool IsOccupied(int index)
@@ -150,6 +124,20 @@ namespace Babel.Tests
             MethodInfo method = _buildPointType.GetMethod("AddBuildProgress", BindingFlags.Instance | BindingFlags.Public);
             Assert.That(method, Is.Not.Null, "BuildPoint.AddBuildProgress should remain public.");
             method.Invoke(_buildPoints[index], new object[] { 9999 });
+        }
+
+        private void SetGateway(int index, bool value)
+        {
+            FieldInfo f = _buildPointType.GetField("isGateway", BindingFlags.Instance | BindingFlags.Public);
+            Assert.That(f, Is.Not.Null);
+            f.SetValue(_buildPoints[index], value);
+        }
+
+        private bool IsGatewayBuilt()
+        {
+            MethodInfo m = _pathType.GetMethod("IsGatewayBuilt", BindingFlags.Instance | BindingFlags.Public);
+            Assert.That(m, Is.Not.Null, "Path.IsGatewayBuilt should be public.");
+            return (bool)m.Invoke(_path, null);
         }
 
         private static Type RequireType(string fullName)

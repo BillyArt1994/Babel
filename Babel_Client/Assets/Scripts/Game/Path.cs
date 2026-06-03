@@ -14,9 +14,8 @@ namespace Babel
         [HideInInspector] public int LayerIndex;
 
         private int _completedCount;
-        private readonly List<BuildPointCandidate> _reserveCandidates = new List<BuildPointCandidate>(16);
-        private static readonly BuildPointCandidateDistanceComparer CandidateDistanceComparer =
-            new BuildPointCandidateDistanceComparer();
+        private static readonly DefaultBuildSelector DefaultSelector = new DefaultBuildSelector();
+        private readonly List<int> _candidateIndices = new List<int>(16);
 
         public bool IsCompleted => _completedCount >= wayPointList.Length;
 
@@ -39,13 +38,28 @@ namespace Babel
             return 0;
         }
 
+        /// <summary>本层 gateway 是否已建完（可作为公共梯子）。</summary>
+        public bool IsGatewayBuilt()
+        {
+            if (wayPointList == null) return false;
+            for (int i = 0; i < wayPointList.Length; i++)
+            {
+                var bp = wayPointList[i];
+                if (bp != null && bp.isGateway)
+                    return bp.IsBuildCompleted;
+            }
+            return false;
+        }
+
         public int ReserveBuildPoint(Vector3 fromPos)
         {
-            _reserveCandidates.Clear();
-            if (wayPointList == null)
-            {
-                return -1;
-            }
+            return ReserveBuildPoint(fromPos, DefaultSelector);
+        }
+
+        public int ReserveBuildPoint(Vector3 fromPos, ITargetSelector selector)
+        {
+            _candidateIndices.Clear();
+            if (wayPointList == null) return -1;
 
             for (int i = 0; i < wayPointList.Length; i++)
             {
@@ -53,20 +67,16 @@ namespace Babel
                 if (point == null) continue;
                 if (point.IsBuildCompleted) continue;
                 if (point.IsOccupied) continue;
-
-                float distance = Vector3.Distance(point.transform.position, fromPos);
-                _reserveCandidates.Add(new BuildPointCandidate(i, distance));
+                _candidateIndices.Add(i);
             }
 
-            if (_reserveCandidates.Count <= 0)
-            {
+            if (_candidateIndices.Count == 0) return -1;
+
+            ITargetSelector chooser = selector ?? DefaultSelector;
+            int selectedBuildPointIndex = chooser.Select(_candidateIndices, this, fromPos);
+            if (selectedBuildPointIndex < 0 || selectedBuildPointIndex >= wayPointList.Length)
                 return -1;
-            }
 
-            _reserveCandidates.Sort(CandidateDistanceComparer);
-            int selectableCount = GetFarthestSelectionCount(_reserveCandidates.Count);
-            int selectedCandidateIndex = UnityEngine.Random.Range(0, selectableCount);
-            int selectedBuildPointIndex = _reserveCandidates[selectedCandidateIndex].Index;
             wayPointList[selectedBuildPointIndex].SetOccupied(true);
             return selectedBuildPointIndex;
         }
@@ -76,36 +86,6 @@ namespace Babel
             if (index >= 0 && index < wayPointList.Length)
             {
                 wayPointList[index].SetOccupied(false);
-            }
-        }
-
-        private static int GetFarthestSelectionCount(int candidateCount)
-        {
-            if (candidateCount <= 0)
-            {
-                return 0;
-            }
-
-            return Mathf.Max(1, candidateCount / 2);
-        }
-
-        private readonly struct BuildPointCandidate
-        {
-            public BuildPointCandidate(int index, float distance)
-            {
-                Index = index;
-                Distance = distance;
-            }
-
-            public readonly int Index;
-            public readonly float Distance;
-        }
-
-        private sealed class BuildPointCandidateDistanceComparer : IComparer<BuildPointCandidate>
-        {
-            public int Compare(BuildPointCandidate left, BuildPointCandidate right)
-            {
-                return right.Distance.CompareTo(left.Distance);
             }
         }
 
