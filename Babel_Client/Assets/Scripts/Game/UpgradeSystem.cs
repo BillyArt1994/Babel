@@ -20,7 +20,6 @@ namespace Babel
     public class UpgradeSystem : ViewController
     {
         private const int OPTIONS_COUNT = 3;
-        private const int EXP_THRESHOLD = 5;
 
         [Header("升级配置")]
         [SerializeField]
@@ -32,7 +31,6 @@ namespace Babel
         private XpSystem xpSystem;
 
         private readonly List<UpgradeOption> _pendingOptions = new();
-        private bool _isHandlingExpChange;
 
         /// <summary>
         /// 当前待选择选项数量，仅供测试验证。
@@ -51,18 +49,13 @@ namespace Babel
             if (xpSystem != null) xpSystem.OnLevelsGained -= HandleLevelsGained;
         }
 
-        private void Start()
-        {
-            Global.Exp.RegisterWithInitValue(OnExpChanged)
-                .UnRegisterWhenGameObjectDestroyed(gameObject);
-        }
-
         /// <summary>
         /// XpSystem 升级时触发，循环处理每次升级（生成选项、暂停时间、触发事件）。
         /// </summary>
         /// <param name="count">本次获得的升级次数。</param>
         private void HandleLevelsGained(int count)
         {
+            if (xpSystem != null) Global.Level.Value = xpSystem.CurrentLevel;
             for (int i = 0; i < count; i++)
             {
                 if (_pendingOptions.Count > 0) break; // 上一次选项还未选择则不再叠加
@@ -172,41 +165,6 @@ namespace Babel
             }
 
             return selected;
-        }
-
-        private void OnExpChanged(int exp)
-        {
-            // TODO: 待 XpSystem 完全接入后移除
-            if (_isHandlingExpChange || exp < EXP_THRESHOLD || _pendingOptions.Count > 0)
-            {
-                return;
-            }
-
-            _isHandlingExpChange = true;
-            Global.Exp.Value -= EXP_THRESHOLD;
-            Global.Level.Value++;
-            _pendingOptions.Clear();
-            IReadOnlyList<UpgradeOption> options = GenerateOptions(OPTIONS_COUNT);
-            for (int i = 0; i < options.Count; i++)
-            {
-                _pendingOptions.Add(options[i]);
-            }
-
-            if (_pendingOptions.Count == 0)
-            {
-                Time.timeScale = 1f;
-                UpgradeEvents.RaiseOptionsGenerated(Array.Empty<SkillConfig>());
-                _isHandlingExpChange = false;
-                return;
-            }
-
-            Time.timeScale = 0f;
-            // 提取 Config 列表传给 UI
-            var configList = new List<SkillConfig>(_pendingOptions.Count);
-            for (int i = 0; i < _pendingOptions.Count; i++)
-                configList.Add(_pendingOptions[i].Config);
-            UpgradeEvents.RaiseOptionsGenerated(configList);
-            _isHandlingExpChange = false;
         }
 
         private List<UpgradeOption> BuildEligiblePool()

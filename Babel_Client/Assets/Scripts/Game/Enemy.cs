@@ -464,7 +464,7 @@ namespace Babel
             if (XpSystem.Instance != null)
                 XpSystem.Instance.GainXp(expAmount);
             else
-                Global.Exp.Value += (int)expAmount; // fallback：XpSystem 未初始化时兼容
+                Debug.LogWarning("[BABEL][Enemy] XpSystem.Instance 为空，经验未结算");
             DestroyAfterDeath();
         }
 
