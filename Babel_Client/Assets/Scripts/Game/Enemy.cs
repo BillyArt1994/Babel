@@ -33,6 +33,7 @@ namespace Babel
 
         private IEnemyAbility _ability;
         private EnemyData _data;
+        private ITargetSelector _targetSelector;
         private float _maxHealth = 15f;
         private float _speedBuffTimer;
         private float _speedBuffMult = 1.0f;
@@ -167,6 +168,14 @@ namespace Babel
             _deathFeedbackTimer = 0f;
             _isDying = false;
             _deathCompleted = false;
+
+            // 按 TargetMode 构建选点策略（必须在 ReserveNextTarget() 之前）
+            _targetSelector = data.TargetMode switch
+            {
+                "scout" => new GatewayFirstSelector(),
+                _ => new DefaultBuildSelector()
+            };
+
             ReserveNextTarget();
 
             // Ability
@@ -240,7 +249,10 @@ namespace Babel
         {
             if (_targetBuildPointIndex < 0)
             {
-                if (currentPath.IsCompleted)
+                // 本层无可预约点：整层完成 或 gateway 已建好(公共梯子) 且有上层 → 爬梯
+                bool canClimb = currentPath.nextLayerPath != null
+                    && (currentPath.IsCompleted || currentPath.IsGatewayBuilt());
+                if (canClimb)
                 {
                     StartMovingToPassage();
                 }
@@ -293,7 +305,7 @@ namespace Babel
             {
                 _moveState = EnemyMoveState.MovingToBuildPoint;
             }
-            else if (currentPath.IsCompleted)
+            else if (currentPath.nextLayerPath != null && (currentPath.IsCompleted || currentPath.IsGatewayBuilt()))
             {
                 StartMovingToPassage();
             }
@@ -363,7 +375,7 @@ namespace Babel
                 _targetBuildPointIndex = -1;
                 return;
             }
-            _targetBuildPointIndex = currentPath.ReserveBuildPoint(transform.position);
+            _targetBuildPointIndex = currentPath.ReserveBuildPoint(transform.position, _targetSelector);
         }
 
         private void ReleaseCurrentTarget()
