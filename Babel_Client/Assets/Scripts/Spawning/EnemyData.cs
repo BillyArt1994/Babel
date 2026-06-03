@@ -16,5 +16,6 @@ namespace Babel
         public float AbilityValue;
         public float AbilityCooldown;
         public float BuildTime;
+        public string TargetMode = "";
     }
 }
