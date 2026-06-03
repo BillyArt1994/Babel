@@ -160,6 +160,7 @@ namespace Babel
                 Interval = GetFloat(fields, map, "interval"),
                 Chance = GetFloat(fields, map, "chance"),
                 Level = GetInt(fields, map, "level"),
+                MaxLevel = GetInt(fields, map, "maxLevel"),
                 IsStarterSkill = GetBool(fields, map, "isStarterSkill"),
                 UpgradesFrom = GetString(fields, map, "upgradesFrom")
             };
