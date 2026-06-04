@@ -169,9 +169,9 @@ namespace Babel
             _isDying = false;
             _deathCompleted = false;
 
-            // 按 TargetMode 构建选点策略（必须在 ReserveNextTarget() 之前）
+            // 按 MoveMode 构建选点策略（必须在 ReserveNextTarget() 之前）
             // 使用单例：selector 无状态，无需每次 Init 重复分配
-            _targetSelector = data.TargetMode switch
+            _targetSelector = data.MoveMode switch
             {
                 "scout" => GatewayFirstSelector.Instance,
                 _ => DefaultBuildSelector.Instance

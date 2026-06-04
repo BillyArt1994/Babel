@@ -16,6 +16,11 @@ namespace Babel
         public float AbilityValue;
         public float AbilityCooldown;
         public float BuildTime;
-        public string TargetMode = "";
+
+        // 原 TargetMode 改名为 MoveMode；EnemyParser 读取 CSV "moveMode" 列
+        public string MoveMode = "";
+
+        // 感知半径（SupportMovement 使用）；CSV 列 "senseRadius"
+        public float SenseRadius = 8f;
     }
 }

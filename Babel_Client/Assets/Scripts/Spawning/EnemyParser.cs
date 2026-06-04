@@ -62,8 +62,12 @@ namespace Babel
                         data.AbilityCooldown = ParseFloat(fields[acIdx]);
                     if (colMap.TryGetValue("buildtime", out int btIdx) && btIdx < fields.Length && !string.IsNullOrWhiteSpace(fields[btIdx]))
                         data.BuildTime = ParseFloat(fields[btIdx]);
-                    if (colMap.TryGetValue("targetmode", out int tmIdx) && tmIdx < fields.Length)
-                        data.TargetMode = fields[tmIdx].Trim().ToLowerInvariant();
+                    if (colMap.TryGetValue("movemode", out int mmIdx) && mmIdx < fields.Length)
+                        data.MoveMode = fields[mmIdx].Trim().ToLowerInvariant();
+
+                    if (colMap.TryGetValue("senseradius", out int srIdx) && srIdx < fields.Length
+                        && !string.IsNullOrWhiteSpace(fields[srIdx]))
+                        data.SenseRadius = ParseFloat(fields[srIdx]);
 
                     results.Add(data);
                 }
