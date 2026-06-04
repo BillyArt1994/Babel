@@ -26,14 +26,10 @@ namespace Babel
         [HideInInspector] public Babel.Path currentPath;
         [HideInInspector] public int waveEventId = -1;
 
-        private EnemyMoveState _moveState = EnemyMoveState.MovingToBuildPoint;
-        private int _targetBuildPointIndex = -1;
-        private Transform _passageTarget;
-        private float _buildTimer;
+        private IEnemyMovement _movement;
 
         private IEnemyAbility _ability;
         private EnemyData _data;
-        private ITargetSelector _targetSelector;
         private float _maxHealth = 15f;
         private float _speedBuffTimer;
         private float _speedBuffMult = 1.0f;
@@ -160,24 +156,20 @@ namespace Babel
             buildCharges = data.BuildCharges;
             currentPath = startPath;
             waveEventId = eventId;
-            _moveState = EnemyMoveState.MovingToBuildPoint;
-            _targetBuildPointIndex = -1;
-            _buildTimer = 0;
             _speedBuffTimer = 0;
             _speedBuffMult = 1.0f;
             _deathFeedbackTimer = 0f;
             _isDying = false;
             _deathCompleted = false;
 
-            // 按 MoveMode 构建选点策略（必须在 ReserveNextTarget() 之前）
-            // 使用单例：selector 无状态，无需每次 Init 重复分配
-            _targetSelector = data.MoveMode switch
+            // 按 MoveMode 选移动策略
+            _movement?.OnRemoved();
+            _movement = data.MoveMode switch
             {
-                "scout" => GatewayFirstSelector.Instance,
-                _ => DefaultBuildSelector.Instance
+                "scout" => new BuilderMovement(GatewayFirstSelector.Instance),
+                _       => new BuilderMovement(DefaultBuildSelector.Instance)
             };
-
-            ReserveNextTarget();
+            _movement.Init(this, data);
 
             // Ability
             _ability?.OnRemoved();
@@ -226,171 +218,19 @@ namespace Babel
             // 驱动 Animator IsMoving 参数
             UpdateAnimatorState();
 
-            switch (_moveState)
-            {
-                case EnemyMoveState.MovingToBuildPoint:
-                    UpdateMovingToBuildPoint();
-                    break;
-                case EnemyMoveState.Building:
-                    UpdateBuilding();
-                    break;
-                case EnemyMoveState.MovingToPassage:
-                    UpdateMovingToPassage();
-                    break;
-                case EnemyMoveState.ClimbingPassage:
-                    ExecuteClimbing();
-                    break;
-                case EnemyMoveState.Finished:
-                    ExecuteFinished();
-                    break;
-            }
+            _movement?.Tick(Time.deltaTime);
         }
 
-        private void UpdateMovingToBuildPoint()
+        /// <summary>
+        /// 供 BuilderMovement.ExecuteFinished 调用，触发 charges 耗尽事件并销毁。
+        /// </summary>
+        internal void NotifyChargesExhausted()
         {
-            if (_targetBuildPointIndex < 0)
-            {
-                // 本层无可预约点：整层完成 或 gateway 已建好(公共梯子) 且有上层 → 爬梯
-                bool canClimb = currentPath.nextLayerPath != null
-                    && (currentPath.IsCompleted || currentPath.IsGatewayBuilt());
-                if (canClimb)
-                {
-                    StartMovingToPassage();
-                }
-                return;
-            }
-
-            var target = currentPath.wayPointList[_targetBuildPointIndex];
-            var targetPos = GetBuildApproachPosition(target);
-            UpdateFacing(targetPos.x);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
-
-            if (IsAtHorizontalTarget(targetPos))
-            {
-                transform.position = targetPos;
-                _buildTimer = _data != null ? _data.BuildTime : 0f;
-                _moveState = EnemyMoveState.Building;
-                target.BeginBuild();
-                BuildEvents.RaiseBuildStarted(target);
-            }
-        }
-
-        private void UpdateBuilding()
-        {
-            _buildTimer -= Time.deltaTime;
-            if (_buildTimer > 0) return;
-
-            // Building complete
-            if (_targetBuildPointIndex >= 0 && _targetBuildPointIndex < currentPath.wayPointList.Length)
-            {
-                var bp = currentPath.wayPointList[_targetBuildPointIndex];
-                if (!bp.IsBuildCompleted)
-                {
-                    bp.AddBuildProgress(buildAbility);
-                }
-            }
-            currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
-            _targetBuildPointIndex = -1;
-
-            buildCharges--;
-
-            if (buildCharges <= 0)
-            {
-                _moveState = EnemyMoveState.Finished;
-                return;
-            }
-
-            // Find next target
-            ReserveNextTarget();
-            if (_targetBuildPointIndex >= 0)
-            {
-                _moveState = EnemyMoveState.MovingToBuildPoint;
-            }
-            else if (currentPath.nextLayerPath != null && (currentPath.IsCompleted || currentPath.IsGatewayBuilt()))
-            {
-                StartMovingToPassage();
-            }
-            else
-            {
-                _moveState = EnemyMoveState.MovingToBuildPoint;
-            }
-        }
-
-        private void StartMovingToPassage()
-        {
-            if (currentPath.nextLayerPath == null)
-            {
-                GameSession.EndGame(GameEndReason.Defeat);
-                return;
-            }
-
-            int gatewayIdx = currentPath.GetGatewayIndex();
-            _passageTarget = currentPath.wayPointList[gatewayIdx].transform;
-            _moveState = EnemyMoveState.MovingToPassage;
-        }
-
-        private void UpdateMovingToPassage()
-        {
-            if (_passageTarget == null) return;
-
-            var targetPos = new Vector3(_passageTarget.position.x, transform.position.y, transform.position.z);
-            UpdateFacing(targetPos.x);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, EffectiveSpeed * Time.deltaTime);
-
-            if ((transform.position - targetPos).magnitude <= 0.1f)
-            {
-                _moveState = EnemyMoveState.ClimbingPassage;
-            }
-        }
-
-        private void ExecuteClimbing()
-        {
-            currentPath = currentPath.nextLayerPath;
-
-            // Teleport to entrance of new layer
-            if (currentPath != null && currentPath.wayPointList.Length > 0)
-            {
-                transform.position = currentPath.wayPointList[0].transform.position;
-            }
-
-            ReserveNextTarget();
-            _moveState = EnemyMoveState.MovingToBuildPoint;
-        }
-
-        private void ExecuteFinished()
-        {
-            ReleaseCurrentTarget();
-            if (waveEventId >= 0)
-            {
-                OnChargesExhausted?.Invoke(waveEventId);
-            }
             _ability?.OnRemoved();
             _ability = null;
+            if (waveEventId >= 0)
+                OnChargesExhausted?.Invoke(waveEventId);
             this.DestroyGameObjGracefully();
-        }
-
-        private void ReserveNextTarget()
-        {
-            if (currentPath == null)
-            {
-                _targetBuildPointIndex = -1;
-                return;
-            }
-            _targetBuildPointIndex = currentPath.ReserveBuildPoint(transform.position, _targetSelector);
-        }
-
-        private void ReleaseCurrentTarget()
-        {
-            if (_targetBuildPointIndex >= 0 && currentPath != null)
-            {
-                currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
-                _targetBuildPointIndex = -1;
-            }
-        }
-
-        private Vector3 GetBuildApproachPosition(BuildPoint target)
-        {
-            return new Vector3(target.transform.position.x, transform.position.y, transform.position.z);
         }
 
         /// <summary>
@@ -399,32 +239,13 @@ namespace Babel
         /// </summary>
         private void UpdateAnimatorState()
         {
-            // 仅 MovingToBuildPoint / MovingToPassage 两种状态算"走路"
-            bool moving = _moveState == EnemyMoveState.MovingToBuildPoint
-                       || _moveState == EnemyMoveState.MovingToPassage;
+            bool moving = _movement?.IsMoving ?? false;
 
             if (_animator != null && moving != _lastIsMoving)
             {
                 _animator.SetBool(AnimIsMoving, moving);
                 _lastIsMoving = moving;
             }
-        }
-
-        /// <summary>
-        /// 根据水平移动方向翻转 sprite。原图朝右：往左走翻转 flipX。
-        /// </summary>
-        /// <param name="targetX">目标点的世界 x 坐标。</param>
-        private void UpdateFacing(float targetX)
-        {
-            if (Circle == null) return;
-            float dx = targetX - transform.position.x;
-            if (Mathf.Abs(dx) < 0.01f) return; // 死区：太近不翻，避免到点抖动
-            Circle.flipX = dx < 0f;
-        }
-
-        private bool IsAtHorizontalTarget(Vector3 targetPos)
-        {
-            return Mathf.Abs(transform.position.x - targetPos.x) <= 0.1f;
         }
 
         private void StartHitFlash()
@@ -453,7 +274,7 @@ namespace Babel
         {
             _isDying = true;
             _deathFeedbackTimer = HIT_FLASH_DURATION;
-            ReleaseCurrentTarget();
+            _movement?.OnRemoved();
             _ability?.OnRemoved();
             _ability = null;
         }
