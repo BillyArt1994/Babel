@@ -37,16 +37,18 @@ namespace Babel.Tests
         }
 
         [Test]
-        public void ReserveBuildPoint_ExcludesCompletedAndOccupied()
+        public void ReserveBuildPoint_ExcludesCompleted_AllowsMultipleReservations()
         {
+            // Phase B 后：完成的点被排除，但多个 builder 可选同一未完成点
             CreatePathWithPointXs(1f, 10f, 20f, 30f);
-            CompleteBuildPoint(2);
-            SetOccupied(3, true);
+            CompleteBuildPoint(2); // 点 2 已完成，不可选
 
-            int reservedIndex = ReserveFrom(Vector3.zero);
+            int first = ReserveFrom(Vector3.zero);
+            int second = ReserveFrom(Vector3.zero);
 
-            Assert.That(reservedIndex == 0 || reservedIndex == 1, Is.True);
-            Assert.That(IsOccupied(reservedIndex), Is.True);
+            // 两次预约都应返回有效索引（可以相同，因为不再独占）
+            Assert.That(first, Is.InRange(0, 3).And.Not.EqualTo(2));
+            Assert.That(second, Is.InRange(0, 3).And.Not.EqualTo(2));
         }
 
         [Test]
@@ -58,7 +60,7 @@ namespace Babel.Tests
             int reservedIndex = ReserveFrom(Vector3.zero);
 
             Assert.That(reservedIndex, Is.InRange(0, 2));
-            Assert.That(IsOccupied(reservedIndex), Is.True);
+            // B3 后 ReserveBuildPoint 不再调 SetOccupied；IsOccupied 断言已移除，B4 统一删 IsOccupied
         }
 
         [Test]

@@ -66,7 +66,7 @@ namespace Babel
                 BuildPoint point = wayPointList[i];
                 if (point == null) continue;
                 if (point.IsBuildCompleted) continue;
-                if (point.IsOccupied) continue;
+                // 不再排除 IsOccupied：多建者可同时选同一点
                 _candidateIndices.Add(i);
             }
 
@@ -77,16 +77,14 @@ namespace Babel
             if (selectedBuildPointIndex < 0 || selectedBuildPointIndex >= wayPointList.Length)
                 return -1;
 
-            wayPointList[selectedBuildPointIndex].SetOccupied(true);
+            // 不再调 SetOccupied：占用语义由 BuilderMovement 的 AttachBuilder 承担
             return selectedBuildPointIndex;
         }
 
         public void ReleaseBuildPoint(int index)
         {
-            if (index >= 0 && index < wayPointList.Length)
-            {
-                wayPointList[index].SetOccupied(false);
-            }
+            // 预约不再独占（多建者并发），故无需释放占用状态。
+            // 方法保留：BuilderMovement 仍调用它；占用语义已由 AttachBuilder/DetachBuilder 承担。
         }
 
         private void OnDrawGizmos()
