@@ -1,0 +1,10 @@
+skillId,skillName,description,iconPath,triggerType,cooldown,chargeTime,interval,chance,effectType,damage,damageRatio,radius,dps,duration,statName,statValue,effect2Type,e2Damage,e2DamageRatio,e2Radius,e2Dps,e2Duration,e2StatName,e2StatValue,effect3Type,e3Damage,e3DamageRatio,e3Radius,e3Dps,e3Duration,e3StatName,e3StatValue,level,maxLevel,weight,isStarterSkill,upgradesFrom
+divine_finger,神罚之指,天神之怒降临指尖,Icons/divine_finger,OnClick,0.1,0.5,,,hit_single,50,,,,,,,,,,,,,,,,,,,,,,,1,1,1,TRUE,
+meteor,天降陨石,陨石从天而降,Icons/meteor,OnClick,2.5,1,,,hit_aoe,150,,3,,,,,,,,,,,,,,,,,,,,,1,2,1,TRUE,
+meteor,天降陨石·强化,强化的陨石，伤害与范围提升,Icons/meteor,OnClick,2.5,1,,,hit_aoe,200,,3.5,,,,,dot_aoe,,,3.5,0,3,,,,,,,,,,,2,2,0,FALSE,
+thunder_auto,天雷,自动降下雷击,Icons/thunder,OnTimer,,,3,,hit_single,80,,,,,,,,,,,,,,,,,,,,,,,1,1,0.8,FALSE,
+aftershock,余震,攻击引发二次爆炸,Icons/aftershock,OnHit,,,,0.3,hit_aoe,,0.3,1.5,,,,,,,,,,,,,,,,,,,,,1,1,0.7,FALSE,
+plague,瘟疫,击杀传播死亡,Icons/plague,OnKill,,,,1,hit_aoe,20,,2,,,,,,,,,,,,,,,,,,,,,1,1,0.6,FALSE,
+rage,狂怒,击杀加速技能冷却,Icons/rage,OnKill,,,,1,stat_buff,,,,,5,cooldownMult,-0.5,,,,,,,,,,,,,,,,,1,1,0.6,FALSE,
+meteor_evolved,天降陨石·炎,陨石撞击后留下灼烧地面,Icons/meteor_fire,OnClick,3,1.2,,,hit_aoe,200,,3.5,,,,,dot_aoe,,,3.5,30,3,,,,,,,,,,,2,1,0.8,FALSE,meteor
+berserker_pact,狂战契约,以防御换取力量,Icons/berserker,OnKill,,,,1,stat_buff,,,,,8,damageMult,0.4,stat_buff,,,,,8,defenseReduction,0.2,,,,,,,,,1,1,0.5,FALSE,
