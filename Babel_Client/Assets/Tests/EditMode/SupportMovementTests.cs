@@ -37,9 +37,12 @@ namespace Babel.Tests
         }
 
         [Test]
-        public void SupportMovement_IsMoving_TrueWhenMovingTowardsFriends()
+        public void SupportMovement_MovesTowardsFriends_NotGateway()
         {
-            var (pathGo, path, bps) = MakePath(new[] { -10f, 5f, 20f }, gatewayIdx: 1);
+            // gateway 在左(x=-20)、队友在右(x=5)：两分支方向相反。
+            // 若真追质心 → 向右(x 增大)；若误走 gateway 分支(没感知到队友) → 向左。
+            // 断言向右移动，才能真正验证「感知并追随队友」而非侥幸。
+            var (pathGo, path, bps) = MakePath(new[] { -20f, 30f }, gatewayIdx: 0);
             var nextGo = new GameObject("Next");
             var nextPath = nextGo.AddComponent<Path>();
             var nextBpGo = new GameObject("NBP");
@@ -59,11 +62,14 @@ namespace Babel.Tests
             };
             suppEnemy.Init(path, suppData, -1);
 
+            float xBefore = suppEnemy.transform.position.x;
             var movement = GetMovement(suppEnemy);
             Assert.That(movement, Is.Not.Null, "SupportMovement 应已绑定");
             movement.Tick(0.1f);
 
             Assert.That(movement.IsMoving, Is.True, "有队友在感知范围内时应处于移动状态");
+            Assert.That(suppEnemy.transform.position.x, Is.GreaterThan(xBefore),
+                "应朝队友(右, x=5)移动，而非朝 gateway(左, x=-20)");
 
             Object.DestroyImmediate(friendGo);
             Object.DestroyImmediate(suppGo);
