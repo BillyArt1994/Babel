@@ -49,17 +49,26 @@ Static class with reactive bindable properties:
 ### Core Systems
 
 **Enemy lifecycle**
-`WaveScheduler` → `IEnemyPool.Get()` → `Enemy.Init()` → `Enemy.Update()` (state machine) → death/finish → `Enemy.OnChargesExhausted` event
+`WaveScheduler` → `IEnemyPool.Get()` → `Enemy.Init()` → `Enemy.Update()` → `_movement.Tick()` → death/finish → `Enemy.OnChargesExhausted` event
 
-Enemy state machine: `MovingToBuildPoint → Building → MovingToPassage → ClimbingPassage → Finished`
+**Movement strategy (`IEnemyMovement`)**
+`Enemy` delegates all movement to an `IEnemyMovement` strategy (symmetric to `IEnemyAbility`: `Init/Tick/IsMoving/OnRemoved`). `Enemy.Update` runs shared ticks (hit-flash, ability, speed buff, animator) then calls `_movement.Tick()`. `Enemy.Init` picks the strategy from `EnemyData.MoveMode`:
+- `""` (default) → `BuilderMovement(DefaultBuildSelector)` — random build-point seeking (workers)
+- `"scout"` → `BuilderMovement(GatewayFirstSelector)` — gateway-first seeking
+- `"support"` → `SupportMovement` — seeks allied centroid, no building (priest/zealot)
+
+Strategies live in `Scripts/Spawning/Movement/`. `BuilderMovement` holds the build state machine: `MovingToBuildPoint → Building → MovingToPassage → ClimbingPassage → Finished`. `SupportMovement` uses `Physics2D.OverlapCircleNonAlloc` within `EnemyData.SenseRadius` (default 8) to find the centroid of living allies and moves toward it on the x-axis (1.0 dead-zone); with no allies it walks toward the gateway and climbs to follow the push; on the top layer it idles (never calls `GameSession.EndGame`). It never builds or consumes `buildCharges`.
 
 **Path / BuildPoint system**
-`Path` holds an array of `BuildPoint` waypoints and a `nextLayerPath` reference. Enemies call `Path.ReserveBuildPoint(fromPos, selector)` to reserve a point and `ReleaseBuildPoint()` to free it. The point is chosen by an `ITargetSelector` strategy (see below). When **all** BuildPoints (the gateway included) are completed, `Path.IsCompleted` becomes true and `BuildEvents.RaiseLayerCompleted` fires.
+`Path` holds an array of `BuildPoint` waypoints and a `nextLayerPath` reference. `BuilderMovement` calls `Path.ReserveBuildPoint(fromPos, selector)` to pick a point; the point is chosen by an `ITargetSelector` strategy (see below). Reservation is **non-exclusive** — multiple builders may target and build the same point concurrently (there is no `IsOccupied` lock; candidates are filtered only by `IsBuildCompleted`). When **all** BuildPoints (the gateway included) are completed, `Path.IsCompleted` becomes true and `BuildEvents.RaiseLayerCompleted` fires.
+
+**Multi-builder & build interruption**
+A `BuildPoint` tracks its active builders (`AttachBuilder`/`DetachBuilder`, builders implement `IBuildInterruptible`). When a point completes, it notifies all registered builders via `OnTargetBuildCompleted` so they stop immediately, **keep their build charge**, and pick a new target. The finishing builder detaches itself before calling `AddBuildProgress`, so it is not self-notified.
 
 A `BuildPoint` with `isGateway = true` is the ladder to the next layer; it is a normal buildable point that also counts toward completion. Once built, it acts as a **public ladder**: an enemy with no reservable point left on its current layer will climb if `Path.IsGatewayBuilt()` is true and a `nextLayerPath` exists (climbing costs no build charge). `Path.GetGatewayIndex()` returns the gateway's index, falling back to 0 if no point is flagged.
 
 **Target selection (`ITargetSelector`)**
-`Path.ReserveBuildPoint` filters candidates (skip built/occupied) then delegates the pick to an `ITargetSelector`. `DefaultBuildSelector` picks uniformly at random from all candidates (workers). `GatewayFirstSelector` forces the gateway when it is among the candidates, else falls back to default (the "scout" enemy, `targetMode = scout` in `enemies.csv`). `Enemy.Init` builds the selector from `EnemyData.TargetMode`.
+`Path.ReserveBuildPoint` filters candidates (skip completed) then delegates the pick to an `ITargetSelector`. `DefaultBuildSelector` picks uniformly at random from all candidates. `GatewayFirstSelector` forces the gateway when it is among the candidates, else falls back to default. The selector is an internal detail of `BuilderMovement` (injected via its constructor); it is *not* a top-level CSV concept — `Enemy.Init` derives it from `EnemyData.MoveMode` (`scout` → `GatewayFirstSelector`, else `DefaultBuildSelector`).
 
 **Skill system**
 `SkillSystem` owns a list of `Skill` objects. Each skill has a trigger (`OnClick`, `OnHit`, `OnTimer`, `OnKill`) and one or more effects (`Damage`, `Buff`, `DoT`, `Composite`). Skills are loaded from `skills.csv` via `SkillDatabase.Init()`. `SkillFactory.Create()` builds the runtime object.
