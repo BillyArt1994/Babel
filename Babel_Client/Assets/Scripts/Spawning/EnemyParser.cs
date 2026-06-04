@@ -63,7 +63,7 @@ namespace Babel
                     if (colMap.TryGetValue("buildtime", out int btIdx) && btIdx < fields.Length && !string.IsNullOrWhiteSpace(fields[btIdx]))
                         data.BuildTime = ParseFloat(fields[btIdx]);
                     if (colMap.TryGetValue("targetmode", out int tmIdx) && tmIdx < fields.Length)
-                        data.TargetMode = fields[tmIdx].Trim();
+                        data.TargetMode = fields[tmIdx].Trim().ToLowerInvariant();
 
                     results.Add(data);
                 }

@@ -14,10 +14,10 @@ namespace Babel
         [HideInInspector] public int LayerIndex;
 
         private int _completedCount;
-        private static readonly DefaultBuildSelector DefaultSelector = new DefaultBuildSelector();
+        private static readonly ITargetSelector DefaultSelector = DefaultBuildSelector.Instance;
         private readonly List<int> _candidateIndices = new List<int>(16);
 
-        public bool IsCompleted => _completedCount >= wayPointList.Length;
+        public bool IsCompleted => wayPointList != null && _completedCount >= wayPointList.Length;
 
         public void OnBuildPointCompleted()
         {

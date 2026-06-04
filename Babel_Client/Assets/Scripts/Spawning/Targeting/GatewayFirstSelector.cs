@@ -9,7 +9,11 @@ namespace Babel
     /// </summary>
     public class GatewayFirstSelector : ITargetSelector
     {
-        private readonly DefaultBuildSelector _fallback = new DefaultBuildSelector();
+        /// <summary>无状态单例，避免每次 Init 重复分配。</summary>
+        public static readonly GatewayFirstSelector Instance = new GatewayFirstSelector();
+
+        /// <summary>退化策略复用单例，满足 DIP（依赖接口而非具体类）。</summary>
+        private readonly ITargetSelector _fallback = DefaultBuildSelector.Instance;
 
         public int Select(IReadOnlyList<int> candidateIndices, Path path, Vector3 fromPos)
         {

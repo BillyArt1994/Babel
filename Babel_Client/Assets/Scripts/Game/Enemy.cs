@@ -170,10 +170,11 @@ namespace Babel
             _deathCompleted = false;
 
             // 按 TargetMode 构建选点策略（必须在 ReserveNextTarget() 之前）
+            // 使用单例：selector 无状态，无需每次 Init 重复分配
             _targetSelector = data.TargetMode switch
             {
-                "scout" => new GatewayFirstSelector(),
-                _ => new DefaultBuildSelector()
+                "scout" => GatewayFirstSelector.Instance,
+                _ => DefaultBuildSelector.Instance
             };
 
             ReserveNextTarget();
