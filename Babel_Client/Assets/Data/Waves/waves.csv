@@ -1,5 +1,5 @@
 startTime,endTime,mode,enemyPool,countMin,countMax,interval,spawnPointId
-0,120,Timed,worker:0.8|scout:0.2,1,3,4,default
+0,120,Timed,worker:0.8,1,3,4,default
 10,20,Burst ,worker:1.0,8,10,0,default
 120,300,Timed,worker:0.7|elite:0.3,2,3,3.5,default
 120,0,Maintain,elite:1.0,2,2,5,default

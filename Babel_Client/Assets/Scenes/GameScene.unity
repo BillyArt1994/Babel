@@ -213,7 +213,7 @@ Transform:
   m_GameObject: {fileID: 132111267}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.84, y: -0.89, z: 0}
+  m_LocalPosition: {x: 4.34, y: -0.89, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -279,6 +279,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 09983d0bccfc75f45a3026ca780337d3, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t6_p08
@@ -1260,8 +1264,8 @@ Transform:
   m_GameObject: {fileID: 578433438}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5.5, z: 0.3}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.0064082, y: 3.92, z: 0.3}
+  m_LocalScale: {x: 0.74367, y: 0.74367, z: 0.74367}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1174220103}
@@ -2431,7 +2435,7 @@ Transform:
   m_GameObject: {fileID: 970888489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.84, y: -0.89, z: 0}
+  m_LocalPosition: {x: -4.29, y: -0.89, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2807,7 +2811,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 9a352b1d7b8edea47ac1c627615ff4e9, type: 3}
     - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: isGateway
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
@@ -2969,7 +2973,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 869d7d4a31fa8ac44995d5350c27f3e5, type: 3}
     - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: isGateway
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
@@ -3930,6 +3934,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 6dd576c1197815544bd9a530b6ee1ec1, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t3_p06
