@@ -166,7 +166,8 @@ namespace Babel
             {
                 "scout"   => new BuilderMovement(GatewayFirstSelector.Instance),
                 "support" => new SupportMovement(),
-                _         => new BuilderMovement(DefaultBuildSelector.Instance)
+                "builder" => new BuilderMovement(DefaultBuildSelector.Instance),
+                _         => new BuilderMovement(DefaultBuildSelector.Instance) // 空/未知拼写兜底为随机建造者
             };
             _movement.Init(this, data);
 

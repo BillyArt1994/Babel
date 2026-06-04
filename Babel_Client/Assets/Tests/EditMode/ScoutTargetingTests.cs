@@ -129,5 +129,34 @@ namespace Babel.Tests
             Assert.That(tick, Is.Not.Null, "Tick should exist on movement.");
             tick.Invoke(movement, new object[] { dt });
         }
+
+        [Test]
+        public void BuilderMode_RoutesToBuilderMovement()
+        {
+            var pathGo = new GameObject("P");
+            var path = pathGo.AddComponent<Path>();
+            var bpGo = new GameObject("BP"); bpGo.transform.position = Vector3.zero;
+            var bp = bpGo.AddComponent<BuildPoint>(); bp.OwnerPath = path;
+            path.wayPointList = new[] { bp };
+
+            var enemyGo = new GameObject("W");
+            var enemy = enemyGo.AddComponent<Enemy>();
+            var data = new EnemyData
+            {
+                Hp = 30, MoveSpeed = 1, BuildContribution = 25,
+                BuildCharges = 1, MoveMode = "builder", BuildTime = 1f
+            };
+            enemy.Init(path, data, -1);
+
+            var mf = typeof(Enemy).GetField("_movement",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var movement = mf.GetValue(enemy);
+            Assert.That(movement, Is.TypeOf<BuilderMovement>(),
+                "moveMode=builder 应路由到 BuilderMovement");
+
+            Object.DestroyImmediate(enemyGo);
+            Object.DestroyImmediate(pathGo);
+            Object.DestroyImmediate(bpGo);
+        }
     }
 }
