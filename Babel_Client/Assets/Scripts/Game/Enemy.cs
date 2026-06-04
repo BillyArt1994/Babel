@@ -21,7 +21,6 @@ namespace Babel
         public float HP = 15;
         public float MovementSpeed = 2.0f;
         public int buildAbility = 25;
-        public int buildCharges = 1;
 
         [HideInInspector] public Babel.Path currentPath;
         [HideInInspector] public int waveEventId = -1;
@@ -153,7 +152,6 @@ namespace Babel
             _maxHealth = Mathf.Max(data.Hp, 1f);
             MovementSpeed = data.MoveSpeed;
             buildAbility = data.BuildContribution;
-            buildCharges = data.BuildCharges;
             currentPath = startPath;
             waveEventId = eventId;
             _speedBuffTimer = 0;
