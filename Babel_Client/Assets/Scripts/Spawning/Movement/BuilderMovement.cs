@@ -95,6 +95,24 @@ namespace Babel
                 return;
             }
 
+            // 移动途中目标点已被他人建完：放弃该点，不扣 charge，重选目标
+            var wayPoints = _owner.currentPath.wayPointList;
+            if (_targetBuildPointIndex >= wayPoints.Length)
+            {
+                _owner.currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
+                _targetBuildPointIndex = -1;
+                ChooseNextAfterRelease();
+                return;
+            }
+            var targetBp = wayPoints[_targetBuildPointIndex];
+            if (targetBp == null || targetBp.IsBuildCompleted)
+            {
+                _owner.currentPath.ReleaseBuildPoint(_targetBuildPointIndex);
+                _targetBuildPointIndex = -1;
+                ChooseNextAfterRelease();
+                return;
+            }
+
             var target = _owner.currentPath.wayPointList[_targetBuildPointIndex];
             var targetPos = GetBuildApproachPosition(target);
             UpdateFacing(targetPos.x);
