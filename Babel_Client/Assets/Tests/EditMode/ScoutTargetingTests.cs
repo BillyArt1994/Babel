@@ -7,7 +7,7 @@ namespace Babel.Tests
     public class ScoutTargetingTests
     {
         [Test]
-        public void ScoutEnemy_OnInit_ReservesGatewayWhenAvailable()
+        public void ScoutEnemy_OnInit_TargetsGatewayWhenAvailable()
         {
             var pathGo = new GameObject("P");
             var path = pathGo.AddComponent<Path>();
@@ -25,7 +25,6 @@ namespace Babel.Tests
 
             var enemyGo = new GameObject("Scout");
             var enemy = enemyGo.AddComponent<Enemy>();
-            // TargetMode 已改名为 MoveMode
             var data = new EnemyData
             {
                 Hp = 25, MoveSpeed = 5, BuildContribution = 25,
@@ -34,7 +33,9 @@ namespace Babel.Tests
 
             enemy.Init(path, data, -1);
 
-            Assert.That(bps[1].IsOccupied, Is.True, "斥候应优先预约 gateway");
+            // 斥候用 GatewayFirstSelector，Init 内预约应锁定 gateway（index 1）
+            int targetIndex = GetMovementInt(enemy, "_targetBuildPointIndex");
+            Assert.That(targetIndex, Is.EqualTo(1), "斥候应优先预约 gateway（index 1）");
 
             Object.DestroyImmediate(enemyGo);
             Object.DestroyImmediate(pathGo);
@@ -64,9 +65,10 @@ namespace Babel.Tests
             }
             bps[0].isGateway = true;
             path.wayPointList = bps;
+            // 全部点建完 → 无可预约点 + IsCompleted/IsGatewayBuilt 成立 → 应爬楼
             bps[0].AddBuildProgress(99999);
             bps[1].AddBuildProgress(99999);
-            bps[2].SetOccupied(true);
+            bps[2].AddBuildProgress(99999);
 
             var enemyGo = new GameObject("W");
             var enemy = enemyGo.AddComponent<Enemy>();
@@ -77,9 +79,10 @@ namespace Babel.Tests
             };
             enemy.Init(path, data, -1);
 
-            InvokePrivate(enemy, "UpdateMovingToBuildPoint");
+            // 驱动 movement 一帧：无可预约点 + gateway built → 进入爬楼流程
+            TickMovement(enemy, 0.1f);
 
-            string state = GetState(enemy);
+            string state = GetMovementState(enemy);
             Assert.That(state, Is.EqualTo("MovingToPassage").Or.EqualTo("ClimbingPassage"));
 
             Object.DestroyImmediate(enemyGo);
@@ -89,20 +92,42 @@ namespace Babel.Tests
             for (int i = 0; i < 3; i++) Object.DestroyImmediate(bpGos[i]);
         }
 
-        private static void InvokePrivate(object obj, string method)
+        // ── 反射助手：读取 Enemy._movement(BuilderMovement) 内部状态 ──
+        private static object GetMovement(object enemy)
         {
-            MethodInfo m = obj.GetType().GetMethod(method,
+            FieldInfo mf = enemy.GetType().GetField("_movement",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(m, Is.Not.Null, $"{method} should exist.");
-            m.Invoke(obj, null);
+            Assert.That(mf, Is.Not.Null, "Enemy._movement should exist.");
+            object movement = mf.GetValue(enemy);
+            Assert.That(movement, Is.Not.Null, "_movement should be initialized after Init.");
+            return movement;
         }
 
-        private static string GetState(object enemy)
+        private static int GetMovementInt(object enemy, string fieldName)
         {
-            FieldInfo f = enemy.GetType().GetField("_moveState",
+            object movement = GetMovement(enemy);
+            FieldInfo f = movement.GetType().GetField(fieldName,
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(f, Is.Not.Null);
-            return f.GetValue(enemy).ToString();
+            Assert.That(f, Is.Not.Null, $"{fieldName} should exist on movement.");
+            return (int)f.GetValue(movement);
+        }
+
+        private static string GetMovementState(object enemy)
+        {
+            object movement = GetMovement(enemy);
+            FieldInfo f = movement.GetType().GetField("_state",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(f, Is.Not.Null, "_state should exist on movement.");
+            return f.GetValue(movement).ToString();
+        }
+
+        private static void TickMovement(object enemy, float dt)
+        {
+            object movement = GetMovement(enemy);
+            MethodInfo tick = movement.GetType().GetMethod("Tick",
+                BindingFlags.Instance | BindingFlags.Public);
+            Assert.That(tick, Is.Not.Null, "Tick should exist on movement.");
+            tick.Invoke(movement, new object[] { dt });
         }
     }
 }

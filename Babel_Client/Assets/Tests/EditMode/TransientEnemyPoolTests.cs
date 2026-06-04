@@ -54,6 +54,8 @@ namespace Babel.Tests
         {
             Type enemyType = RequireType("Babel.Enemy");
             Type buildPointType = RequireType("Babel.BuildPoint");
+            Type builderMovementType = RequireType("Babel.BuilderMovement");
+            Type enemyDataType = RequireType("Babel.EnemyData");
             var enemyObject = new GameObject("EnemyMovementTest");
             var buildPointObject = new GameObject("BuildPointMovementTest");
 
@@ -64,12 +66,19 @@ namespace Babel.Tests
                 Component enemy = enemyObject.AddComponent(enemyType);
                 Component buildPoint = buildPointObject.AddComponent(buildPointType);
 
-                MethodInfo method = enemyType.GetMethod(
+                // GetBuildApproachPosition 已搬到 BuilderMovement，构造并注入 owner
+                object movement = Activator.CreateInstance(builderMovementType);
+                object data = Activator.CreateInstance(enemyDataType);
+                MethodInfo initMethod = builderMovementType.GetMethod(
+                    "Init", BindingFlags.Instance | BindingFlags.Public);
+                initMethod.Invoke(movement, new object[] { enemy, data });
+
+                MethodInfo method = builderMovementType.GetMethod(
                     "GetBuildApproachPosition",
                     BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.That(method, Is.Not.Null, "Enemy should expose a private testable build approach helper.");
+                Assert.That(method, Is.Not.Null, "BuilderMovement should expose a private build approach helper.");
 
-                var result = (Vector3)method.Invoke(enemy, new object[] { buildPoint });
+                var result = (Vector3)method.Invoke(movement, new object[] { buildPoint });
 
                 Assert.That(result.x, Is.EqualTo(buildPointObject.transform.position.x).Within(0.001f));
                 Assert.That(result.y, Is.EqualTo(enemyObject.transform.position.y).Within(0.001f));

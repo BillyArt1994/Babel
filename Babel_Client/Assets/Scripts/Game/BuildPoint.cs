@@ -24,8 +24,6 @@ namespace Babel
         /// </summary>
         public BuildPointState State { get; private set; } = BuildPointState.Hidden;
         public bool IsBuildCompleted => State == BuildPointState.Completed;
-        public bool IsOccupied { get; private set; }
-
         private int _currentProgress;
         private readonly System.Collections.Generic.List<IBuildInterruptible> _activeBuilders
             = new System.Collections.Generic.List<IBuildInterruptible>(4);
@@ -53,11 +51,6 @@ namespace Babel
             CacheVisualRenderer();
             EnsureDebugBuildProgressBar();
             ApplyVisualState(State);
-        }
-
-        public void SetOccupied(bool occupied)
-        {
-            IsOccupied = occupied;
         }
 
         /// <summary>
@@ -98,7 +91,6 @@ namespace Babel
             if (_currentProgress >= buildAmount)
             {
                 _currentProgress = buildAmount;
-                IsOccupied = false;
                 SetState(BuildPointState.Completed);
 
                 // 通知所有在建者：此点已被建完，请中断
@@ -116,7 +108,6 @@ namespace Babel
 
         public void Reset()
         {
-            IsOccupied = false;
             _activeBuilders.Clear();
             _currentProgress = 0;
             SetState(BuildPointState.Hidden);

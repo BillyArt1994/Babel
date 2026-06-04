@@ -107,20 +107,6 @@ namespace Babel.Tests
             return (int)method.Invoke(_path, new object[] { fromPosition });
         }
 
-        private bool IsOccupied(int index)
-        {
-            PropertyInfo property = _buildPointType.GetProperty("IsOccupied", BindingFlags.Instance | BindingFlags.Public);
-            Assert.That(property, Is.Not.Null, "BuildPoint.IsOccupied should remain public.");
-            return (bool)property.GetValue(_buildPoints[index]);
-        }
-
-        private void SetOccupied(int index, bool occupied)
-        {
-            MethodInfo method = _buildPointType.GetMethod("SetOccupied", BindingFlags.Instance | BindingFlags.Public);
-            Assert.That(method, Is.Not.Null, "BuildPoint.SetOccupied should remain public.");
-            method.Invoke(_buildPoints[index], new object[] { occupied });
-        }
-
         private void CompleteBuildPoint(int index)
         {
             MethodInfo method = _buildPointType.GetMethod("AddBuildProgress", BindingFlags.Instance | BindingFlags.Public);
