@@ -232,7 +232,7 @@ scout,斥候,20,5,100,1,2,Enemies/Scout,,,,,1.2,scout,
 **Commit message:**
 
 ```
-refactor(data): EnemyData.TargetMode→MoveMode，新增 SenseRadius；Parser 兼容双 key
+refactor(data): EnemyData.TargetMode→MoveMode，新增 SenseRadius
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 ```
