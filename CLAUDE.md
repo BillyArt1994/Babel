@@ -98,6 +98,15 @@ A `BuildPoint` with `isGateway = true` is the ladder to the next layer; it is a 
 
 `TransientEnemyPool` assigns `LayerMask.NameToLayer("Enemy")` to spawned enemies at runtime.
 
+## Art Style
+Before generating ANY art asset (especially via AI image generation), read the style bible:
+- `docs/references/art/STYLE_GUIDE.md` — per-section (characters / UI / tower / environment) art direction, locked reference images, **reusable prompt recipes**, and pitfalls.
+- Characters use **hard angular linework + flat color blocks** (ancient-Greek cartoon); no gradients/painterly shading. Style anchor image: `concept-art/worker_v2_raw.png`.
+- Use the `image-generator` skill (do not write custom gen scripts); `--mode variations` against an anchor image is the most reliable way to lock style.
+
+For posters / cutscenes / promo art, also read the character bible for who each character *is* (age, personality, skills, background):
+- `design/lore/characters.md` — per-character design設定. Mechanic fields (skills/speed/role) follow the CSVs, not the older GDD concept doc. Sister doc to STYLE_GUIDE (looks vs. identity).
+
 ## Production Docs
 Sprint plans and milestone tracking live in `production/`:
 - `production/sprints/sprint-3.md` — active sprint
