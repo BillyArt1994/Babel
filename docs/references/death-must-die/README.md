@@ -14,6 +14,7 @@
 | 系统 | 文档 | 覆盖内容 | 状态 |
 |------|------|---------|------|
 | **技能 / 升级系统**(Boon) | [`skill-upgrade-system.md`](./skill-upgrade-system.md) | 数据模型、等级化数值、三选一流程、121个Ability效果、CSV加载 | ✅ 完整 |
+| **怪物移动 / AI 系统** | [`monster-movement-ai.md`](./monster-movement-ai.md) | 双层架构(AI行为树+Steering)、11种转向行为、Cohesion群聚、CSV+TOML配置 | ✅ 完整 |
 
 ### 技能升级系统 — 文档内锚点速查
 > 文档:[`skill-upgrade-system.md`](./skill-upgrade-system.md)
@@ -26,6 +27,21 @@
 | 效果如何实现 / 触发器 / 数值计算 | [§4 效果分发](./skill-upgrade-system.md#4-效果分发ability-架构) | `IAbility` / `AbilityTrigger` / `StatHierarchy` |
 | CSV 怎么解析成技能数据 | [§5 CSV加载](./skill-upgrade-system.md#5-csv-数据加载) | `Parser` / `BoonTable` / `CsvLine` |
 | **Babel 该借鉴什么** | [附:优先级建议](./skill-upgrade-system.md#附babel-参考实现优先级建议) | — |
+
+### 怪物移动/AI — 文档内锚点速查
+> 文档：[`monster-movement-ai.md`](./monster-movement-ai.md)
+
+| 想查什么 | 跳转锚点 | 核心类 |
+|----------|---------|--------|
+| 双层架构总览 / 结论 | [§0 结论先行](./monster-movement-ai.md#0-结论先行) | `Controller_Ai` / `SteeringAgent2D` |
+| AI 行为树节点类型（28种） | [§1.2 节点类型枚举](./monster-movement-ai.md#12-aini-节点类型枚举) | `TomlAi` / `AiNodeTemplate` |
+| Ai.ini 真实配置示例 | [§1.3 Ai.ini 示例](./monster-movement-ai.md#13-aini-真实示例) | — |
+| 11 种 Steering 行为库完整列表 | [§2.2 Steering 行为库](./monster-movement-ai.md#22-11-种内置-steering-行为库) | `SteeringBehaviour` 子类 |
+| Cohesion 群聚核心逻辑（代码级） | [§2.3 Cohesion 核心逻辑](./monster-movement-ai.md#23-steering_cohesion-核心逻辑babel-最关心) | `Steering_Cohesion` |
+| 每帧数据流（CSV→决策→移动） | [§3 数据流图](./monster-movement-ai.md#3-数据流图) | `Controller_Ai` / `SteeringAgent2D` |
+| Monsters.csv 关键列 / 配置文件 | [§4 CSV 配置速查](./monster-movement-ai.md#4-csv--配置字段速查) | `Parser` / `AiBindings` |
+| **Babel 该借鉴什么 / SupportMovement 实施建议** | [§5 映射 Babel](./monster-movement-ai.md#5-映射-babel--借鉴优先级与实施建议) | `IEnemyMovement` / `SupportMovement` |
+| 所有结论的源码证据 | [§6 证据表](./monster-movement-ai.md#6-证据表) | — |
 
 ---
 
@@ -41,7 +57,7 @@
 | 主动技能 | `Death.Run.Behaviours.Abilities.Actives` | 38 | 主动技能的具体行为(冲刺变体、施法等) |
 | **实体/单位** | `Death.Run.Behaviours.Entities` | 124 | 玩家/怪物/投射物的行为组件、移动、碰撞、动画驱动 |
 | **核心系统** | `Death.Run.Systems` | 53 | BoonManager 同级的各 System_*(Rewards/Spawn/XP/Darkness 等管理器) |
-| 怪物 AI | `Death.Run.Behaviours.AI` | 42 | 怪物决策、`Controller_Ai`、行为节点 |
+| 怪物 AI | `Death.Run.Behaviours.AI` | 42 | 怪物决策、`Controller_Ai`、行为节点（**已分析见 [monster-movement-ai.md](./monster-movement-ai.md)**） |
 | 事件总线 | `Death.Run.Behaviours.Events` | 40 | `Event_*` 全量(BoonGained/LevelUp 等只是其中几个) |
 | 状态(buff/debuff) | `Death.Run.Behaviours.Statuses` | 29 | Burn/Stun/Chill 等状态效果实现(配 `Statuses.csv`) |
 | 瞬发效果 | `Death.Run.Behaviours.Instants` | 19 | `Instant_*` 一次性效果 |
@@ -65,7 +81,7 @@
 | 系统 | 关键目录 | 文件数 | 说明 |
 |------|---------|--------|------|
 | 世界生成 | `Death.WorldGen` | 36 | 地图/关卡程序生成 |
-| 转向/移动 | `Death.Steering.Behaviours` | 11 | steering behavior(群体移动) |
+| 转向/移动 | `Death.Steering.Behaviours` | 11 | steering behavior(群体移动)（**已分析见 [monster-movement-ai.md](./monster-movement-ai.md)**） |
 
 ### 表现/UI/框架
 | 系统 | 关键目录 | 文件数 | 说明 |
