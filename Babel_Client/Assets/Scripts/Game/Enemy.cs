@@ -166,8 +166,9 @@ namespace Babel
             _movement?.OnRemoved();
             _movement = data.MoveMode switch
             {
-                "scout" => new BuilderMovement(GatewayFirstSelector.Instance),
-                _       => new BuilderMovement(DefaultBuildSelector.Instance)
+                "scout"   => new BuilderMovement(GatewayFirstSelector.Instance),
+                "support" => new SupportMovement(),
+                _         => new BuilderMovement(DefaultBuildSelector.Instance)
             };
             _movement.Init(this, data);
 
