@@ -25,7 +25,12 @@ namespace Babel.Tests
 
             var enemyGo = new GameObject("Scout");
             var enemy = enemyGo.AddComponent<Enemy>();
-            var data = new EnemyData { Hp = 25, MoveSpeed = 5, BuildContribution = 25, BuildCharges = 1, TargetMode = "scout", BuildTime = 1.2f };
+            // TargetMode 已改名为 MoveMode
+            var data = new EnemyData
+            {
+                Hp = 25, MoveSpeed = 5, BuildContribution = 25,
+                BuildCharges = 1, MoveMode = "scout", BuildTime = 1.2f
+            };
 
             enemy.Init(path, data, -1);
 
@@ -59,16 +64,18 @@ namespace Babel.Tests
             }
             bps[0].isGateway = true;
             path.wayPointList = bps;
-            // gateway(0)+idx1 建完；idx2 被外部占用 → 预约返回 -1，但 IsCompleted=false
             bps[0].AddBuildProgress(99999);
             bps[1].AddBuildProgress(99999);
             bps[2].SetOccupied(true);
 
             var enemyGo = new GameObject("W");
             var enemy = enemyGo.AddComponent<Enemy>();
-            var data = new EnemyData { Hp = 30, MoveSpeed = 1, BuildContribution = 25, BuildCharges = 1, TargetMode = "", BuildTime = 1f };
+            var data = new EnemyData
+            {
+                Hp = 30, MoveSpeed = 1, BuildContribution = 25,
+                BuildCharges = 1, MoveMode = "", BuildTime = 1f
+            };
             enemy.Init(path, data, -1);
-            // Init 已 ReserveNextTarget()，此时 _targetBuildPointIndex 应为 -1
 
             InvokePrivate(enemy, "UpdateMovingToBuildPoint");
 
@@ -84,14 +91,16 @@ namespace Babel.Tests
 
         private static void InvokePrivate(object obj, string method)
         {
-            MethodInfo m = obj.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo m = obj.GetType().GetMethod(method,
+                BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(m, Is.Not.Null, $"{method} should exist.");
             m.Invoke(obj, null);
         }
 
         private static string GetState(object enemy)
         {
-            FieldInfo f = enemy.GetType().GetField("_moveState", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo f = enemy.GetType().GetField("_moveState",
+                BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.That(f, Is.Not.Null);
             return f.GetValue(enemy).ToString();
         }
