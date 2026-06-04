@@ -27,6 +27,8 @@ namespace Babel
         public bool IsOccupied { get; private set; }
 
         private int _currentProgress;
+        private readonly System.Collections.Generic.List<IBuildInterruptible> _activeBuilders
+            = new System.Collections.Generic.List<IBuildInterruptible>(4);
         private SpriteRenderer _spriteRenderer;
 
         /// <summary>
@@ -59,6 +61,23 @@ namespace Babel
         }
 
         /// <summary>
+        /// 注册一个正在建造此点的建造者，建造完成时会收到 OnTargetBuildCompleted 回调。
+        /// </summary>
+        public void AttachBuilder(IBuildInterruptible builder)
+        {
+            if (builder != null && !_activeBuilders.Contains(builder))
+                _activeBuilders.Add(builder);
+        }
+
+        /// <summary>
+        /// 取消注册建造者（建造者主动放弃或死亡时调用）。
+        /// </summary>
+        public void DetachBuilder(IBuildInterruptible builder)
+        {
+            _activeBuilders.Remove(builder);
+        }
+
+        /// <summary>
         /// 开始建造该建造点，并显示建造中视觉。
         /// </summary>
         public void BeginBuild()
@@ -82,6 +101,12 @@ namespace Babel
                 IsOccupied = false;
                 SetState(BuildPointState.Completed);
 
+                // 通知所有在建者：此点已被建完，请中断
+                var snapshot = new System.Collections.Generic.List<IBuildInterruptible>(_activeBuilders);
+                _activeBuilders.Clear();
+                foreach (var b in snapshot)
+                    b.OnTargetBuildCompleted(this);
+
                 if (OwnerPath != null)
                     OwnerPath.OnBuildPointCompleted();
 
@@ -92,6 +117,7 @@ namespace Babel
         public void Reset()
         {
             IsOccupied = false;
+            _activeBuilders.Clear();
             _currentProgress = 0;
             SetState(BuildPointState.Hidden);
             ApplyVisualState(State);
