@@ -59,6 +59,9 @@ sysinfo.txt
 crashlytics-build.properties
 
 # Claude Code 本地配置与自动生成的审计日志（停止跟踪，保留本地文件）
+.agents/
+.codex/
+.claude/
 .claude/settings.local.json
 production/session-logs/session-log.md
 

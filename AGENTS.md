@@ -1,97 +1,218 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This is the canonical agent guidance for the Babel repository. Other assistant
+entry files should point here instead of duplicating project rules.
 
 ## Project Overview
 
-**Babel** is a 2D Unity survival/tower-defense game. The player is a god defending against humans trying to build the Tower of Babel. Humans spawn from spawn points, march along layered paths, and build the tower by occupying and completing `BuildPoint` nodes. The player clicks to attack and selects skill upgrades every 5 EXP.
+Babel is a 2D Unity survival/tower-defense game. The player is a god defending
+against humans trying to build the Tower of Babel. Humans spawn from spawn
+points, move along layered paths, occupy `BuildPoint` nodes, build upward, and
+pressure the player over a 15-minute run.
 
-Unity project root: `Babel_Client/`
-All C# scripts: `Babel_Client/Assets/Scripts/`
-Namespace: `Babel` (all game code)
+- Unity project root: `Babel_Client/`
+- C# scripts: `Babel_Client/Assets/Scripts/`
+- Tests: `Babel_Client/Assets/Tests/EditMode/`
+- Runtime namespace: `Babel`
+- Data source: CSV files under `Babel_Client/Assets/Data/`
+
+## Task-Based Agent Workflow
+
+Non-trivial work must start from a task brief under `production/tasks/`.
+
+Each task brief declares:
+
+- `primary_role`: `designer`, `artist`, or `programmer`
+- `role_file`: one file under `docs/agents/roles/`
+- required reading
+- allowed paths
+- forbidden paths
+- acceptance criteria
+- handoff target
+
+Before editing files, the agent must read:
+
+1. `AGENTS.md`
+2. the task brief
+3. the `role_file` declared by the task brief
+
+Then restate:
+
+- current task
+- current role
+- allowed paths
+- forbidden paths
+- validation plan
+
+If no task brief exists, ask whether to create one or proceed as an ad-hoc task.
+For ad-hoc tasks, still choose one primary role and respect the matching role
+file.
+
+## Role Routing
+
+- Design, balance, GDD, enemy/skill/wave rules, progression, or CSV tuning:
+  read `docs/agents/roles/designer.md`
+- Visual style, concept art, references, prompts, asset review, or art bible
+  updates: read `docs/agents/roles/artist.md`
+- Unity implementation, C# scripts, tests, data parsers, editor tools, or runtime
+  integration: read `docs/agents/roles/programmer.md`
+
+Mixed work should be split into multiple tasks. Example: a new enemy usually
+needs a designer task, an artist task, and a programmer task.
+
+## Long Context Recovery
+
+Do not rely on chat memory for role identity or permissions. When a session is
+long, resumed, compacted, or the user says "continue", reload the current task
+brief and its role file before continuing.
+
+## Source Of Truth
+
+- Design truth: `design/gdd/**`, `design/lore/**`
+- Art truth: `docs/references/art/**`, `production/artifacts/**`
+- Code truth: `Babel_Client/Assets/Scripts/**`, `Babel_Client/Assets/Tests/**`
+- Data truth: `Babel_Client/Assets/Data/**`
+- Project management truth: `production/sprints/**`,
+  `production/risk-register/**`, `production/tasks/**`
+- Handoff memory: `production/handoffs/**`
+
+Avoid duplicating the same decision in multiple places. Prefer linking to the
+source of truth.
 
 ## Commands
 
-### Running Tests (Unity Test Framework — EditMode)
-Open Unity Editor → Window > General > Test Runner → EditMode → Run All
+### Unity EditMode Tests
 
-Or via CLI (from `Babel_Client/`):
-```
-# Windows
+Open Unity Editor -> Window > General > Test Runner -> EditMode -> Run All.
+
+CLI from `Babel_Client/`:
+
+```powershell
 "C:\Program Files\Unity\Hub\Editor\<version>\Editor\Unity.exe" -runTests -testPlatform editmode -projectPath . -testResults results.xml
 ```
 
-Tests live in `Babel_Client/Assets/Tests/EditMode/`.
+## Data Import
 
-### Data Import
-Game data is CSV-driven. CSVs live in `Babel_Client/Assets/Data/`:
-- `Enemies/enemies.csv` — enemy stats (parsed by `EnemyParser`)
-- `Waves/waves.csv` — wave schedule (parsed by `WaveParser`)
-- `Skills/skills.csv` — skill definitions (parsed by `SkillParser`)
+Game data is CSV-driven:
 
-`EnemyDatabase` and `SkillDatabase` are static singletons initialized at runtime from these CSVs.
+- `Babel_Client/Assets/Data/Enemies/enemies.csv`
+- `Babel_Client/Assets/Data/Waves/waves.csv`
+- `Babel_Client/Assets/Data/Skills/skills.csv`
+- `Babel_Client/Assets/Data/experience.csv`
 
-## Architecture
+`EnemyDatabase` and `SkillDatabase` are static runtime databases initialized
+from CSV. Do not move gameplay data to ScriptableObjects without explicit
+discussion.
 
-### Framework
-The project uses **QFramework** (`using QFramework;`):
-- `ViewController` — base class for scene MonoBehaviours (replaces `MonoBehaviour` directly)
-- `UIKit` — panel management: `UIKit.OpenPanel<T>()` / `UIKit.ClosePanel<T>()`
-- `BindableProperty<T>` — reactive properties in `Global`
-- `.Designer.cs` files — code-generated by QFramework UIKit; **do not edit manually**
+## Framework
 
-### Global State (`Global.cs`)
-Static class with reactive bindable properties:
-- `Global.Exp` — experience points; 5 EXP triggers an upgrade
-- `Global.Level` — current player level
-- `Global.CurrentTime` — countdown timer (starts at 900s = 15 min)
+The project uses QFramework:
 
-### Core Systems
+- `ViewController` is the scene behavior base class.
+- `UIKit.OpenPanel<T>()` / `UIKit.ClosePanel<T>()` manage panels.
+- `BindableProperty<T>` powers reactive global state.
+- `.Designer.cs` files are generated by QFramework UIKit. Do not edit them
+  manually.
 
-**Enemy lifecycle**
-`WaveScheduler` → `IEnemyPool.Get()` → `Enemy.Init()` → `Enemy.Update()` (state machine) → death/finish → `Enemy.OnChargesExhausted` event
+## Current Runtime Architecture
 
-Enemy state machine: `MovingToBuildPoint → Building → MovingToPassage → ClimbingPassage → Finished`
+### Global State
 
-**Path / BuildPoint system**
-`Path` holds an array of `BuildPoint` waypoints and a `nextLayerPath` reference. Enemies call `Path.ReserveBuildPoint()` (nearest available) and `ReleaseBuildPoint()` on completion. A `BuildPoint` with `isGateway = true` is the ladder to the next layer. When all non-gateway BuildPoints are completed, `BuildEvents.RaiseLayerCompleted` fires.
+`Global.cs` contains reactive bindable properties:
 
-**Skill system**
-`SkillSystem` owns a list of `Skill` objects. Each skill has a trigger (`OnClick`, `OnHit`, `OnTimer`, `OnKill`) and one or more effects (`Damage`, `Buff`, `DoT`, `Composite`). Skills are loaded from `skills.csv` via `SkillDatabase.Init()`. `SkillFactory.Create()` builds the runtime object.
+- `Global.Exp`
+- `Global.Level`
+- `Global.CurrentTime`
 
-`AddOrReplaceSkill()`: adding an `OnClick` skill replaces all existing `OnClick` skills.
+XP progression is handled by `XpSystem`, which loads `Data/experience.csv`.
 
-**Upgrade system**
-`UpgradeSystem` subscribes to `Global.Exp` changes. When Exp ≥ 5: deducts 5 EXP, increments Level, generates 3 weighted-random skill options, pauses time (`Time.timeScale = 0`), raises `UpgradeEvents.RaiseOptionsGenerated`. On selection: `UpgradeEvents.OnOptionSelected` → `SkillSystem.AddOrReplaceSkill()` → resume time.
+### Enemy Lifecycle
 
-**Enemy pool**
-`IEnemyPool` interface → currently `TransientEnemyPool` (Instantiate/Destroy placeholder). Prefabs loaded from `Resources/` by path stored in `EnemyData.Prefab`; falls back to a colored procedural sprite if missing.
+`WaveScheduler` -> `IEnemyPool.Get()` -> `Enemy.Init()` -> `Enemy.Update()` ->
+movement/ability ticks -> death, removal, or finish.
 
-**Static event buses**
-- `EnemyEvents.OnEnemyDied` — fires at enemy death position
-- `BuildEvents.RaiseBuildStarted/Completed/LayerCompleted`
-- `UpgradeEvents.OnOptionSelected / RaiseOptionsGenerated`
+`Enemy` delegates movement to `IEnemyMovement` implementations:
 
-### UI
-`GameUIController` opens `UIGamePanel` on Start. Game-over triggers `UIKit.OpenPanel<UIGameOverPanel>()` from within `Enemy.StartMovingToPassage()` when there's no next layer.
+- default workers use `BuilderMovement(DefaultBuildSelector)`
+- scouts use `BuilderMovement(GatewayFirstSelector)`
+- support enemies use `SupportMovement`
 
-### Debug Overlays
-`DebugHealthBar` and `DebugBuildProgressBar` are auto-created as child GameObjects in `Enemy.Awake()` and `BuildPoint.Awake()`. They derive from `DebugWorldBar`. These are runtime debug visuals — not prefab children.
+Movement code lives under `Babel_Client/Assets/Scripts/Spawning/`.
+
+### Path And BuildPoint System
+
+`Path` owns `BuildPoint` waypoints and an optional `nextLayerPath`.
+`BuilderMovement` reserves build targets through an `ITargetSelector`.
+Reservations are non-exclusive: multiple builders may build the same point.
+
+`BuildPoint` tracks active builders and interrupts them when the target completes
+so they can keep their charge and choose a new target. Built gateways act as
+public ladders to the next path layer.
+
+### Skill And Upgrade Systems
+
+`SkillSystem` owns runtime `Skill` objects. Skills are built from
+`skills.csv` via `SkillDatabase`, `SkillParser`, and `SkillFactory`.
+
+Triggers include:
+
+- `OnClick`
+- `OnHit`
+- `OnTimer`
+- `OnKill`
+
+Effects include damage, buffs, DoT, and composite effects.
+
+`UpgradeSystem` reacts to `XpSystem.OnLevelsGained`, generates upgrade options,
+pauses time while the panel is open, and applies selected skills or level-ups.
+
+### Enemy Pool
+
+`IEnemyPool` currently maps to `TransientEnemyPool`, which instantiates and
+destroys prefabs loaded from `Resources/`. Missing prefabs fall back to a colored
+procedural sprite. Spawned enemies are assigned to the `Enemy` physics layer.
+
+## Static Event Buses
+
+- `EnemyEvents.OnEnemyDied`
+- `BuildEvents.RaiseBuildStarted`
+- `BuildEvents.RaiseBuildCompleted`
+- `BuildEvents.RaiseLayerCompleted`
+- `UpgradeEvents.OnOptionSelected`
+- `UpgradeEvents.RaiseOptionsGenerated`
+
+## UI
+
+`GameUIController` opens `UIGamePanel` on start. Game-over opens
+`UIGameOverPanel`. UI code lives under `Babel_Client/Assets/Scripts/UI/` and
+QFramework-generated `.Designer.cs` files must not be edited manually.
+
+## Debug Overlays
+
+`DebugHealthBar` and `DebugBuildProgressBar` are runtime debug children created
+from code. They are not prefab children.
 
 ## Physics Layers
+
 - Layer 6: `Enemy`
 - Layer 7: `Tower`
 
-`TransientEnemyPool` assigns `LayerMask.NameToLayer("Enemy")` to spawned enemies at runtime.
+## Art Direction
 
-## Production Docs
-Sprint plans and milestone tracking live in `production/`:
-- `production/sprints/sprint-3.md` — active sprint
-- `production/milestones/milestone-1-mvp.md` — milestone 1 (MVP, closed)
-- `production/risk-register/risk-register.md`
+Before generating or changing art references, read:
+
+- `docs/references/art/STYLE_GUIDE.md`
+- `design/lore/characters.md` when character identity matters
+
+Characters use hard angular linework and flat color blocks with an ancient-Greek
+cartoon feel. Avoid painterly shading and gradients unless the style guide is
+updated.
 
 ## Key Conventions
-- All game logs use `[BABEL][SystemName]` prefix via `Debug.LogWarning`
-- `BabelLogger` static class exists for structured logging (prefer over raw `Debug.Log`)
-- Performance-sensitive queries use `NonAlloc` variants (`OverlapCircleNonAlloc`) with pre-allocated static buffers
-- Skill/Enemy/Wave data are all defined in CSVs, not ScriptableObjects — do not move to SO without discussion
+
+- Use `BabelLogger` or `[BABEL][SystemName]` log prefixes.
+- Use NonAlloc physics APIs with preallocated buffers for performance-sensitive
+  queries.
+- Do not edit generated `.Designer.cs` files manually.
+- Do not revert unrelated dirty worktree changes.
+- Keep changes scoped to the active task's allowed paths.
