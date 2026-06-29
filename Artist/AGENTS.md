@@ -68,6 +68,11 @@ rules into `art-style-guide/` when they should guide future sessions.
 ### Working Paths
 
 - `concept-art/`: generated or hand-authored concept images.
+- Generated effect/concept images must be saved under `concept-art/`, not left
+  only in the default generator output directory.
+- For each named subject or tower exploration, create a dedicated subfolder under
+  `concept-art/` and keep all concept variants for that subject there. Example:
+  `concept-art/tower_babel_facade_module_cells/`.
 - `gamer-ref/`: external visual references.
 - `STYLE_GUIDE.md`: existing style-guide material; use as reference while durable
   rules are gradually moved into `art-style-guide/`.
@@ -95,3 +100,4 @@ Do not rename historical files only to satisfy this convention.
 - Change art pipeline tooling unless the user explicitly asks.
 - Approve scope additions on behalf of the user.
 - Treat exploratory images as approved references without explicit user approval.
+
