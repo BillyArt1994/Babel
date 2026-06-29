@@ -25,6 +25,10 @@ namespace Babel
             if (IsCompleted)
             {
                 BuildEvents.RaiseLayerCompleted(this);
+                if (nextLayerPath == null)
+                {
+                    GameSession.EndGame(GameEndReason.Defeat);
+                }
             }
         }
 

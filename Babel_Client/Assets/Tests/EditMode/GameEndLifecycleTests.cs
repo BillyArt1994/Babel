@@ -92,6 +92,47 @@ namespace Babel.Tests
         }
 
         [Test]
+        public void BuildPoint_WhenFinalLayerCompleted_EndsGameAsDefeat()
+        {
+            Type sessionType = RequireType("Babel.GameSession");
+            Type reasonType = RequireType("Babel.GameEndReason");
+            Type pathType = RequireType("Babel.Path");
+            Type buildPointType = RequireType("Babel.BuildPoint");
+            var pathObject = new GameObject("FinalLayerPathDefeatTest");
+            var buildPointObject = new GameObject("FinalLayerBuildPointDefeatTest");
+            float previousTimeScale = Time.timeScale;
+
+            try
+            {
+                InvokeStatic(sessionType, "ResetSession");
+                Component path = pathObject.AddComponent(pathType);
+                Component buildPoint = buildPointObject.AddComponent(buildPointType);
+
+                buildPointType.GetField("buildAmount", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(buildPoint, 100);
+                buildPointType.GetField("OwnerPath").SetValue(buildPoint, path);
+
+                Array wayPoints = Array.CreateInstance(buildPointType, 1);
+                wayPoints.SetValue(buildPoint, 0);
+                pathType.GetField("wayPointList").SetValue(path, wayPoints);
+                pathType.GetField("nextLayerPath").SetValue(path, null);
+
+                buildPointType.GetMethod("AddBuildProgress").Invoke(buildPoint, new object[] { 100 });
+
+                Assert.That((bool)RequireProperty(sessionType, "IsGameEnded").GetValue(null), Is.True);
+                Assert.That(RequireProperty(sessionType, "EndReason").GetValue(null), Is.EqualTo(Enum.Parse(reasonType, "Defeat")));
+                Assert.That(Time.timeScale, Is.EqualTo(0f));
+            }
+            finally
+            {
+                InvokeStatic(sessionType, "ResetSession");
+                Time.timeScale = previousTimeScale;
+                UnityEngine.Object.DestroyImmediate(pathObject);
+                UnityEngine.Object.DestroyImmediate(buildPointObject);
+            }
+        }
+
+        [Test]
         public void GameSession_RestartStartAndReturnRouteToExpectedScenes()
         {
             Type sessionType = RequireType("Babel.GameSession");

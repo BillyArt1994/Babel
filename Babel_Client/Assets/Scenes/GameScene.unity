@@ -2887,11 +2887,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d72137816e683d9498d63eae2caefe6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Namespace: 
-  ScriptName: 
-  ScriptsFolder: 
+  Namespace: Babel
+  ScriptName: Managers
+  ScriptsFolder: Assets\Scripts\Game
   GeneratePrefab: 0
-  PrefabFolder: 
+  PrefabFolder: Assets/Art/Prefab
   ArchitectureFullTypeName: 
   ViewControllerFullTypeName: 
   enemiesCSV: {fileID: 0}
@@ -3849,6 +3849,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 2595752a5dc471d4d8f66fdb285ad7b0, type: 3}
+    - target: {fileID: 4395537159648890455, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
+      propertyPath: isGateway
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6044058846626489951, guid: 8d92dbfa491d9af438f444939d7d82ee, type: 3}
       propertyPath: m_Name
       value: BuildPoint_t6_p05
