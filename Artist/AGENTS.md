@@ -53,17 +53,25 @@ user.
 When a visual decision becomes a long-term rule, record it in the style-guide
 folder instead of leaving it only in chat.
 
-- `art-style-guide/global-art-direction.md`: overall rendering direction,
-  palette rules, proportions, material language, lighting direction, visual
-  hierarchy, visual pillars, and cross-asset constraints.
+- `STYLE_GUIDE.md`: global visual direction, macro art targets, cross-asset
+  rendering rules, readability goals, asset-path conventions, and style-guide
+  routing.
 - `art-style-guide/character-style.md`: character anatomy, faction identity,
   silhouette, clothing, prompt recipes, approved anchors, and known generation
   pitfalls.
 - `art-style-guide/environment-style.md`: tower, scene, background, atmosphere,
   terrain, props, and environment composition rules.
 
+When iterating on art assets:
+
+- Record broad, project-wide art direction in `STYLE_GUIDE.md`.
+- Record character-specific anatomy, species, silhouette, clothing, anchor, and
+  prompt details in `art-style-guide/character-style.md`.
+- Record tower, background, ground, scene composition, environment theme, and
+  construction grammar details in `art-style-guide/environment-style.md`.
+
 Keep temporary explorations in `concept-art/` with clear filenames. Only promote
-rules into `art-style-guide/` when they should guide future sessions.
+rules into the style-guide files when they should guide future sessions.
 
 ### Working Paths
 
@@ -74,8 +82,8 @@ rules into `art-style-guide/` when they should guide future sessions.
   `concept-art/` and keep all concept variants for that subject there. Example:
   `concept-art/tower_babel_facade_module_cells/`.
 - `gamer-ref/`: external visual references.
-- `STYLE_GUIDE.md`: existing style-guide material; use as reference while durable
-  rules are gradually moved into `art-style-guide/`.
+- `STYLE_GUIDE.md`: global art bible and style-guide routing entry point.
+- `art-style-guide/`: durable topic-specific art rules.
 
 ### Asset Naming Convention
 
@@ -100,4 +108,3 @@ Do not rename historical files only to satisfy this convention.
 - Change art pipeline tooling unless the user explicitly asks.
 - Approve scope additions on behalf of the user.
 - Treat exploratory images as approved references without explicit user approval.
-
