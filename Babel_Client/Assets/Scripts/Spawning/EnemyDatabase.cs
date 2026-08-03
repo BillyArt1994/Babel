@@ -8,11 +8,8 @@ namespace Babel
         private const string LOG_PREFIX = "[BABEL][EnemyDB]";
         private static readonly Dictionary<string, EnemyData> _byId = new();
         private static readonly List<EnemyData> _allEnemies = new();
-        private static bool _initialized;
-
         public static void Init(string csvText)
         {
-            _initialized = false;
             _byId.Clear();
             _allEnemies.Clear();
 
@@ -28,7 +25,6 @@ namespace Babel
                 _allEnemies.Add(data);
             }
 
-            _initialized = true;
             Debug.Log($"{LOG_PREFIX} Initialized with {_allEnemies.Count} enemy types");
         }
 

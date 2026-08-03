@@ -25,7 +25,7 @@ namespace Babel.Tests
             MethodInfo startMethod = RequireType("Babel.SkillSystem").GetMethod(
                 "Start",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            TextAsset skillsCsv = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Data/Skills/skills.csv");
+            TextAsset skillsCsv = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Babel/Content/Data/Skills/skills.csv");
             var skillSystemObject = new GameObject("SkillSystemStartupTest");
 
             try
@@ -33,6 +33,9 @@ namespace Babel.Tests
                 Assert.That(skillsCsv, Is.Not.Null, "Test fixture requires the production skills CSV.");
                 initDatabaseMethod.Invoke(null, new object[] { string.Empty });
                 Component skillSystem = skillSystemObject.AddComponent(RequireType("Babel.SkillSystem"));
+                FieldInfo skillsField = skillSystem.GetType().GetField("skillsCSV", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(skillsField, Is.Not.Null);
+                skillsField.SetValue(skillSystem, skillsCsv);
 
                 startMethod.Invoke(skillSystem, Array.Empty<object>());
 

@@ -9,8 +9,8 @@ namespace Babel.Tests
 {
     public class SkillCooldownHudTests
     {
-        private const string SKILLS_CSV_PATH = "Assets/Data/Skills/skills.csv";
-        private const string GAME_PANEL_PATH = "Assets/Art/UIPrefab/UIGamePanel.prefab";
+        private const string SKILLS_CSV_PATH = "Assets/Babel/Content/Data/Skills/skills.csv";
+        private const string GAME_PANEL_PATH = "Assets/Babel/Prefabs/UI/UIGamePanel.prefab";
 
         [Test]
         public void SkillSystem_WhenClickSkillFires_ExposesActiveClickCooldownProgress()
@@ -25,6 +25,7 @@ namespace Babel.Tests
             try
             {
                 Component skillSystem = skillObject.AddComponent(skillSystemType);
+                InvokePrivate(skillSystemType, skillSystem, "Awake");
                 InvokePrivate(skillSystemType, skillSystem, "Start");
                 object clickContext = CreatePointerInputContext(inputContextType, Vector2.zero);
 
@@ -56,11 +57,14 @@ namespace Babel.Tests
             Type inputEventsType = RequireType("Babel.InputEvents");
             InitSkillDatabase(skillDatabaseType);
             var skillObject = new GameObject("SkillSystemHudCooldownTest");
-            GameObject panelObject = PrefabUtility.LoadPrefabContents(GAME_PANEL_PATH);
+            GameObject panelObject = UnityEngine.Object.Instantiate(
+                AssetDatabase.LoadAssetAtPath<GameObject>(GAME_PANEL_PATH));
+            GameObject routerObject = null;
 
             try
             {
                 Component skillSystem = skillObject.AddComponent(skillSystemType);
+                InvokePrivate(skillSystemType, skillSystem, "Awake");
                 InvokePrivate(skillSystemType, skillSystem, "Start");
                 object clickContext = CreatePointerInputContext(inputContextType, Vector2.zero);
                 inputEventsType.GetMethod("RaisePointerDown", BindingFlags.Public | BindingFlags.Static)
@@ -68,27 +72,32 @@ namespace Babel.Tests
                 inputEventsType.GetMethod("RaisePointerUp", BindingFlags.Public | BindingFlags.Static)
                     .Invoke(null, new[] { clickContext });
 
+                MethodInfo progressMethod = skillSystemType.GetMethod(
+                    "GetActiveClickCooldownProgress",
+                    BindingFlags.Public | BindingFlags.Instance);
+                Assert.That(
+                    (float)progressMethod.Invoke(skillSystem, Array.Empty<object>()),
+                    Is.EqualTo(1f).Within(0.001f),
+                    "Fixture must establish cooldown before testing HUD presentation.");
+
                 Component panel = panelObject.GetComponent(RequireType("Babel.UIGamePanel"));
+                routerObject = ShowGamePanel(panel);
                 Image fill = (Image)panel.GetType().GetField("MainSkill_ImageFill").GetValue(panel);
                 fill.fillAmount = 0f;
 
-                MethodInfo updateMethod = panel.GetType().GetMethod(
-                    "UpdateMainSkillCooldownFill",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.That(updateMethod, Is.Not.Null);
-                updateMethod.Invoke(panel, Array.Empty<object>());
+                InvokePrivate(panel.GetType(), panel, "Update");
 
                 Assert.That(fill.fillAmount, Is.EqualTo(1f).Within(0.001f));
             }
             finally
             {
+                DisposeRouter(routerObject);
+                if (panelObject != null) UnityEngine.Object.DestroyImmediate(panelObject);
                 skillSystemType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Instance)
                     ?.Invoke(skillObject.GetComponent(skillSystemType), null);
                 UnityEngine.Object.DestroyImmediate(skillObject);
-                PrefabUtility.UnloadPrefabContents(panelObject);
             }
         }
-
         [Test]
         public void SkillSystem_WhenPointerDownDuringCooldown_DoesNotQueueReleaseAfterCooldownExpires()
         {
@@ -104,6 +113,7 @@ namespace Babel.Tests
             try
             {
                 Component skillSystem = skillObject.AddComponent(skillSystemType);
+                InvokePrivate(skillSystemType, skillSystem, "Awake");
                 InvokePrivate(skillSystemType, skillSystem, "Start");
                 enemyObject.transform.position = Vector3.zero;
                 enemyObject.AddComponent<CircleCollider2D>().radius = 0.5f;
@@ -143,11 +153,14 @@ namespace Babel.Tests
             Type inputEventsType = RequireType("Babel.InputEvents");
             InitSkillDatabase(skillDatabaseType);
             var skillObject = new GameObject("SkillSystemChargeCooldownTest");
-            GameObject panelObject = PrefabUtility.LoadPrefabContents(GAME_PANEL_PATH);
+            GameObject panelObject = UnityEngine.Object.Instantiate(
+                AssetDatabase.LoadAssetAtPath<GameObject>(GAME_PANEL_PATH));
+            GameObject routerObject = null;
 
             try
             {
                 Component skillSystem = skillObject.AddComponent(skillSystemType);
+                InvokePrivate(skillSystemType, skillSystem, "Awake");
                 InvokePrivate(skillSystemType, skillSystem, "Start");
                 object clickContext = CreatePointerInputContext(inputContextType, Vector2.zero);
                 inputEventsType.GetMethod("RaisePointerDown", BindingFlags.Public | BindingFlags.Static)
@@ -155,26 +168,55 @@ namespace Babel.Tests
                 inputEventsType.GetMethod("RaisePointerUp", BindingFlags.Public | BindingFlags.Static)
                     .Invoke(null, new[] { clickContext });
 
+                MethodInfo progressMethod = skillSystemType.GetMethod(
+                    "GetActiveClickCooldownProgress",
+                    BindingFlags.Public | BindingFlags.Instance);
+                Assert.That(
+                    (float)progressMethod.Invoke(skillSystem, Array.Empty<object>()),
+                    Is.EqualTo(1f).Within(0.001f),
+                    "Fixture must establish cooldown before testing HUD presentation.");
+
                 Component panel = panelObject.GetComponent(RequireType("Babel.UIGamePanel"));
+                routerObject = ShowGamePanel(panel);
                 RectTransform chargeRing = (RectTransform)panel.GetType().GetField("ChargeRing").GetValue(panel);
                 chargeRing.gameObject.SetActive(false);
-                panel.GetType().GetField("_panelRectTransform", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(panel, panelObject.transform);
 
-                MethodInfo pointerDownMethod = panel.GetType().GetMethod(
-                    "OnPointerDown",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                pointerDownMethod.Invoke(panel, new[] { clickContext });
+                inputEventsType.GetMethod("RaisePointerDown", BindingFlags.Public | BindingFlags.Static)
+                    .Invoke(null, new[] { clickContext });
 
                 Assert.That(chargeRing.gameObject.activeSelf, Is.False);
             }
             finally
             {
+                DisposeRouter(routerObject);
+                if (panelObject != null) UnityEngine.Object.DestroyImmediate(panelObject);
                 skillSystemType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Instance)
                     ?.Invoke(skillObject.GetComponent(skillSystemType), null);
                 UnityEngine.Object.DestroyImmediate(skillObject);
-                PrefabUtility.UnloadPrefabContents(panelObject);
             }
+        }
+
+        private static GameObject ShowGamePanel(Component panel)
+        {
+            Type routerType = RequireType("Babel.Unity.Presentation.UI.ScreenRouter");
+            var routerObject = new GameObject("GamePanelLifecycleTestRouter");
+            Component router = routerObject.AddComponent(routerType);
+            routerType.GetMethod("Register", BindingFlags.Public | BindingFlags.Instance)
+                .Invoke(router, new object[] { "hud", panel });
+            routerType.GetMethod("Show", BindingFlags.Public | BindingFlags.Instance)
+                .Invoke(router, new object[] { "hud" });
+            return routerObject;
+        }
+
+        private static void DisposeRouter(GameObject routerObject)
+        {
+            if (routerObject == null) return;
+
+            Type routerType = RequireType("Babel.Unity.Presentation.UI.ScreenRouter");
+            Component router = routerObject.GetComponent(routerType);
+            routerType.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance)
+                .Invoke(router, Array.Empty<object>());
+            UnityEngine.Object.DestroyImmediate(routerObject);
         }
 
         private static void InitSkillDatabase(Type skillDatabaseType)

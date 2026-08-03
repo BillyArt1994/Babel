@@ -1,0 +1,22 @@
+{
+  "name": "Babel.Tests.PlayMode",
+  "rootNamespace": "Babel.Tests",
+  "references": [
+    "Babel.Foundation",
+    "Babel.Gameplay",
+    "Babel.Unity",
+    "Babel.Bootstrap"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

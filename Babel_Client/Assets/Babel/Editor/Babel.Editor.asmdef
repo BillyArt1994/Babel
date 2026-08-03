@@ -1,0 +1,22 @@
+{
+  "name": "Babel.Editor",
+  "rootNamespace": "Babel.Editor",
+  "references": [
+    "Babel.Foundation",
+    "Babel.Gameplay",
+    "Babel.Unity",
+    "Babel.Bootstrap"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": []
+}

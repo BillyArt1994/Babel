@@ -1,15 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
-using QFramework;
+using Babel.Unity.Presentation.UI;
 using System;
 using System.Collections.Generic;
+using Babel.Gameplay.RunFlow;
+using Babel.Unity.Infrastructure.Time;
 
 namespace Babel
 {
-    public class UIGamePanelData : UIPanelData
-    {
-    }
-    public partial class UIGamePanel : UIPanel
+    public partial class UIGamePanel : Babel.Unity.Presentation.UI.Screen
     {
         private static readonly float[] TIME_SCALES = { 1f, 2f, 4f };
 
@@ -24,6 +23,7 @@ namespace Babel
         private int _timeScaleIndex;
         private bool _pausedByButton;
         private float _timeScaleBeforePause = 1f;
+        private long _lastRunReadModelVersion = -1;
         private const int MAX_PASSIVE_ICON_COUNT = 8;
         private static readonly Color UPGRADE_CARD_BACKGROUND_COLOR = new Color(0.10f, 0.08f, 0.14f, 0.94f);
         private static readonly Color UPGRADE_CARD_HIGHLIGHT_COLOR = new Color(0.18f, 0.14f, 0.24f, 0.98f);
@@ -32,131 +32,119 @@ namespace Babel
         private static readonly Color UPGRADE_CARD_BODY_COLOR = new Color(0.94f, 0.90f, 0.84f, 1f);
         private static readonly Color UPGRADE_CARD_TYPE_COLOR = new Color(1f, 0.72f, 0.28f, 1f);
 
-        protected override void OnInit(IUIData uiData = null)
+        private bool _initialized;
+
+        private void Awake()
         {
-            mData = uiData as UIGamePanelData ?? new UIGamePanelData();
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_initialized) return;
 
             _canvas = GetComponentInParent<Canvas>();
             _panelRectTransform = transform as RectTransform;
             _upgradeButtons[0] = Card1Btn;
             _upgradeButtons[1] = Card2Btn;
             _upgradeButtons[2] = Card3Btn;
+            _initialized = true;
+
             ApplyRuntimePortraitLayout();
-            ChargeRing.gameObject.SetActive(false);
-            ChargeRing_Fill.fillAmount = 0;
-            UpdateMainSkillCooldownFill();
+            HideChargeRing();
+            SetUpgradePanelVisible(false);
+            SetUpgradeButtonsActive(false);
             RefreshSkillHudFromSystem();
+            RefreshPresentation();
             ResetTimeScale();
-
-            // please add init code here
-            // EXP 进度条由 XpSystem.XpProgress 驱动（见 ActionKit.OnUpdate），Global.Exp 订阅已移除
-
-             Global.Level.Register(Level =>
-             {
-                 LevelText.text = "LV:" + (Level).ToString();
-             }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-            Global.CurrentTime.RegisterWithInitValue(time =>
-            {
-                var currentTimeInt = Mathf.FloorToInt(Global.CurrentTime.Value);
-                var seconds = currentTimeInt % 60;
-                var minutes = currentTimeInt / 60;
-                TimerText.text = $"{minutes:00}:{seconds:00}";
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-            UpgradePanel.Hide();
-
-            ActionKit.OnUpdate.Register(() =>
-            {
-                GameSession.TickCountdown(Time.deltaTime);
-                UpdateMainSkillCooldownFill();
-                // XP 进度条：由 XpSystem 驱动
-                if (XpSystem.Instance != null && EXPScrollbar != null)
-                    EXPScrollbar.size = XpSystem.Instance.XpProgress;
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-
-
         }
 
-        protected override void OnOpen(IUIData uiData = null)
+        protected override void OnScreenShown()
+        {
+            EnsureInitialized();
+            _lastRunReadModelVersion = -1;
+            SubscribeVisibilityEvents();
+            ApplyRuntimePortraitLayout();
+            HideChargeRing();
+            SetUpgradePanelVisible(false);
+            SetUpgradeButtonsActive(false);
+            RefreshSkillHudFromSystem();
+            RefreshPresentation();
+            ResetTimeScale();
+        }
+
+        protected override void OnScreenHidden()
+        {
+            _currentOptions = Array.Empty<SkillConfig>();
+            HideChargeRing();
+            SetUpgradePanelVisible(false);
+            SetUpgradeButtonsActive(false);
+            ResetTimeScale();
+        }
+
+        private void Update()
+        {
+            RefreshPresentation();
+        }
+
+        private void RefreshPresentation()
+        {
+            SyncRunControlsFromReadModel();
+            UpdateMainSkillCooldownFill();
+
+            XpSystem xpSystem = XpSystem.Instance;
+            if (LevelText != null)
+                LevelText.text = "LV:" + (xpSystem != null ? xpSystem.CurrentLevel : 1);
+            if (EXPScrollbar != null)
+                EXPScrollbar.size = xpSystem != null ? xpSystem.XpProgress : 0f;
+            if (!LegacyRunBridge.IsAvailable)
+                UpdateTimerText(GameSession.RemainingTime);
+        }
+
+        private void UpdateTimerText(float remainingTime)
+        {
+            if (TimerText == null) return;
+
+            int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(remainingTime));
+            TimerText.text = $"{totalSeconds / 60:00}:{totalSeconds % 60:00}";
+        }
+
+        private void SubscribeVisibilityEvents()
         {
             InputEvents.OnPointerDown += OnPointerDown;
+            VisibilitySubscriptions.Add(() => InputEvents.OnPointerDown -= OnPointerDown);
             InputEvents.OnPointerHold += OnPointerHold;
+            VisibilitySubscriptions.Add(() => InputEvents.OnPointerHold -= OnPointerHold);
             InputEvents.OnPointerUp += OnPointerUp;
+            VisibilitySubscriptions.Add(() => InputEvents.OnPointerUp -= OnPointerUp);
             InputEvents.OnPointerCancel += OnPointerCancel;
+            VisibilitySubscriptions.Add(() => InputEvents.OnPointerCancel -= OnPointerCancel);
             UpgradeEvents.OnOptionsGenerated += OnUpgradeOptionsGenerated;
+            VisibilitySubscriptions.Add(() => UpgradeEvents.OnOptionsGenerated -= OnUpgradeOptionsGenerated);
             SkillEvents.OnEquippedSkillsChanged += RefreshSkillHud;
-            GameSession.OnGameEnded += OnGameEnded;
-            Card1Btn.onClick.AddListener(OnCard1Clicked);
-            Card2Btn.onClick.AddListener(OnCard2Clicked);
-            Card3Btn.onClick.AddListener(OnCard3Clicked);
-            if (TimeScaleButton != null)
-            {
-                TimeScaleButton.onClick.AddListener(OnTimeScaleClicked);
-            }
+            VisibilitySubscriptions.Add(() => SkillEvents.OnEquippedSkillsChanged -= RefreshSkillHud);
 
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.AddListener(OnPauseClicked);
-            }
+            AddVisibilityListener(Card1Btn, OnCard1Clicked);
+            AddVisibilityListener(Card2Btn, OnCard2Clicked);
+            AddVisibilityListener(Card3Btn, OnCard3Clicked);
+            AddVisibilityListener(TimeScaleButton, OnTimeScaleClicked);
+            AddVisibilityListener(_pauseButton, OnPauseClicked);
         }
 
-        protected override void OnShow()
+        private void AddVisibilityListener(Button button, UnityEngine.Events.UnityAction listener)
         {
+            if (button == null) return;
 
+            button.onClick.AddListener(listener);
+            VisibilitySubscriptions.Add(() =>
+            {
+                if (button != null) button.onClick.RemoveListener(listener);
+            });
         }
 
-        protected override void OnHide()
+        private void SetUpgradePanelVisible(bool visible)
         {
-
-        }
-
-        protected override void OnClose()
-        {
-            UnsubscribeEvents();
-            ResetTimeScale();
-        }
-
-        private void OnDestroy()
-        {
-            UnsubscribeEvents();
-            ResetTimeScale();
-        }
-
-        private void UnsubscribeEvents()
-        {
-            InputEvents.OnPointerDown -= OnPointerDown;
-            InputEvents.OnPointerHold -= OnPointerHold;
-            InputEvents.OnPointerUp -= OnPointerUp;
-            InputEvents.OnPointerCancel -= OnPointerCancel;
-            UpgradeEvents.OnOptionsGenerated -= OnUpgradeOptionsGenerated;
-            SkillEvents.OnEquippedSkillsChanged -= RefreshSkillHud;
-            GameSession.OnGameEnded -= OnGameEnded;
-            if (Card1Btn != null)
-            {
-                Card1Btn.onClick.RemoveListener(OnCard1Clicked);
-            }
-
-            if (Card2Btn != null)
-            {
-                Card2Btn.onClick.RemoveListener(OnCard2Clicked);
-            }
-
-            if (Card3Btn != null)
-            {
-                Card3Btn.onClick.RemoveListener(OnCard3Clicked);
-            }
-
-            if (TimeScaleButton != null)
-            {
-                TimeScaleButton.onClick.RemoveListener(OnTimeScaleClicked);
-            }
-
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.RemoveListener(OnPauseClicked);
-            }
+            if (UpgradePanel != null) UpgradePanel.gameObject.SetActive(visible);
         }
 
         private void OnUpgradeOptionsGenerated(IReadOnlyList<SkillConfig> options)
@@ -164,7 +152,7 @@ namespace Babel
             _currentOptions = options ?? Array.Empty<SkillConfig>();
             if (_currentOptions.Count == 0)
             {
-                UpgradePanel.Hide();
+                SetUpgradePanelVisible(false);
                 SetUpgradeButtonsActive(false);
                 return;
             }
@@ -174,7 +162,7 @@ namespace Babel
                 SetUpgradeButton(i);
             }
 
-            UpgradePanel.Show();
+            SetUpgradePanelVisible(true);
         }
 
         private void SetUpgradeButton(int index)
@@ -195,7 +183,7 @@ namespace Babel
         {
             for (int i = 0; i < _upgradeButtons.Length; i++)
             {
-                _upgradeButtons[i].gameObject.SetActive(active);
+                if (_upgradeButtons[i] != null) _upgradeButtons[i].gameObject.SetActive(active);
             }
         }
 
@@ -215,11 +203,11 @@ namespace Babel
             typeLabel.text = IsPassiveSkill(config) ? "被动" : "主动";
             typeLabel.color = UPGRADE_CARD_TYPE_COLOR;
 
-            Text nameText = FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(162f, 44f), 24);
+            Text nameText = FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
             nameText.text = config.SkillName;
             nameText.color = UPGRADE_CARD_TITLE_COLOR;
 
-            Text descriptionText = FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(162f, 118f), 18);
+            Text descriptionText = FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
             descriptionText.text = config.Description;
             descriptionText.color = UPGRADE_CARD_BODY_COLOR;
         }
@@ -269,8 +257,9 @@ namespace Babel
         private void ApplyCardTextLayout(Text text, Vector2 position, Vector2 sizeDelta, int fontSize, bool wrapMultiline)
         {
             RectTransform rect = text.rectTransform;
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            bool stretchHorizontally = sizeDelta.x < 0f;
+            rect.anchorMin = stretchHorizontally ? new Vector2(0f, 0.5f) : new Vector2(0.5f, 0.5f);
+            rect.anchorMax = stretchHorizontally ? new Vector2(1f, 0.5f) : new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = sizeDelta;
@@ -278,7 +267,9 @@ namespace Babel
             text.font = BabelFont.Default;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = UPGRADE_CARD_BODY_COLOR;
-            text.resizeTextForBestFit = false;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 12;
+            text.resizeTextMaxSize = fontSize;
             text.fontSize = fontSize;
 
             if (wrapMultiline)
@@ -332,57 +323,65 @@ namespace Babel
 
         private void OnPauseClicked()
         {
-            if (GameSession.IsGameEnded)
-            {
-                return;
-            }
+            if (GameSession.IsGameEnded) return;
 
             EnsureRuntimeHudControls();
-            if (!_pausedByButton)
+            _pausedByButton = !_pausedByButton;
+            if (!LegacyRunBridge.TryTogglePause())
             {
-                _timeScaleBeforePause = Time.timeScale > 0f ? Time.timeScale : TIME_SCALES[_timeScaleIndex];
-                Time.timeScale = 0f;
-                _pausedByButton = true;
-                UpdatePauseButtonText();
-                return;
+                if (_pausedByButton) PresentationTimeScaleAdapter.PauseLegacy();
+                else PresentationTimeScaleAdapter.ResumeLegacy();
             }
 
-            Time.timeScale = _timeScaleBeforePause;
-            _pausedByButton = false;
             UpdatePauseButtonText();
         }
 
         private void ApplyTimeScale()
         {
             float scale = TIME_SCALES[_timeScaleIndex];
-            if (Time.timeScale > 0f)
-            {
-                Time.timeScale = scale;
-            }
+            RunSpeed speed = (RunSpeed)Mathf.RoundToInt(scale);
+            if (!LegacyRunBridge.TrySetSpeed(speed))
+                PresentationTimeScaleAdapter.ApplyLegacySpeed(scale);
 
-            if (TimeScaleText != null)
-            {
-                TimeScaleText.text = $"{scale:0}x";
-            }
+            if (TimeScaleText != null) TimeScaleText.text = $"{scale:0}x";
         }
 
         private void ResetTimeScale()
         {
-            if (GameSession.IsGameEnded)
-            {
-                return;
-            }
+            if (GameSession.IsGameEnded) return;
 
             _timeScaleIndex = 0;
             _pausedByButton = false;
             _timeScaleBeforePause = TIME_SCALES[_timeScaleIndex];
-            Time.timeScale = TIME_SCALES[_timeScaleIndex];
-            if (TimeScaleText != null)
+            if (!LegacyRunBridge.IsAvailable) PresentationTimeScaleAdapter.ResetLegacy();
+            if (TimeScaleText != null) TimeScaleText.text = "1x";
+            UpdatePauseButtonText();
+        }
+
+        private void SyncRunControlsFromReadModel()
+        {
+            if (!LegacyRunBridge.TryGetReadModel(out RunReadModel model) ||
+                model.Version == _lastRunReadModelVersion)
+                return;
+
+            _lastRunReadModelVersion = model.Version;
+            int speedValue = (int)model.Speed;
+            for (int i = 0; i < TIME_SCALES.Length; i++)
             {
-                TimeScaleText.text = "1x";
+                if (!Mathf.Approximately(TIME_SCALES[i], speedValue)) continue;
+                _timeScaleIndex = i;
+                break;
             }
 
+            _pausedByButton = model.Phase == RunPhase.Paused;
+            if (TimeScaleText != null) TimeScaleText.text = $"{speedValue:0}x";
             UpdatePauseButtonText();
+
+            if (TimerText != null)
+            {
+                int totalSeconds = Mathf.Max(0, Mathf.FloorToInt((float)model.RemainingSeconds));
+                TimerText.text = $"{totalSeconds / 60:00}:{totalSeconds % 60:00}";
+            }
         }
 
         private static int GetNextTimeScaleIndex(int currentIndex, int scaleCount)
@@ -487,8 +486,8 @@ namespace Babel
             ApplyUpgradeCardStyle(button);
             EnsureCardIcon(button.transform);
             FindOrCreateCardText(button.transform, "TypeLabel", new Vector2(0f, 78f), new Vector2(88f, 26f), 20);
-            FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(162f, 44f), 24);
-            FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(162f, 118f), 18);
+            FindOrCreateCardText(button.transform, "SkillNameText", new Vector2(0f, 36f), new Vector2(-28f, 44f), 24);
+            FindOrCreateCardText(button.transform, "SkillDecsText", new Vector2(0f, -58f), new Vector2(-28f, 118f), 18);
         }
 
         private void ApplyUpgradeCardStyle(Button button)
@@ -573,8 +572,8 @@ namespace Babel
 
         private void HideChargeRing()
         {
-            ChargeRing.gameObject.SetActive(false);
-            ChargeRing_Fill.fillAmount = 0f;
+            if (ChargeRing != null) ChargeRing.gameObject.SetActive(false);
+            if (ChargeRing_Fill != null) ChargeRing_Fill.fillAmount = 0f;
         }
 
         private void UpdateChargeRingPosition(Vector2 screenPosition)
@@ -767,19 +766,6 @@ namespace Babel
             return config != null && config.TriggerType != "OnClick";
         }
 
-        private void OnGameEnded(GameSessionResult result)
-        {
-            if (result.Reason == GameEndReason.Victory)
-            {
-                UIKit.OpenPanel<UIGamePassPanel>();
-            }
-            else if (result.Reason == GameEndReason.Defeat)
-            {
-                UIKit.OpenPanel<UIGameOverPanel>();
-            }
-
-            gameObject.SetActive(false);
-        }
 
     }
 }

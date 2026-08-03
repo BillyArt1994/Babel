@@ -1,0 +1,19 @@
+{
+  "name": "Babel.Bootstrap",
+  "rootNamespace": "Babel.Bootstrap",
+  "references": [
+    "Babel.Foundation",
+    "Babel.Gameplay",
+    "Babel.Unity"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": []
+}

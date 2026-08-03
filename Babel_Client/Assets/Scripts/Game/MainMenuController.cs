@@ -1,33 +1,44 @@
-using QFramework;
+using Babel.Unity.Presentation.UI;
 using UnityEngine;
 
 namespace Babel
 {
-    /// <summary>
-    /// 独立主菜单场景入口，负责打开主菜单 QFramework 面板。
-    /// </summary>
-    public class MainMenuController : ViewController
+    /// <summary>Scene composition entry for the explicitly authored main-menu screen.</summary>
+    [DisallowMultipleComponent]
+    public sealed class MainMenuController : MonoBehaviour
     {
-        private bool _isApplicationQuitting;
+        public const string MainMenuScreenId = "main-menu";
+
+        [SerializeField] private ScreenRouter _screenRouter;
+        [SerializeField] private UIMainMenuPanel _mainMenuPanel;
+
+        private bool _registered;
+
+        public ScreenRouter Router => _screenRouter;
+        public UIMainMenuPanel Panel => _mainMenuPanel;
+
+        private void Awake()
+        {
+            if (_screenRouter == null || _mainMenuPanel == null)
+            {
+                throw new MissingReferenceException(
+                    "MainMenuController requires serialized ScreenRouter and UIMainMenuPanel references.");
+            }
+
+            _screenRouter.Register(MainMenuScreenId, _mainMenuPanel);
+            _registered = true;
+        }
 
         private void Start()
         {
-            UIKit.OpenPanel<UIMainMenuPanel>();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isApplicationQuitting = true;
+            _screenRouter.Show(MainMenuScreenId);
         }
 
         private void OnDestroy()
         {
-            if (_isApplicationQuitting)
-            {
-                return;
-            }
-
-            UIKit.ClosePanel<UIMainMenuPanel>();
+            if (!_registered || _screenRouter == null || _screenRouter.IsDisposed) return;
+            _screenRouter.Unregister(MainMenuScreenId);
+            _registered = false;
         }
     }
 }

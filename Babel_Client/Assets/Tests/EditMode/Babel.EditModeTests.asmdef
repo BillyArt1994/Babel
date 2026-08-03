@@ -1,8 +1,7 @@
 {
     "name": "Babel.EditModeTests",
     "references": [
-        "Babel",
-        "QFramework.CoreKit"
+        "Babel"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

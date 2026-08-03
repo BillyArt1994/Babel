@@ -14,7 +14,7 @@ namespace Babel.Tests
         {
             get
             {
-                TextAsset skillsCsv = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Data/Skills/skills.csv");
+                TextAsset skillsCsv = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Babel/Content/Data/Skills/skills.csv");
                 Assert.That(skillsCsv, Is.Not.Null, "Test fixture requires the production skills CSV.");
                 return skillsCsv.text;
             }
@@ -272,21 +272,17 @@ namespace Babel.Tests
             Type skillSystemType = RequireType("Babel.SkillSystem");
             Type upgradeSystemType = RequireType("Babel.UpgradeSystem");
             Type xpSystemType = RequireType("Babel.XpSystem");
-            Type globalType = RequireType("Babel.Global");
             skillDatabaseType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new object[] { SkillsCsvText });
             var skillObj = new GameObject("SkillSystemForExp");
             var upgradeObj = new GameObject("UpgradeSystemForExp");
             var xpObj = new GameObject("XpForExp");
             float previousTimeScale = Time.timeScale;
-            int previousLevel = GetGlobalInt(globalType, "Level");
 
             try
             {
-                SetGlobalInt(globalType, "Level", 1);
                 Time.timeScale = 1f;
 
-                // 创建 XpSystem，注入曲线（升到 2 级需 5 XP）
                 Component xpSystem = xpObj.AddComponent(xpSystemType);
                 xpSystemType.GetMethod("InitForTests", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(xpSystem, new object[] { new float[] { 5f } });
@@ -298,17 +294,17 @@ namespace Babel.Tests
                 upgradeSystemType.GetMethod("SetSkillSystemForTests", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(upgradeSystem, new object[] { skillSystem });
 
-                // 注入 xpSystem 字段后重调 OnEnable，使 UpgradeSystem 订阅 OnLevelsGained
                 upgradeSystemType.GetField("xpSystem", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(upgradeSystem, xpSystem);
                 upgradeSystemType.GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic)
                     .Invoke(upgradeSystem, null);
 
-                // 触发升级
                 xpSystemType.GetMethod("GainXp", BindingFlags.Public | BindingFlags.Instance)
                     .Invoke(xpSystem, new object[] { 5f });
 
-                Assert.That(GetGlobalInt(globalType, "Level"), Is.EqualTo(2));
+                Assert.That(
+                    (int)xpSystemType.GetProperty("CurrentLevel").GetValue(xpSystem),
+                    Is.EqualTo(2));
                 Assert.That(Time.timeScale, Is.EqualTo(0f));
                 Assert.That(
                     (int)upgradeSystemType.GetProperty("PendingOptionCountForTests").GetValue(upgradeSystem),
@@ -317,13 +313,11 @@ namespace Babel.Tests
             finally
             {
                 Time.timeScale = previousTimeScale;
-                SetGlobalInt(globalType, "Level", previousLevel);
                 UnityEngine.Object.DestroyImmediate(skillObj);
                 UnityEngine.Object.DestroyImmediate(upgradeObj);
                 UnityEngine.Object.DestroyImmediate(xpObj);
             }
         }
-
         private static void InvokePrivateStart(Component component)
         {
             MethodInfo startMethod = component.GetType().GetMethod(
@@ -353,18 +347,6 @@ namespace Babel.Tests
             return Activator.CreateInstance(
                 inputContextType,
                 new object[] { Vector2.zero, worldPosition, 0f, 0f });
-        }
-
-        private static int GetGlobalInt(Type globalType, string fieldName)
-        {
-            object property = globalType.GetField(fieldName, BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            return (int)property.GetType().GetProperty("Value").GetValue(property);
-        }
-
-        private static void SetGlobalInt(Type globalType, string fieldName, int value)
-        {
-            object property = globalType.GetField(fieldName, BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            property.GetType().GetProperty("Value").SetValue(property, value);
         }
 
         private static Type RequireType(string fullName)

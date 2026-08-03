@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using QFramework;
+using Babel.Unity.Infrastructure.Time;
 using UnityEngine;
 
 namespace Babel
 {
-    /// <summary>升级三选一的单个选项：新技能或升级已有技能。</summary>
     public class UpgradeOption
     {
         public enum OptionType { NewSkill, LevelUpgrade }
@@ -14,10 +13,11 @@ namespace Babel
     }
 
     /// <summary>
-    /// 管理升级三选一的选项生成、选择应用与暂停恢复流程。
+    /// Legacy option generator retained during WP1. RunFlow owns the ChoosingUpgrade phase;
+    /// this component only generates options and applies the selected legacy skill.
     /// </summary>
     [DisallowMultipleComponent]
-    public class UpgradeSystem : ViewController
+    public class UpgradeSystem : MonoBehaviour
     {
         private const int OPTIONS_COUNT = 3;
 
@@ -30,11 +30,8 @@ namespace Babel
         [Tooltip("经验值与等级成长系统。")]
         private XpSystem xpSystem;
 
-        private readonly List<UpgradeOption> _pendingOptions = new();
+        private readonly List<UpgradeOption> _pendingOptions = new List<UpgradeOption>();
 
-        /// <summary>
-        /// 当前待选择选项数量，仅供测试验证。
-        /// </summary>
         public int PendingOptionCountForTests => _pendingOptions.Count;
 
         private void OnEnable()
@@ -49,108 +46,106 @@ namespace Babel
             if (xpSystem != null) xpSystem.OnLevelsGained -= HandleLevelsGained;
         }
 
-        /// <summary>
-        /// XpSystem 升级时触发，循环处理每次升级（生成选项、暂停时间、触发事件）。
-        /// </summary>
-        /// <param name="count">本次获得的升级次数。</param>
         private void HandleLevelsGained(int count)
         {
-            if (xpSystem != null) Global.Level.Value = xpSystem.CurrentLevel;
             for (int i = 0; i < count; i++)
             {
-                if (_pendingOptions.Count > 0) break; // 上一次选项还未选择则不再叠加
+                if (_pendingOptions.Count > 0) break;
 
                 _pendingOptions.Clear();
                 IReadOnlyList<UpgradeOption> options = GenerateOptions(OPTIONS_COUNT);
-                for (int j = 0; j < options.Count; j++)
-                {
-                    _pendingOptions.Add(options[j]);
-                }
+                for (int j = 0; j < options.Count; j++) _pendingOptions.Add(options[j]);
 
                 if (_pendingOptions.Count == 0)
                 {
-                    Time.timeScale = 1f;
+                    if (!LegacyRunBridge.IsAvailable) PresentationTimeScaleAdapter.ResetLegacy();
                     UpgradeEvents.RaiseOptionsGenerated(Array.Empty<SkillConfig>());
                     continue;
                 }
 
-                Time.timeScale = 0f;
                 var configList = new List<SkillConfig>(_pendingOptions.Count);
-                for (int j = 0; j < _pendingOptions.Count; j++)
-                    configList.Add(_pendingOptions[j].Config);
+                for (int j = 0; j < _pendingOptions.Count; j++) configList.Add(_pendingOptions[j].Config);
                 UpgradeEvents.RaiseOptionsGenerated(configList);
+
+                if (LegacyRunBridge.IsAvailable)
+                {
+                    if (!LegacyRunBridge.TryBeginUpgradeChoice(this))
+                    {
+                        Debug.LogWarning("[Babel][UpgradeSystem] RunFlow rejected the upgrade-choice phase.");
+                        _pendingOptions.Clear();
+                        UpgradeEvents.RaiseOptionsGenerated(Array.Empty<SkillConfig>());
+                    }
+                }
+                else
+                {
+                    PresentationTimeScaleAdapter.FreezeLegacy();
+                }
             }
         }
 
-        /// <summary>
-        /// 选择并应用指定索引的升级选项。
-        /// </summary>
-        /// <param name="index">选项索引。</param>
         public void SelectOption(int index)
         {
-            if (index < 0 || index >= _pendingOptions.Count)
+            if (!CanApplySelection(index)) return;
+
+            if (LegacyRunBridge.IsAvailable)
             {
-                Debug.LogWarning($"[BABEL][UpgradeSystem] Invalid upgrade option index {index}");
+                if (!LegacyRunBridge.TryRequestUpgradeSelection(this, index))
+                    Debug.LogWarning("[Babel][UpgradeSystem] RunFlow rejected the upgrade selection.");
                 return;
             }
 
-            if (skillSystem == null)
-            {
-                Debug.LogWarning("[BABEL][UpgradeSystem] No SkillSystem assigned");
-                return;
-            }
+            if (ApplySelectedOptionFromRun(index))
+                PresentationTimeScaleAdapter.ResetLegacy();
+        }
+
+        internal bool ApplySelectedOptionFromRun(int index)
+        {
+            if (!CanApplySelection(index)) return false;
 
             UpgradeOption selected = _pendingOptions[index];
             if (selected.Type == UpgradeOption.OptionType.LevelUpgrade)
-            {
                 skillSystem.UpgradeSkill(selected.Config);
-            }
             else
-            {
                 skillSystem.AddOrReplaceSkill(selected.Config);
-            }
 
             skillSystem.ResetClickCooldowns();
             _pendingOptions.Clear();
-            Time.timeScale = 1f;
             UpgradeEvents.RaiseOptionsGenerated(Array.Empty<SkillConfig>());
+            return true;
         }
 
-        /// <summary>
-        /// 为测试注入技能系统依赖。
-        /// </summary>
-        /// <param name="system">技能系统实例。</param>
         public void SetSkillSystemForTests(SkillSystem system)
         {
             skillSystem = system;
         }
 
-        /// <summary>
-        /// 为测试生成指定数量的升级选项。
-        /// </summary>
-        /// <param name="count">目标选项数量。</param>
-        /// <returns>生成的技能选项。</returns>
         public IReadOnlyList<UpgradeOption> GenerateOptionsForTests(int count)
         {
             return GenerateOptions(count);
         }
 
-        /// <summary>
-        /// 为测试直接设置待选项。
-        /// </summary>
-        /// <param name="options">待选择技能。</param>
         public void SetPendingOptionsForTests(IReadOnlyList<UpgradeOption> options)
         {
             _pendingOptions.Clear();
-            if (options == null)
+            if (options == null) return;
+            for (int i = 0; i < options.Count; i++) _pendingOptions.Add(options[i]);
+        }
+
+        private bool CanApplySelection(int index)
+        {
+            if (index < 0 || index >= _pendingOptions.Count)
             {
-                return;
+                Debug.LogWarning("[Babel][UpgradeSystem] Invalid upgrade option index " + index);
+                return false;
             }
 
-            for (int i = 0; i < options.Count; i++)
+            if (skillSystem == null)
             {
-                _pendingOptions.Add(options[i]);
+                Debug.LogWarning("[Babel][UpgradeSystem] No SkillSystem assigned");
+                return false;
             }
+
+            return true;
         }
 
         private IReadOnlyList<UpgradeOption> GenerateOptions(int count)
@@ -171,7 +166,6 @@ namespace Babel
         {
             var pool = new List<UpgradeOption>();
 
-            // 新技能
             IReadOnlyList<SkillConfig> allSkills = SkillDatabase.GetAll();
             for (int i = 0; i < allSkills.Count; i++)
             {
@@ -179,7 +173,6 @@ namespace Babel
                     pool.Add(new UpgradeOption { Type = UpgradeOption.OptionType.NewSkill, Config = allSkills[i] });
             }
 
-            // 升级已有技能
             if (skillSystem != null)
             {
                 IReadOnlyList<Skill> equipped = skillSystem.GetEquippedSkills();
@@ -198,21 +191,12 @@ namespace Babel
 
         private bool IsEligibleNewSkill(SkillConfig config)
         {
-            if (config == null || config.Weight <= 0f)
-            {
-                return false;
-            }
-
-            if (skillSystem != null && skillSystem.HasSkill(config.SkillId))
-            {
-                return false;
-            }
+            if (config == null || config.Weight <= 0f) return false;
+            if (skillSystem != null && skillSystem.HasSkill(config.SkillId)) return false;
 
             if (!string.IsNullOrEmpty(config.UpgradesFrom) &&
                 (skillSystem == null || !skillSystem.HasSkill(config.UpgradesFrom)))
-            {
                 return false;
-            }
 
             return true;
         }
@@ -222,24 +206,21 @@ namespace Babel
             float totalWeight = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                float w = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
+                float weight = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
                     ? Mathf.Max(1f, pool[i].Config.Weight)
                     : Mathf.Max(0f, pool[i].Config.Weight);
-                totalWeight += w;
+                totalWeight += weight;
             }
 
             float roll = UnityEngine.Random.Range(0f, totalWeight);
             float cumulative = 0f;
             for (int i = 0; i < pool.Count; i++)
             {
-                float w = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
+                float weight = pool[i].Type == UpgradeOption.OptionType.LevelUpgrade
                     ? Mathf.Max(1f, pool[i].Config.Weight)
                     : Mathf.Max(0f, pool[i].Config.Weight);
-                cumulative += w;
-                if (roll <= cumulative)
-                {
-                    return i;
-                }
+                cumulative += weight;
+                if (roll <= cumulative) return i;
             }
 
             return pool.Count - 1;

@@ -1,0 +1,464 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5d9e29ebab44d64bb547e49b2811d6d, type: 3}
+  m_Name: CompiledGameContent
+  m_EditorClassIdentifier: 
+  _schemaVersion: 1
+  _sourceHash: 9a948f53be151c3c4eae27fe6936657e9e075c81b8f792a54d486e0b70ab93a3
+  _humans:
+  - id: worker
+    displayName: "\u5DE5\u4EBA"
+    maxHealth: 30
+    moveSpeed: 1
+    buildContribution: 25
+    buildCharges: 1
+    experienceReward: 1
+    abilityType: 
+    abilityRadius: 0
+    abilityValue: 0
+    abilityCooldownSeconds: 0
+    buildTimeSeconds: 2
+    moveMode: builder
+    senseRadius: 8
+  - id: elite
+    displayName: "\u7CBE\u82F1"
+    maxHealth: 120
+    moveSpeed: 1
+    buildContribution: 50
+    buildCharges: 2
+    experienceReward: 5
+    abilityType: 
+    abilityRadius: 0
+    abilityValue: 0
+    abilityCooldownSeconds: 0
+    buildTimeSeconds: 3
+    moveMode: builder
+    senseRadius: 8
+  - id: priest
+    displayName: "\u796D\u53F8"
+    maxHealth: 60
+    moveSpeed: 1.5
+    buildContribution: 25
+    buildCharges: 1
+    experienceReward: 3
+    abilityType: heal_aura
+    abilityRadius: 3
+    abilityValue: 10
+    abilityCooldownSeconds: 2
+    buildTimeSeconds: 0
+    moveMode: support
+    senseRadius: 8
+  - id: engineer
+    displayName: "\u5DE5\u7A0B\u5E08"
+    maxHealth: 60
+    moveSpeed: 2
+    buildContribution: 50
+    buildCharges: 2
+    experienceReward: 3
+    abilityType: 
+    abilityRadius: 0
+    abilityValue: 0
+    abilityCooldownSeconds: 0
+    buildTimeSeconds: 1
+    moveMode: builder
+    senseRadius: 8
+  - id: zealot
+    displayName: "\u72C2\u4FE1\u8005"
+    maxHealth: 20
+    moveSpeed: 4.5
+    buildContribution: 25
+    buildCharges: 1
+    experienceReward: 2
+    abilityType: speed_aura
+    abilityRadius: 4
+    abilityValue: 1.5
+    abilityCooldownSeconds: 0
+    buildTimeSeconds: 0
+    moveMode: support
+    senseRadius: 8
+  - id: scout
+    displayName: "\u65A5\u5019"
+    maxHealth: 20
+    moveSpeed: 5
+    buildContribution: 100
+    buildCharges: 1
+    experienceReward: 2
+    abilityType: 
+    abilityRadius: 0
+    abilityValue: 0
+    abilityCooldownSeconds: 0
+    buildTimeSeconds: 1.5
+    moveMode: scout
+    senseRadius: 8
+  _waves:
+  - id: wave_001
+    startSeconds: 0
+    endSeconds: 120
+    mode: 2
+    pool:
+    - humanId: worker
+      weight: 1
+    countMin: 1
+    countMax: 3
+    intervalSeconds: 4
+    spawnPointId: default
+  - id: wave_002
+    startSeconds: 10
+    endSeconds: 20
+    mode: 0
+    pool:
+    - humanId: worker
+      weight: 1
+    countMin: 8
+    countMax: 10
+    intervalSeconds: 0
+    spawnPointId: default
+  - id: wave_003
+    startSeconds: 120
+    endSeconds: 300
+    mode: 2
+    pool:
+    - humanId: worker
+      weight: 0.7
+    - humanId: elite
+      weight: 0.3
+    countMin: 2
+    countMax: 3
+    intervalSeconds: 3.5
+    spawnPointId: default
+  - id: wave_004
+    startSeconds: 120
+    endSeconds: 0
+    mode: 1
+    pool:
+    - humanId: elite
+      weight: 1
+    countMin: 2
+    countMax: 2
+    intervalSeconds: 5
+    spawnPointId: default
+  - id: wave_005
+    startSeconds: 300
+    endSeconds: 480
+    mode: 2
+    pool:
+    - humanId: worker
+      weight: 0.4
+    - humanId: priest
+      weight: 0.2
+    - humanId: engineer
+      weight: 0.2
+    - humanId: scout
+      weight: 0.2
+    countMin: 2
+    countMax: 3
+    intervalSeconds: 3
+    spawnPointId: default
+  - id: wave_006
+    startSeconds: 480
+    endSeconds: 720
+    mode: 2
+    pool:
+    - humanId: worker
+      weight: 0.3
+    - humanId: elite
+      weight: 0.3
+    - humanId: zealot
+      weight: 0.4
+    countMin: 3
+    countMax: 4
+    intervalSeconds: 2.5
+    spawnPointId: default
+  - id: wave_007
+    startSeconds: 720
+    endSeconds: 870
+    mode: 2
+    pool:
+    - humanId: worker
+      weight: 0.2
+    - humanId: elite
+      weight: 0.3
+    - humanId: priest
+      weight: 0.2
+    - humanId: zealot
+      weight: 0.3
+    countMin: 4
+    countMax: 6
+    intervalSeconds: 2
+    spawnPointId: default
+  - id: wave_008
+    startSeconds: 870
+    endSeconds: 900
+    mode: 0
+    pool:
+    - humanId: elite
+      weight: 0.5
+    - humanId: zealot
+      weight: 0.5
+    countMin: 6
+    countMax: 8
+    intervalSeconds: 0
+    spawnPointId: default
+  _skills:
+  - id: divine_finger
+    displayName: "\u795E\u7F5A\u4E4B\u6307"
+    description: "\u5929\u795E\u4E4B\u6012\u964D\u4E34\u6307\u5C16"
+    iconId: divine_finger
+    triggerType: OnClick
+    cooldownSeconds: 0.1
+    chargeTimeSeconds: 0.5
+    intervalSeconds: 0
+    chance: 0
+    effects:
+    - effectType: hit_single
+      damage: 50
+      damageRatio: 0
+      radius: 0
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 1
+    weight: 1
+    isStarterSkill: 1
+    upgradesFrom: 
+  - id: meteor
+    displayName: "\u5929\u964D\u9668\u77F3"
+    description: "\u9668\u77F3\u4ECE\u5929\u800C\u964D"
+    iconId: meteor
+    triggerType: OnClick
+    cooldownSeconds: 2.5
+    chargeTimeSeconds: 1
+    intervalSeconds: 0
+    chance: 0
+    effects:
+    - effectType: hit_aoe
+      damage: 150
+      damageRatio: 0
+      radius: 3
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 2
+    weight: 1
+    isStarterSkill: 1
+    upgradesFrom: 
+  - id: meteor
+    displayName: "\u5929\u964D\u9668\u77F3\xB7\u5F3A\u5316"
+    description: "\u5F3A\u5316\u7684\u9668\u77F3\uFF0C\u4F24\u5BB3\u4E0E\u8303\u56F4\u63D0\u5347"
+    iconId: meteor
+    triggerType: OnClick
+    cooldownSeconds: 2.5
+    chargeTimeSeconds: 1
+    intervalSeconds: 0
+    chance: 0
+    effects:
+    - effectType: hit_aoe
+      damage: 200
+      damageRatio: 0
+      radius: 3.5
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    - effectType: dot_aoe
+      damage: 0
+      damageRatio: 0
+      radius: 3.5
+      damagePerSecond: 0
+      durationSeconds: 3
+      statName: 
+      statValue: 0
+    level: 2
+    maxLevel: 2
+    weight: 0
+    isStarterSkill: 0
+    upgradesFrom: 
+  - id: thunder_auto
+    displayName: "\u5929\u96F7"
+    description: "\u81EA\u52A8\u964D\u4E0B\u96F7\u51FB"
+    iconId: thunder_auto
+    triggerType: OnTimer
+    cooldownSeconds: 0
+    chargeTimeSeconds: 0
+    intervalSeconds: 3
+    chance: 0
+    effects:
+    - effectType: hit_single
+      damage: 80
+      damageRatio: 0
+      radius: 0
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 1
+    weight: 0.8
+    isStarterSkill: 0
+    upgradesFrom: 
+  - id: aftershock
+    displayName: "\u4F59\u9707"
+    description: "\u653B\u51FB\u5F15\u53D1\u4E8C\u6B21\u7206\u70B8"
+    iconId: aftershock
+    triggerType: OnHit
+    cooldownSeconds: 0
+    chargeTimeSeconds: 0
+    intervalSeconds: 0
+    chance: 0.3
+    effects:
+    - effectType: hit_aoe
+      damage: 0
+      damageRatio: 0.3
+      radius: 1.5
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 1
+    weight: 0.7
+    isStarterSkill: 0
+    upgradesFrom: 
+  - id: plague
+    displayName: "\u761F\u75AB"
+    description: "\u51FB\u6740\u4F20\u64AD\u6B7B\u4EA1"
+    iconId: plague
+    triggerType: OnKill
+    cooldownSeconds: 0
+    chargeTimeSeconds: 0
+    intervalSeconds: 0
+    chance: 1
+    effects:
+    - effectType: hit_aoe
+      damage: 20
+      damageRatio: 0
+      radius: 2
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 1
+    weight: 0.6
+    isStarterSkill: 0
+    upgradesFrom: 
+  - id: rage
+    displayName: "\u72C2\u6012"
+    description: "\u51FB\u6740\u52A0\u901F\u6280\u80FD\u51B7\u5374"
+    iconId: rage
+    triggerType: OnKill
+    cooldownSeconds: 0
+    chargeTimeSeconds: 0
+    intervalSeconds: 0
+    chance: 1
+    effects:
+    - effectType: stat_buff
+      damage: 0
+      damageRatio: 0
+      radius: 0
+      damagePerSecond: 0
+      durationSeconds: 5
+      statName: cooldownMult
+      statValue: -0.5
+    level: 1
+    maxLevel: 1
+    weight: 0.6
+    isStarterSkill: 0
+    upgradesFrom: 
+  - id: meteor_evolved
+    displayName: "\u5929\u964D\u9668\u77F3\xB7\u708E"
+    description: "\u9668\u77F3\u649E\u51FB\u540E\u7559\u4E0B\u707C\u70E7\u5730\u9762"
+    iconId: meteor_evolved
+    triggerType: OnClick
+    cooldownSeconds: 3
+    chargeTimeSeconds: 1.2
+    intervalSeconds: 0
+    chance: 0
+    effects:
+    - effectType: hit_aoe
+      damage: 200
+      damageRatio: 0
+      radius: 3.5
+      damagePerSecond: 0
+      durationSeconds: 0
+      statName: 
+      statValue: 0
+    - effectType: dot_aoe
+      damage: 0
+      damageRatio: 0
+      radius: 3.5
+      damagePerSecond: 30
+      durationSeconds: 3
+      statName: 
+      statValue: 0
+    level: 1
+    maxLevel: 1
+    weight: 0.8
+    isStarterSkill: 0
+    upgradesFrom: meteor
+  - id: berserker_pact
+    displayName: "\u72C2\u6218\u5951\u7EA6"
+    description: "\u4EE5\u9632\u5FA1\u6362\u53D6\u529B\u91CF"
+    iconId: berserker_pact
+    triggerType: OnKill
+    cooldownSeconds: 0
+    chargeTimeSeconds: 0
+    intervalSeconds: 0
+    chance: 1
+    effects:
+    - effectType: stat_buff
+      damage: 0
+      damageRatio: 0
+      radius: 0
+      damagePerSecond: 0
+      durationSeconds: 8
+      statName: damageMult
+      statValue: 0.4
+    - effectType: stat_buff
+      damage: 0
+      damageRatio: 0
+      radius: 0
+      damagePerSecond: 0
+      durationSeconds: 8
+      statName: defenseReduction
+      statValue: 0.2
+    level: 1
+    maxLevel: 1
+    weight: 0.5
+    isStarterSkill: 0
+    upgradesFrom: 
+  _experienceThresholds:
+  - 5
+  - 12
+  - 21
+  - 32
+  - 45
+  - 60
+  - 77
+  - 96
+  - 117
+  - 140
+  - 165
+  - 192
+  - 221
+  - 252
+  - 285
+  - 320
+  - 357
+  - 396
+  - 437
+  _babelBuildPointCounts: 080000000700000006000000060000000500000004000000
+  _babelGatewayCounts: 010000000100000001000000010000000100000000000000

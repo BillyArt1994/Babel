@@ -2,6 +2,8 @@ using NUnit.Framework;
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,32 +11,12 @@ namespace Babel.Tests
 {
     public class PortraitUILayoutTests
     {
-        private const string UI_ROOT_PATH = "Assets/QFramework/Toolkits/UIKit/Scripts/Resources/UIRoot.prefab";
-        private const string GAME_PANEL_PATH = "Assets/Art/UIPrefab/UIGamePanel.prefab";
-        private const string GAME_PASS_PANEL_PATH = "Assets/Art/UIPrefab/UIGamePassPanel.prefab";
-        private const string GAME_OVER_PANEL_PATH = "Assets/Art/UIPrefab/UIGameOverPanel.prefab";
+        private const string GAME_SCENE_PATH = "Assets/Babel/Scenes/Game/GameScene.unity";
+        private const string GAME_PANEL_PATH = "Assets/Babel/Prefabs/UI/UIGamePanel.prefab";
+        private const string GAME_PASS_PANEL_PATH = "Assets/Babel/Prefabs/UI/UIGamePassPanel.prefab";
+        private const string GAME_OVER_PANEL_PATH = "Assets/Babel/Prefabs/UI/UIGameOverPanel.prefab";
 
-        [Test]
-        public void UIRoot_UsesPortraitFriendlyCanvasScaler()
-        {
-            GameObject root = PrefabUtility.LoadPrefabContents(UI_ROOT_PATH);
-
-            try
-            {
-                CanvasScaler scaler = root.GetComponent<CanvasScaler>();
-
-                Assert.That(scaler, Is.Not.Null);
-                Assert.That(scaler.uiScaleMode, Is.EqualTo(CanvasScaler.ScaleMode.ScaleWithScreenSize));
-                Assert.That(scaler.referenceResolution.x, Is.EqualTo(720f));
-                Assert.That(scaler.referenceResolution.y, Is.EqualTo(1280f));
-                Assert.That(scaler.matchWidthOrHeight, Is.EqualTo(0.5f));
-            }
-            finally
-            {
-                PrefabUtility.UnloadPrefabContents(root);
-            }
-        }
-
+[Test] public void GameScene_UsesProjectOwnedPortraitUIRoot() { SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup(); try { Scene scene = EditorSceneManager.OpenScene(GAME_SCENE_PATH, OpenSceneMode.Single); GameObject[] roots = scene.GetRootGameObjects(); GameObject root = Array.Find(roots, candidate => candidate.name == "GameUIRoot"); Assert.That(root, Is.Not.Null, "GameScene should contain the project-owned GameUIRoot."); Canvas canvas = root.GetComponent<Canvas>(); CanvasScaler scaler = root.GetComponent<CanvasScaler>(); GraphicRaycaster raycaster = root.GetComponent<GraphicRaycaster>(); Type routerType = RequireType("Babel.Unity.Presentation.UI.ScreenRouter"); Type controllerType = RequireType("Babel.GameUIController"); Component controller = null; for (int i = 0; i < roots.Length && controller == null; i++) controller = roots[i].GetComponentInChildren(controllerType, true); Assert.That(canvas, Is.Not.Null); Assert.That(canvas.renderMode, Is.EqualTo(RenderMode.ScreenSpaceOverlay)); Assert.That(raycaster, Is.Not.Null); Assert.That(root.GetComponent(routerType), Is.Not.Null); Assert.That(controller, Is.Not.Null); Assert.That(scaler, Is.Not.Null); Assert.That(scaler.uiScaleMode, Is.EqualTo(CanvasScaler.ScaleMode.ScaleWithScreenSize)); Assert.That(scaler.referenceResolution.x, Is.EqualTo(720f)); Assert.That(scaler.referenceResolution.y, Is.EqualTo(1280f)); Assert.That(scaler.matchWidthOrHeight, Is.EqualTo(0.5f)); var serializedController = new SerializedObject(controller); Assert.That(serializedController.FindProperty("screenRouter").objectReferenceValue, Is.Not.Null); Assert.That(serializedController.FindProperty("hudScreen").objectReferenceValue, Is.Not.Null); Assert.That(serializedController.FindProperty("winScreen").objectReferenceValue, Is.Not.Null); Assert.That(serializedController.FindProperty("loseScreen").objectReferenceValue, Is.Not.Null); GameObject eventSystemRoot = Array.Find(roots, candidate => candidate.GetComponent<UnityEngine.EventSystems.EventSystem>() != null); Assert.That(eventSystemRoot, Is.Not.Null, "GameScene should contain an EventSystem."); Assert.That(eventSystemRoot.GetComponent<UnityEngine.EventSystems.StandaloneInputModule>(), Is.Not.Null); } finally { EditorSceneManager.RestoreSceneManagerSetup(setup); } }
         [Test]
         public void UIGamePanel_HudControlsStayInPortraitSafeAreas()
         {
@@ -213,9 +195,20 @@ namespace Babel.Tests
 
         private static void AssertCardText(RectTransform card, string childName, Vector2 position, Vector2 sizeDelta, int fontSize)
         {
-            RectTransform rect = AssertCardChild(card, childName, position, sizeDelta);
-            Text text = rect.GetComponent<Text>();
+            Transform child = card.Find(childName);
+            Assert.That(child, Is.Not.Null, $"{card.name}/{childName} should exist.");
+            RectTransform rect = (RectTransform)child;
+            bool stretchesHorizontally = sizeDelta.x < 0f;
+            Assert.That(
+                rect.anchorMin,
+                Is.EqualTo(stretchesHorizontally ? new Vector2(0f, 0.5f) : new Vector2(0.5f, 0.5f)));
+            Assert.That(
+                rect.anchorMax,
+                Is.EqualTo(stretchesHorizontally ? new Vector2(1f, 0.5f) : new Vector2(0.5f, 0.5f)));
+            Assert.That(rect.anchoredPosition, Is.EqualTo(position));
+            Assert.That(rect.sizeDelta, Is.EqualTo(sizeDelta));
 
+            Text text = rect.GetComponent<Text>();
             Assert.That(text, Is.Not.Null, $"{childName} should have a text label.");
             Assert.That(text.fontSize, Is.EqualTo(fontSize));
             Assert.That(text.resizeTextForBestFit, Is.True);
@@ -263,6 +256,25 @@ namespace Babel.Tests
             Transform target = panel.transform.Find(path);
             Assert.That(target, Is.Not.Null, $"{path} should exist in UIGamePanel prefab.");
             return (RectTransform)target;
+        }
+
+        private static Type RequireType(string fullName)
+        {
+            Type type = Type.GetType($"{fullName}, Babel")
+                      ?? Type.GetType($"{fullName}, Babel.Unity")
+                      ?? Type.GetType($"{fullName}, Assembly-CSharp")
+                      ?? Type.GetType(fullName);
+            if (type == null)
+            {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    type = assembly.GetType(fullName);
+                    if (type != null) break;
+                }
+            }
+
+            Assert.That(type, Is.Not.Null, $"{fullName} should exist in a loaded assembly.");
+            return type;
         }
 
         private static void ApplyRuntimePortraitLayout(GameObject panel)

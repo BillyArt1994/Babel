@@ -1,5 +1,4 @@
 using UnityEngine;
-using QFramework;
 
 namespace Babel
 {
@@ -13,7 +12,7 @@ namespace Babel
         Completed = 2
     }
 
-    public partial class BuildPoint : ViewController
+    public partial class BuildPoint : MonoBehaviour
     {
         [SerializeField] private int buildAmount = 50;
         [HideInInspector] public Path OwnerPath;

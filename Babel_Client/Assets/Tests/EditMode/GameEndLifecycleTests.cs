@@ -61,28 +61,28 @@ namespace Babel.Tests
         public void GameSession_TickCountdownStopsAfterEndAndTriggersVictoryAtZero()
         {
             Type sessionType = RequireType("Babel.GameSession");
-            Type globalType = RequireType("Babel.Global");
             Type reasonType = RequireType("Babel.GameEndReason");
+            PropertyInfo remainingTimeProperty = RequireProperty(sessionType, "RemainingTime");
             float previousTimeScale = Time.timeScale;
-            object currentTime = globalType.GetField("CurrentTime").GetValue(null);
-            PropertyInfo valueProperty = currentTime.GetType().GetProperty("Value");
 
             try
             {
                 InvokeStatic(sessionType, "ResetSession");
-                valueProperty.SetValue(currentTime, 2f);
+                Assert.That((float)remainingTimeProperty.GetValue(null), Is.EqualTo(900f).Within(0.001f));
+
                 RequireMethod(sessionType, "TickCountdown").Invoke(null, new object[] { 0.5f });
-                Assert.That((float)valueProperty.GetValue(currentTime), Is.EqualTo(1.5f).Within(0.001f));
+                Assert.That((float)remainingTimeProperty.GetValue(null), Is.EqualTo(899.5f).Within(0.001f));
 
                 RequireMethod(sessionType, "EndGame").Invoke(null, new[] { Enum.Parse(reasonType, "Defeat") });
                 RequireMethod(sessionType, "TickCountdown").Invoke(null, new object[] { 10f });
-                Assert.That((float)valueProperty.GetValue(currentTime), Is.EqualTo(1.5f).Within(0.001f));
+                Assert.That((float)remainingTimeProperty.GetValue(null), Is.EqualTo(899.5f).Within(0.001f));
 
                 InvokeStatic(sessionType, "ResetSession");
-                valueProperty.SetValue(currentTime, 0.25f);
-                RequireMethod(sessionType, "TickCountdown").Invoke(null, new object[] { 1f });
-                Assert.That((float)valueProperty.GetValue(currentTime), Is.EqualTo(0f).Within(0.001f));
-                Assert.That(RequireProperty(sessionType, "EndReason").GetValue(null), Is.EqualTo(Enum.Parse(reasonType, "Victory")));
+                RequireMethod(sessionType, "TickCountdown").Invoke(null, new object[] { 900f });
+                Assert.That((float)remainingTimeProperty.GetValue(null), Is.EqualTo(0f).Within(0.001f));
+                Assert.That(
+                    RequireProperty(sessionType, "EndReason").GetValue(null),
+                    Is.EqualTo(Enum.Parse(reasonType, "Victory")));
             }
             finally
             {
@@ -90,7 +90,6 @@ namespace Babel.Tests
                 Time.timeScale = previousTimeScale;
             }
         }
-
         [Test]
         public void BuildPoint_WhenFinalLayerCompleted_EndsGameAsDefeat()
         {
@@ -360,34 +359,61 @@ namespace Babel.Tests
             }
         }
 
-        [Test]
-        public void SettlementPanel_ReturnToMenuImmediatelyHidesItselfBeforeSceneRouting()
+[Test]
+        public void SettlementScreen_MenuButtonRoutesOnceAndUsesScreenRouterVisibilityLifecycle()
         {
             Type sessionType = RequireType("Babel.GameSession");
+            Type reasonType = RequireType("Babel.GameEndReason");
             Type overPanelType = RequireType("Babel.UIGameOverPanel");
-            var panelObject = new GameObject("SettlementSelfCloseTest", typeof(RectTransform));
+            Type routerType = RequireType("Babel.Unity.Presentation.UI.ScreenRouter");
+            var panelObject = new GameObject("SettlementScreenTest", typeof(RectTransform));
+            var routerObject = new GameObject("SettlementScreenRouterTest");
+            Component router = null;
             float previousTimeScale = Time.timeScale;
 
             try
             {
                 RequireMethod(sessionType, "SetSceneLoadingEnabledForTests").Invoke(null, new object[] { false });
                 InvokeStatic(sessionType, "ResetSession");
+                RequireMethod(sessionType, "EndGame")
+                    .Invoke(null, new[] { Enum.Parse(reasonType, "Defeat") });
+
                 Component panel = panelObject.AddComponent(overPanelType);
+                router = routerObject.AddComponent(routerType);
+                RequireMethod(routerType, "Register").Invoke(router, new object[] { "lose", panel });
+                RequireMethod(routerType, "Show").Invoke(router, new object[] { "lose" });
 
-                InvokePrivate(overPanelType, panel, "ReturnToMenuFromSettlement");
+                Assert.That((bool)RequireProperty(overPanelType, "IsVisible").GetValue(panel), Is.True);
+                Assert.That(panelObject.activeSelf, Is.True);
+                Transform buttonsRoot = panelObject.transform.Find("SettlementRoot/SettlementButtons");
+                Assert.That(buttonsRoot, Is.Not.Null);
+                Button restartButton = buttonsRoot.Find("RestartButton").GetComponent<Button>();
+                Button menuButton = buttonsRoot.Find("MenuButton").GetComponent<Button>();
 
+                menuButton.onClick.Invoke();
+
+                Assert.That(
+                    RequireProperty(sessionType, "LastRequestedSceneNameForTests").GetValue(null),
+                    Is.EqualTo("MainMenuScene"));
+                Assert.That(restartButton.interactable, Is.False);
+                Assert.That(menuButton.interactable, Is.False);
+
+                RequireMethod(routerType, "Hide").Invoke(router, new object[] { "lose" });
+                Assert.That((bool)RequireProperty(overPanelType, "IsVisible").GetValue(panel), Is.False);
                 Assert.That(panelObject.activeSelf, Is.False);
-                Assert.That(RequireProperty(sessionType, "LastRequestedSceneNameForTests").GetValue(null), Is.EqualTo("MainMenuScene"));
             }
             finally
             {
+                if (router != null)
+                {
+                    RequireMethod(routerType, "Dispose").Invoke(router, null);
+                }
+
                 RequireMethod(sessionType, "SetSceneLoadingEnabledForTests").Invoke(null, new object[] { true });
                 InvokeStatic(sessionType, "ResetSession");
                 Time.timeScale = previousTimeScale;
-                if (panelObject != null)
-                {
-                    UnityEngine.Object.DestroyImmediate(panelObject);
-                }
+                UnityEngine.Object.DestroyImmediate(routerObject);
+                UnityEngine.Object.DestroyImmediate(panelObject);
             }
         }
 

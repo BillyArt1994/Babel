@@ -7,45 +7,120 @@ namespace Babel.Tests
 {
     public class TransientEnemyPoolTests
     {
+        private const string WorkerCsv =
+            "enemyId,enemyName,hp,moveSpeed,buildContribution,buildCharges,expReward,prefab,buildTime\n" +
+            "worker,Worker,30,2,25,1,1,Missing/Worker,2";
+
         [Test]
         public void Get_WhenPrefabIsUnavailable_CreatesVisibleEnemyAtPosition()
         {
-            Type enemyDatabaseType = RequireType("Babel.EnemyDatabase");
-            MethodInfo initMethod = enemyDatabaseType.GetMethod("Init", BindingFlags.Public | BindingFlags.Static);
-            initMethod.Invoke(null, new object[]
-            {
-                "enemyId,enemyName,hp,moveSpeed,buildContribution,buildCharges,expReward,prefab,buildTime\n" +
-                "worker,Worker,30,2,25,1,1,Missing/Worker,2"
-            });
-
-            Type poolType = RequireType("Babel.TransientEnemyPool");
-            object pool = Activator.CreateInstance(poolType);
-            MethodInfo getMethod = poolType.GetMethod("Get", BindingFlags.Public | BindingFlags.Instance);
-            PropertyInfo activeCountProperty = poolType.GetProperty("ActiveCount", BindingFlags.Public | BindingFlags.Instance);
-            var spawnPosition = new Vector2(1.25f, -0.5f);
-            GameObject enemyObject = (GameObject)getMethod.Invoke(pool, new object[] { "worker", spawnPosition });
+            EnemyDatabase.Init(WorkerCsv);
+            var pool = new TransientEnemyPool();
 
             try
             {
-                Type enemyType = RequireType("Babel.Enemy");
+                var spawnPosition = new Vector2(1.25f, -0.5f);
+                GameObject enemyObject = pool.Get("worker", spawnPosition);
+
                 Assert.That(enemyObject, Is.Not.Null);
                 Assert.That(enemyObject.transform.position.x, Is.EqualTo(spawnPosition.x).Within(0.001f));
                 Assert.That(enemyObject.transform.position.y, Is.EqualTo(spawnPosition.y).Within(0.001f));
-                Assert.That(enemyObject.GetComponent(enemyType), Is.Not.Null);
+                Assert.That(enemyObject.GetComponent<Enemy>(), Is.Not.Null);
+
                 CircleCollider2D collider = enemyObject.GetComponent<CircleCollider2D>();
                 SpriteRenderer renderer = enemyObject.GetComponent<SpriteRenderer>();
                 Assert.That(collider, Is.Not.Null);
                 Assert.That(renderer, Is.Not.Null);
                 Assert.That(collider.bounds.extents.x, Is.GreaterThanOrEqualTo(renderer.bounds.extents.x * 0.95f));
                 Assert.That(enemyObject.layer, Is.EqualTo(LayerMask.NameToLayer("Enemy")));
-                Assert.That((int)activeCountProperty.GetValue(pool), Is.EqualTo(1));
+                Assert.That(pool.ActiveCount, Is.EqualTo(1));
             }
             finally
             {
-                if (enemyObject != null)
-                {
-                    UnityEngine.Object.DestroyImmediate(enemyObject);
-                }
+                pool.Dispose();
+            }
+        }
+
+        [Test]
+        public void Return_ThenGet_ReusesSameInstanceAndTracksActiveCount()
+        {
+            EnemyDatabase.Init(WorkerCsv);
+            var pool = new TransientEnemyPool();
+
+            try
+            {
+                GameObject first = pool.Get("worker", Vector2.zero);
+                Assert.That(pool.ActiveCount, Is.EqualTo(1));
+
+                pool.Return(first);
+                Assert.That(first.activeSelf, Is.False);
+                Assert.That(pool.ActiveCount, Is.Zero);
+
+                GameObject second = pool.Get("worker", Vector2.one);
+                Assert.That(second, Is.SameAs(first));
+                Assert.That(second.activeSelf, Is.True);
+                Assert.That(pool.ActiveCount, Is.EqualTo(1));
+
+                pool.Return(second);
+                Assert.That(pool.ActiveCount, Is.Zero);
+            }
+            finally
+            {
+                pool.Dispose();
+            }
+        }
+
+        [Test]
+        public void ChargesExhausted_ReturnsEnemyWithoutDestroyingIt()
+        {
+            EnemyDatabase.Init(WorkerCsv);
+            var pool = new TransientEnemyPool();
+
+            try
+            {
+                GameObject first = pool.Get("worker", Vector2.zero);
+                MethodInfo notify = typeof(Enemy).GetMethod(
+                    "NotifyChargesExhausted",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(notify, Is.Not.Null);
+
+                notify.Invoke(first.GetComponent<Enemy>(), null);
+
+                Assert.That(first == null, Is.False);
+                Assert.That(first.activeSelf, Is.False);
+                Assert.That(pool.ActiveCount, Is.Zero);
+                Assert.That(pool.Get("worker", Vector2.zero), Is.SameAs(first));
+            }
+            finally
+            {
+                pool.Dispose();
+            }
+        }
+
+        [Test]
+        public void FatalDamage_ReturnsEnemyWithoutDestroyingIt()
+        {
+            EnemyDatabase.Init(WorkerCsv);
+            StatsTracker.Reset();
+            var pool = new TransientEnemyPool();
+
+            try
+            {
+                GameObject first = pool.Get("worker", Vector2.zero);
+                Enemy enemy = first.GetComponent<Enemy>();
+                enemy.TakeDamage(1000f, false);
+                enemy.TickDeathFeedback(0f);
+                enemy.TickDeathFeedback(1f);
+
+                Assert.That(first == null, Is.False);
+                Assert.That(first.activeSelf, Is.False);
+                Assert.That(pool.ActiveCount, Is.Zero);
+                Assert.That(pool.Get("worker", Vector2.zero), Is.SameAs(first));
+            }
+            finally
+            {
+                pool.Dispose();
+                StatsTracker.Reset();
             }
         }
 
@@ -66,7 +141,6 @@ namespace Babel.Tests
                 Component enemy = enemyObject.AddComponent(enemyType);
                 Component buildPoint = buildPointObject.AddComponent(buildPointType);
 
-                // GetBuildApproachPosition 已搬到 BuilderMovement，构造并注入 owner
                 object movement = Activator.CreateInstance(builderMovementType);
                 object data = Activator.CreateInstance(enemyDataType);
                 MethodInfo initMethod = builderMovementType.GetMethod(
@@ -112,12 +186,13 @@ namespace Babel.Tests
                       ?? Type.GetType(fullName);
             if (type == null)
             {
-                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
                 {
                     type = asm.GetType(fullName);
                     if (type != null) break;
                 }
             }
+
             Assert.That(type, Is.Not.Null, $"{fullName} should exist in a loaded assembly.");
             return type;
         }

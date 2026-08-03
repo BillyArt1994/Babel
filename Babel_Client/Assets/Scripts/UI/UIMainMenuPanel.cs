@@ -1,94 +1,94 @@
 using System;
-using QFramework;
+using Babel.Unity.Presentation.UI;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Babel
 {
     /// <summary>
-    /// 独立主菜单运行时 UI 面板。UI 结构由 prefab 定义，此脚本只负责按钮绑定。
+    /// Main-menu screen. Its hierarchy and button references are authored in the prefab;
+    /// the scene-owned ScreenRouter controls its visible lifetime.
     /// </summary>
-    public class UIMainMenuPanel : UIPanel
+    public sealed class UIMainMenuPanel : Babel.Unity.Presentation.UI.Screen
     {
+        private static readonly string[] SettlementPanelTypeNames =
+        {
+            "Babel.UIGameOverPanel",
+            "Babel.UIGamePassPanel"
+        };
+
+        [SerializeField] private Button _startButton;
+        [SerializeField] private Button _exitButton;
+
         private Action _startAction;
         private Action _quitAction = QuitGame;
         private bool _handled;
 
-        /// <summary>
-        /// 为 EditMode 测试替换按钮动作。
-        /// </summary>
+        public Button StartButton => _startButton;
+        public Button ExitButton => _exitButton;
+
+        /// <summary>Replaces menu actions in tests without changing scene navigation globally.</summary>
         public void SetActionsForTests(Action startAction, Action quitAction)
         {
             _startAction = startAction;
             _quitAction = quitAction;
         }
 
-        protected override void OnInit(IUIData uiData = null)
+        protected override void OnScreenShown()
         {
-            _startAction = StartGameFromMenu;
-        }
-
-        protected override void OnOpen(IUIData uiData = null)
-        {
+            ValidateBindings();
             _handled = false;
-            BindButtons();
+            SetButtonsInteractable(true);
+
+            UnityAction startListener = HandleStartClicked;
+            UnityAction exitListener = HandleExitClicked;
+            _startButton.onClick.AddListener(startListener);
+            _exitButton.onClick.AddListener(exitListener);
+            VisibilitySubscriptions.Add(() => _startButton.onClick.RemoveListener(startListener));
+            VisibilitySubscriptions.Add(() => _exitButton.onClick.RemoveListener(exitListener));
         }
 
-        protected override void OnShow() { }
-        protected override void OnHide() { }
-
-        protected override void OnClose()
+        private void HandleStartClicked()
         {
-            RemoveButtonListeners();
+            RunOnce(_startAction ?? StartGameFromMenu);
         }
 
-        private void BindButtons()
+        private void HandleExitClicked()
         {
-            var startBtn = transform.Find("StartButton")?.GetComponent<Button>();
-            var exitBtn  = transform.Find("ExitButton")?.GetComponent<Button>();
-            if (startBtn == null || exitBtn == null)
-            {
-                Debug.LogWarning("[BABEL][MainMenu] StartButton or ExitButton not found in prefab");
-                return;
-            }
-            startBtn.onClick.RemoveAllListeners();
-            exitBtn.onClick.RemoveAllListeners();
-            startBtn.interactable = true;
-            exitBtn.interactable = true;
-            startBtn.onClick.AddListener(() => RunOnce(_startAction ?? StartGameFromMenu));
-            exitBtn.onClick.AddListener(() => RunOnce(_quitAction));
+            RunOnce(_quitAction ?? QuitGame);
         }
 
         private void StartGameFromMenu()
         {
-            CloseStaleGamePanels();
-            if (Application.isPlaying) CloseSelf();
+            CloseStaleSettlementPanels();
             GameSession.StartGame();
         }
 
-        private static void CloseStaleGamePanels()
+        private static void CloseStaleSettlementPanels()
         {
-            if (Application.isPlaying)
+            MonoBehaviour[] behaviours = FindObjectsOfType<MonoBehaviour>(true);
+            for (int i = 0; i < behaviours.Length; i++)
             {
-                UIKit.ClosePanel<UIGameOverPanel>();
-                UIKit.ClosePanel<UIGamePassPanel>();
-                UIKit.ClosePanel<UIGamePanel>();
+                MonoBehaviour behaviour = behaviours[i];
+                if (behaviour == null || !behaviour.gameObject.scene.IsValid()) continue;
+
+                string fullName = behaviour.GetType().FullName;
+                for (int typeIndex = 0; typeIndex < SettlementPanelTypeNames.Length; typeIndex++)
+                {
+                    if (!string.Equals(fullName, SettlementPanelTypeNames[typeIndex], StringComparison.Ordinal))
+                        continue;
+
+                    DestroySceneObject(behaviour.gameObject);
+                    break;
+                }
             }
-            DestroyScenePanelsOfType<UIGameOverPanel>();
-            DestroyScenePanelsOfType<UIGamePassPanel>();
         }
 
-        private static void DestroyScenePanelsOfType<T>() where T : UIPanel
+        private static void DestroySceneObject(GameObject value)
         {
-            T[] panels = FindObjectsOfType<T>(true);
-            for (int i = 0; i < panels.Length; i++)
-                DestroyPanelObject(panels[i].gameObject);
-        }
-
-        private static void DestroyPanelObject(GameObject go)
-        {
-            if (Application.isPlaying) Destroy(go);
-            else DestroyImmediate(go);
+            if (Application.isPlaying) Destroy(value);
+            else DestroyImmediate(value);
         }
 
         private void RunOnce(Action action)
@@ -101,14 +101,16 @@ namespace Babel
 
         private void SetButtonsInteractable(bool interactable)
         {
-            foreach (var btn in GetComponentsInChildren<Button>(true))
-                btn.interactable = interactable;
+            Button[] buttons = GetComponentsInChildren<Button>(true);
+            for (int i = 0; i < buttons.Length; i++)
+                buttons[i].interactable = interactable;
         }
 
-        private void RemoveButtonListeners()
+        private void ValidateBindings()
         {
-            foreach (var btn in GetComponentsInChildren<Button>(true))
-                btn.onClick.RemoveAllListeners();
+            if (_startButton == null || _exitButton == null)
+                throw new InvalidOperationException(
+                    "UIMainMenuPanel requires serialized StartButton and ExitButton references.");
         }
 
         private static void QuitGame()

@@ -1,0 +1,17 @@
+{
+  "name": "Babel.Gameplay",
+  "rootNamespace": "Babel.Gameplay",
+  "references": [
+    "Babel.Foundation"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true,
+  "optionalUnityReferences": []
+}

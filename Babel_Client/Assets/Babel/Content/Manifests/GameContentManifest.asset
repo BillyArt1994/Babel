@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c538dbd56809844b05904113bdf5ac, type: 3}
+  m_Name: GameContentManifest
+  m_EditorClassIdentifier: 
+  _experienceCsv: {fileID: 4900000, guid: c221bd294bd89e149b1efda79509d7a5, type: 3}
+  _enemiesCsv: {fileID: 4900000, guid: 7448f9a9fac15974c901bf2f784293f3, type: 3}
+  _wavesCsv: {fileID: 4900000, guid: f697625249620634f8100388bdc77b06, type: 3}
+  _skillsCsv: {fileID: 4900000, guid: 791af55d51a1432478ae383de7e3966b, type: 3}
+  _compiledContent: {fileID: 11400000, guid: 591f1994fd12c734388ac4f1fe5d372b, type: 2}
+  _defaultFont: {fileID: 12800000, guid: b28ec76392c6c95459f737d6bb0a5cd5, type: 3}
+  _fallbackHumanView: {fileID: 1819552786581738308, guid: 58c643e66465287418d28f787369134b, type: 3}
+  _fallbackSkillIcon: {fileID: 21300000, guid: 69284d59522d83c4f976bbea90b1b332, type: 3}
+  _humanViews:
+  - _id: worker
+    _prefab: {fileID: 1819552786581738308, guid: 58c643e66465287418d28f787369134b, type: 3}
+  - _id: scout
+    _prefab: {fileID: 1819552786581738308, guid: 5c73fd4d5d9975549b35877506e693a4, type: 3}
+  _skillIcons:
+  - _id: divine_finger
+    _icon: {fileID: 21300000, guid: 69284d59522d83c4f976bbea90b1b332, type: 3}
+  - _id: meteor
+    _icon: {fileID: 21300000, guid: c374a5ef96b25354e9b416d67cda6d01, type: 3}
+  - _id: thunder_auto
+    _icon: {fileID: 21300000, guid: a62c392e9d0a59644a2d1c4090045812, type: 3}
+  - _id: aftershock
+    _icon: {fileID: 21300000, guid: ef23ba0a4eb86804fae668da9af8ecfd, type: 3}
+  - _id: plague
+    _icon: {fileID: 21300000, guid: 40e2b1e6f39ecb845a1e761e854bef19, type: 3}
+  - _id: rage
+    _icon: {fileID: 21300000, guid: 08fe4cda3385c74499e45ce16409766e, type: 3}
+  - _id: meteor_evolved
+    _icon: {fileID: 21300000, guid: c374a5ef96b25354e9b416d67cda6d01, type: 3}
+  - _id: berserker_pact
+    _icon: {fileID: 21300000, guid: ef23ba0a4eb86804fae668da9af8ecfd, type: 3}
+  _poolConfigs:
+  - _viewId: worker
+    _prewarm: 48
+    _expectedCapacity: 96
+    _allowExpansion: 1
+  - _viewId: elite
+    _prewarm: 8
+    _expectedCapacity: 16
+    _allowExpansion: 1
+  - _viewId: priest
+    _prewarm: 8
+    _expectedCapacity: 16
+    _allowExpansion: 1
+  - _viewId: engineer
+    _prewarm: 16
+    _expectedCapacity: 32
+    _allowExpansion: 1
+  - _viewId: zealot
+    _prewarm: 16
+    _expectedCapacity: 32
+    _allowExpansion: 1
+  - _viewId: scout
+    _prewarm: 16
+    _expectedCapacity: 32
+    _allowExpansion: 1

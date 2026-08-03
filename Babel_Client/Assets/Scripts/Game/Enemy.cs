@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using QFramework;
 
 namespace Babel
 {
@@ -13,7 +12,7 @@ namespace Babel
         Finished
     }
 
-    public partial class Enemy : ViewController, IDamageable
+    public partial class Enemy : MonoBehaviour, IDamageable
     {
         private const float HIT_FLASH_DURATION = 0.12f;
         private static readonly Color HIT_FLASH_COLOR = Color.red;
@@ -159,6 +158,7 @@ namespace Babel
             _deathFeedbackTimer = 0f;
             _isDying = false;
             _deathCompleted = false;
+            _returnRequested = false;
 
             // 按 MoveMode 选移动策略
             _movement?.OnRemoved();
@@ -222,15 +222,16 @@ namespace Babel
         }
 
         /// <summary>
-        /// 供 BuilderMovement.ExecuteFinished 调用，触发 charges 耗尽事件并销毁。
+        /// 供 BuilderMovement.ExecuteFinished 调用，触发 charges 耗尽事件并归还对象池。
         /// </summary>
         internal void NotifyChargesExhausted()
         {
+            if (_returnRequested) return;
             _ability?.OnRemoved();
             _ability = null;
             if (waveEventId >= 0)
                 OnChargesExhausted?.Invoke(waveEventId);
-            this.DestroyGameObjGracefully();
+            ReturnToPoolOrDestroy();
         }
 
         /// <summary>
@@ -299,7 +300,7 @@ namespace Babel
                 XpSystem.Instance.GainXp(expAmount);
             else
                 Debug.LogWarning("[BABEL][Enemy] XpSystem.Instance 为空，经验未结算");
-            DestroyAfterDeath();
+            ReturnToPoolOrDestroy();
         }
 
         private void DestroyAfterDeath()
@@ -311,7 +312,7 @@ namespace Babel
                 return;
             }
 #endif
-            this.DestroyGameObjGracefully();
+            Destroy(gameObject);
         }
 
         private void ResolveHitFlashRenderer()

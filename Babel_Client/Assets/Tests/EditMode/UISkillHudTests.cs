@@ -12,8 +12,8 @@ namespace Babel.Tests
 {
     public class UISkillHudTests
     {
-        private const string SKILLS_CSV_PATH = "Assets/Data/Skills/skills.csv";
-        private const string GAME_PANEL_PATH = "Assets/Art/UIPrefab/UIGamePanel.prefab";
+        private const string SKILLS_CSV_PATH = "Assets/Babel/Content/Data/Skills/skills.csv";
+        private const string GAME_PANEL_PATH = "Assets/Babel/Prefabs/UI/UIGamePanel.prefab";
 
         [Test]
         public void SkillSystem_WhenPassiveSkillAdded_RaisesChangeEventAndExposesActiveAndPassiveSkills()

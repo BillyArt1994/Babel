@@ -1,10 +1,9 @@
 using System;
 using UnityEngine;
-using QFramework;
 
 namespace Babel
 {
-    public partial class ClickAttackSystem : ViewController
+    public partial class ClickAttackSystem : MonoBehaviour
     {
         public static event Action<AttackResult> OnAttackExecuted;
 

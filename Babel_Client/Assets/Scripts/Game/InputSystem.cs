@@ -1,5 +1,4 @@
 using System;
-using QFramework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -116,7 +115,7 @@ namespace Babel
 	/// 统一采样鼠标输入，并将点击/蓄力状态转换为输入事件。
 	/// </summary>
 	[DisallowMultipleComponent]
-	public partial class InputSystem : ViewController
+	public partial class InputSystem : MonoBehaviour
 	{
 		[Header("输入配置")]
 		[SerializeField]
@@ -237,7 +236,7 @@ namespace Babel
 				return false;
 			}
 
-			return !_ignoreInputWhenTimeScaleIsZero || Time.timeScale > 0f;
+			return !_ignoreInputWhenTimeScaleIsZero || GameSession.IsPlaying;
 		}
 
 		private bool IsPointerOverUI()

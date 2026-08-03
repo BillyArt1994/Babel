@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Babel
 {
     /// <summary>
-    /// 为现有 QFramework 结算面板按胜利/失败结果生成运行时 UI。
+    /// 为项目自有结算 Screen 按胜利/失败结果生成运行时 UI。
     /// </summary>
     public static class SettlementPanelRuntime
     {

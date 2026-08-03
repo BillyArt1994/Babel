@@ -6,10 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenuScene.unity
+    path: Assets/Babel/Scenes/Boot/BootScene.unity
+    guid: 09e0d41bd213c5f46b722fa361cd62a5
+  - enabled: 1
+    path: Assets/Babel/Scenes/Menu/MainMenuScene.unity
     guid: 15ff8339120972749b3544ceaaf3b9be
   - enabled: 1
-    path: Assets/Scenes/GameScene.unity
+    path: Assets/Babel/Scenes/Game/GameScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  m_configObjects:
-    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: b9d678292ff2d2c47a577727bbb90746, type: 2}
+  m_configObjects: {}

@@ -1,18 +1,19 @@
 {
-    "name": "Babel",
-    "references": [
-        "QFramework",
-        "QFramework.CoreKit",
-        "UIKit"
-    ],
-    "optionalUnityReferences": [],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "Babel",
+  "references": [
+    "Babel.Foundation",
+    "Babel.Gameplay",
+    "Babel.Unity",
+    "Babel.Bootstrap"
+  ],
+  "optionalUnityReferences": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

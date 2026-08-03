@@ -1,20 +1,16 @@
 using System.Collections.Generic;
+using Babel.Unity.Infrastructure.Content;
 using UnityEngine;
-using QFramework;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Babel
 {
-    public partial class SkillSystem : ViewController
+    public partial class SkillSystem : MonoBehaviour
     {
-        private const string SKILLS_CSV_ASSET_PATH = "Assets/Data/Skills/skills.csv";
         private const string DEFAULT_CLICK_SKILL_ID = "divine_finger";
 
         [Header("技能配置")]
         [SerializeField]
-        [Tooltip("技能 CSV 数据源。未手动指定时，Editor 下自动读取 Assets/Data/Skills/skills.csv。")]
+        [Tooltip("技能 CSV 数据源。未手动指定时从 GameContentManifest 获取。")]
         private TextAsset skillsCSV;
 
         [SerializeField]
@@ -297,7 +293,7 @@ namespace Babel
                 return;
             }
 
-            SkillDatabase.Init(skillsCSV.text);
+            if (skillsCSV != null) SkillDatabase.Init(skillsCSV.text);
             var defaultSkill = SkillDatabase.GetById(defaultClickSkillId);
             if (defaultSkill == null)
             {
@@ -313,19 +309,15 @@ namespace Babel
 
         private void ResolveMissingReferences()
         {
-#if UNITY_EDITOR
-            if (skillsCSV == null)
-            {
-                skillsCSV = AssetDatabase.LoadAssetAtPath<TextAsset>(SKILLS_CSV_ASSET_PATH);
-            }
-#endif
+            if (skillsCSV == null && GameContentRegistry.Current != null)
+                skillsCSV = GameContentRegistry.Current.SkillsCsv;
         }
 
         private bool ValidateStartupReferences()
         {
-            if (skillsCSV == null)
+            if (skillsCSV == null && SkillDatabase.Count == 0)
             {
-                Debug.LogWarning("[BABEL][SkillSystem] No skills CSV assigned");
+                Debug.LogWarning("[Babel][SkillSystem] Manifest skills CSV unavailable and database is empty.");
                 return false;
             }
 
@@ -340,10 +332,8 @@ namespace Babel
 
         private void OnDestroy()
         {
-            if (Instance == this)
-            {
-                Instance = null;
-            }
+            ClearAll();
+            if (Instance == this) Instance = null;
         }
 
         private void RemoveAllOnClickSkillsExcept(string skillId)
